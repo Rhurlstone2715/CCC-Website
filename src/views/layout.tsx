@@ -156,7 +156,9 @@ export const Layout: FC<LayoutProps> = ({ title, area, user, pendingCount, activ
         </main>
         <footer class="portal-footer">
           <div class="wrap">
-            <span>© {new Date().getFullYear()} Cayman Crane Company</span>
+            <span>
+              © {new Date().getFullYear()} Cayman Crane Company · <a href="/privacy">Privacy</a>
+            </span>
             <span>
               Questions? Call <a href={PHONE_LINK}>{PHONE_DISPLAY}</a> or{" "}
               <a href={WHATSAPP_LINK} target="_blank" rel="noopener">

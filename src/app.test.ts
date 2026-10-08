@@ -312,13 +312,37 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.ok((await prisma.booking.findUniqueOrThrow({ where: { id: 1 } })).contractSentAt);
   });
 
+  test("admins can delete a customer, keeping or removing their bookings", async () => {
+    const kim = await signup();
+    await req("/api/bookings", { json: booking, cookie: kim });
+    const lee = await signup("lee@example.com");
+    await req("/api/bookings", { json: { ...booking, customerEmail: "lee@example.com" }, cookie: lee });
+    const admin = await makeAdmin();
+
+    // Default keeps the booking as a guest booking.
+    const kept = await req("/admin/customers/1/delete", { form: {}, cookie: admin });
+    assert.equal(kept.headers.get("location"), "/admin/customers?notice=customer-deleted");
+    assert.equal(await prisma.user.count({ where: { id: 1 } }), 0);
+    assert.equal((await prisma.booking.findUniqueOrThrow({ where: { id: 1 } })).userId, null);
+    assert.equal((await req("/api/rewards", { cookie: kim })).status, 401);
+
+    // Ticking the box removes their bookings too.
+    await req("/admin/customers/2/delete", { form: { deleteBookings: "1" }, cookie: admin });
+    assert.equal(await prisma.booking.count({ where: { id: 2 } }), 0);
+
+    // An admin can't delete themselves.
+    const self = await req("/admin/customers/3/delete", { form: {}, cookie: admin });
+    assert.equal(self.headers.get("location"), "/admin/customers/3?notice=cant-delete-self");
+    assert.equal(await prisma.user.count(), 1);
+  });
+
   test("forgot password without customer email shows how to get help", async () => {
     const page = await (await req("/account/forgot")).text();
     assert.match(page, /We&#39;ll reset it for you|We'll reset it for you/);
   });
 
   test("pages render", async () => {
-    for (const path of ["/account", "/account/forgot", "/admin/login", "/admin/setup"]) {
+    for (const path of ["/account", "/account/forgot", "/admin/login", "/admin/setup", "/privacy"]) {
       const res = await req(path);
       assert.equal(res.status, 200, path);
       assert.match(await res.text(), /^<!doctype html>/);

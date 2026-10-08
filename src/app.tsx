@@ -10,6 +10,7 @@ import { clientIp, createLimiter } from "./ratelimit.js";
 import { rewardsForUser } from "./rewards.js";
 import { account } from "./routes/account.js";
 import { admin } from "./routes/admin.js";
+import { PrivacyPage } from "./views/privacy.js";
 
 const publicDir = fileURLToPath(new URL("../public", import.meta.url));
 export const app = new Hono<AppEnv>();
@@ -54,6 +55,8 @@ app.get("/", c => c.redirect(`/rentals${new URL(c.req.url).search}`));
 app.get("/index.html", c => c.redirect("/", 301));
 app.get("/rentals.html", c => c.redirect("/rentals", 301));
 app.get("/rentals", serveStatic({ root: publicDir, path: "rentals.html" }));
+
+app.get("/privacy", async c => c.html(<PrivacyPage user={await currentUser(c)} />));
 
 app.route("/account", account);
 app.route("/admin", admin);

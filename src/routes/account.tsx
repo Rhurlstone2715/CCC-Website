@@ -139,6 +139,13 @@ const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupE
               Create account
             </button>
           </div>
+          <p class="hint flush">
+            We keep your details to run your account and bookings. See our{" "}
+            <a class="text-link" href="/privacy">
+              privacy notice
+            </a>
+            .
+          </p>
         </form>
       </section>
     </div>

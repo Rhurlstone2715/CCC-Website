@@ -838,6 +838,54 @@ pre.request {
   max-width: 480px;
 }
 
+label.check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: 14px;
+  min-height: 44px;
+}
+
+label.check input {
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0;
+  flex-shrink: 0;
+  accent-color: var(--red);
+}
+
+/* Long-form text, e.g. the privacy notice */
+.prose {
+  max-width: 720px;
+}
+
+.prose section {
+  margin-top: var(--space-5);
+}
+
+.prose h2 + p,
+.prose h2 + ul {
+  margin-top: var(--space-2);
+}
+
+.prose p,
+.prose li {
+  max-width: 65ch;
+}
+
+.prose ul {
+  padding-left: var(--space-4);
+}
+
+.prose li + li {
+  margin-top: var(--space-2);
+}
+
+.prose a {
+  color: var(--red);
+  font-weight: 600;
+}
+
 /* Spacing utilities, all on the 8px scale */
 .flush,
 form.form.flush {

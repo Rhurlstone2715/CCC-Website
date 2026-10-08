@@ -47,6 +47,9 @@ const NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string
   "credit-saved": { tone: "success", text: "Rewards credit saved." },
   "bad-credit": { tone: "error", text: "Enter the credit in CI$, for example 2500. Use 0 to remove it." },
   "profile-saved": { tone: "success", text: "Customer details saved." },
+  "customer-deleted": { tone: "success", text: "Customer account deleted." },
+  "cant-delete-self": { tone: "error", text: "You can't delete the account you're logged in with." },
+  "last-admin": { tone: "error", text: "This is the only admin account, so it can't be deleted." },
 };
 
 function noticeFrom(c: Context): { tone: "success" | "error" | "info"; text: string } | undefined {
@@ -625,9 +628,11 @@ admin.get("/customers", async c => {
     prisma.user.findMany({ where, orderBy: { createdAt: "desc" }, take: 200, include: { _count: { select: { bookings: true } } } }),
   ]);
   const paid = await paidByUser(customers.map(u => u.id));
+  const notice = noticeFrom(c);
 
   return c.html(
     <AdminPage title="Customers" user={user} pending={pending} active="customers">
+      {notice ? <Notice tone={notice.tone}>{notice.text}</Notice> : null}
       <div class="page-head">
         <p class="eyebrow">Admin</p>
         <h1>Customers</h1>
@@ -797,6 +802,36 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { reset
               <p class="muted">No bookings on this account yet.</p>
             )}
           </section>
+          {customer.id !== user.id ? (
+            <section class="card danger-zone">
+              <h2>Delete account</h2>
+              <p class="muted">
+                Deletes their login, details and rewards credit. Use this when a customer asks to be removed. This can't be undone.
+              </p>
+              <form
+                class="form"
+                method="post"
+                action={`/admin/customers/${customer.id}/delete`}
+                data-confirm={`Delete ${customer.name}'s account permanently?`}
+              >
+                {bookings.length ? (
+                  <label class="check">
+                    <input type="checkbox" name="deleteBookings" value="1" />
+                    <span>
+                      {bookings.length === 1
+                        ? "Also delete their booking. Leave this unticked to keep it as a guest booking for your records."
+                        : `Also delete their ${bookings.length} bookings. Leave this unticked to keep them as guest bookings for your records.`}
+                    </span>
+                  </label>
+                ) : null}
+                <div class="form-actions">
+                  <button class="button danger small" type="submit">
+                    Delete {customer.name}'s account
+                  </button>
+                </div>
+              </form>
+            </section>
+          ) : null}
         </div>
       </div>
     </AdminPage>,
@@ -833,6 +868,16 @@ admin.post("/customers/:id{[0-9]+}/:action", async c => {
     }
     case "reset-link":
       return renderCustomer(c, customer, { resetLink: await createResetLink(c, id, 72) });
+    case "delete": {
+      if (id === (await currentUser(c))!.id) return back("cant-delete-self");
+      if (customer.role === "ADMIN" && (await prisma.user.count({ where: { role: "ADMIN" } })) <= 1) return back("last-admin");
+      // Sessions and reset links go with the user; kept bookings are unlinked (onDelete: SetNull).
+      await prisma.$transaction([
+        ...(body.deleteBookings === "1" ? [prisma.booking.deleteMany({ where: { userId: id } })] : []),
+        prisma.user.delete({ where: { id } }),
+      ]);
+      return c.redirect("/admin/customers?notice=customer-deleted");
+    }
     default:
       return c.notFound();
   }

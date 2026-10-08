@@ -13,6 +13,7 @@ The rentals page is plain HTML, CSS and JavaScript in `public/`. A small Node se
 | `/account` | Customer log in and sign up |
 | `/account/profile` | Rewards tier, booking history, details and password |
 | `/account/forgot`, `/account/reset` | Password reset |
+| `/privacy` | Privacy notice (`src/views/privacy.tsx`), linked from the footer, sign-up and checkout |
 | `/admin` | Admin area: bookings and customers |
 | `/admin/setup` | Creates an admin account, using `ADMIN_SETUP_CODE` |
 | `POST /api/bookings` | Saves a booking request and emails it to Cayman Crane |
@@ -29,7 +30,7 @@ Customers earn one point for every CI$1 an admin marks as paid on a booking they
 
 To add an admin, set `ADMIN_SETUP_CODE` on the web service in Railway, open `/admin/setup`, and enter the code with the admin's name, email and password. If the email already has a customer account, its password is needed and the account becomes an admin. Remove the variable afterwards to turn setup off.
 
-In the admin area, a booking can be approved (which emails the customer their contract), declined, cancelled, marked as paid with the amount, given a private note, or deleted. Customers can be searched, edited, given rewards credit, or sent a one-time password reset link.
+In the admin area, a booking can be approved (which emails the customer their contract), declined, cancelled, marked as paid with the amount, given a private note, or deleted. Customers can be searched, edited, given rewards credit, sent a one-time password reset link, or deleted. Deleting a customer keeps their bookings as guest bookings unless the admin ticks the box to delete those too.
 
 ## Booking alerts
 
