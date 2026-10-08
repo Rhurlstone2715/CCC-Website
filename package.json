@@ -13,7 +13,8 @@
     "start": "prisma migrate deploy && node dist/server.js",
     "typecheck": "tsc --noEmit",
     "db:migrate": "prisma migrate dev",
-    "db:deploy": "prisma migrate deploy"
+    "db:deploy": "prisma migrate deploy",
+    "test": "tsc && node --env-file-if-exists=.env --test \"dist/**/*.test.js\""
   },
   "devDependencies": {
     "@types/node": "^24.19.1",

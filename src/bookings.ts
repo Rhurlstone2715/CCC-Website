@@ -1,4 +1,5 @@
-import type { Booking } from "./generated/prisma/client.js";
+import type { Booking, User } from "./generated/prisma/client.js";
+import { COMPANY_EMAIL, sendEmail } from "./email.js";
 
 // Shape of the JSON the checkout form in public/app.js posts to /api/bookings.
 export type BookingInput = {
@@ -46,18 +47,21 @@ export function bookingRef(id: number): string {
   return `CCC-${String(id).padStart(5, "0")}`;
 }
 
-// Emails the booking to Cayman Crane through Resend. Returns false when alerts
-// aren't configured or the send fails, so the caller can fall back to email.
-export async function sendBookingAlert(booking: Booking): Promise<boolean> {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return false;
+function caymanTime(date: Date): string {
+  return date.toLocaleString("en-US", { timeZone: "America/Cayman", dateStyle: "medium", timeStyle: "short" });
+}
 
+// Emails a new booking to Cayman Crane. Returns false when alerts aren't
+// configured or the send fails, so the caller can fall back to email.
+export async function sendBookingAlert(booking: Booking, account: Pick<User, "name" | "email"> | null): Promise<boolean> {
   const ref = bookingRef(booking.id);
-  const name = booking.customerName.replace(/[\r\n]+/g, " ");
-  const received = booking.createdAt.toLocaleString("en-US", { timeZone: "America/Cayman", dateStyle: "medium", timeStyle: "short" });
+  const accountLine = account
+    ? `Account: ${account.name} <${account.email}>${booking.discountPercent ? ` · ${booking.rewardTier} tier, ${booking.discountPercent}% off equipment` : ""}`
+    : "Account: none (guest booking)";
   const body = [
     `New booking request ${ref}`,
-    `Received ${received} (Cayman time)`,
+    `Received ${caymanTime(booking.createdAt)} (Cayman time)`,
+    accountLine,
     "",
     `Signed by: ${booking.signature} (initials ${booking.initials})`,
     "Rental agreement accepted: yes",
@@ -65,26 +69,48 @@ export async function sendBookingAlert(booking: Booking): Promise<boolean> {
     "",
     booking.requestText,
     "",
-    "Reply to this email to respond to the customer directly.",
+    "Reply to this email to respond to the customer directly, or open the booking in the admin area to approve it.",
   ].join("\n");
 
-  try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from: process.env.BOOKING_ALERT_FROM || "Cayman Crane Bookings <onboarding@resend.dev>",
-        to: [process.env.BOOKING_ALERT_TO || "caymancrane@gmail.com"],
-        reply_to: booking.customerEmail,
-        subject: `Booking request ${ref} from ${name}`,
-        text: body,
-      }),
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (!response.ok) console.error(`Booking alert for ${ref} failed: ${response.status} ${await response.text()}`);
-    return response.ok;
-  } catch (error) {
-    console.error(`Booking alert for ${ref} failed`, error);
-    return false;
-  }
+  return sendEmail({
+    to: COMPANY_EMAIL,
+    replyTo: booking.customerEmail,
+    subject: `Booking request ${ref} from ${booking.customerName}`,
+    text: body,
+  });
+}
+
+export function contractSubject(booking: Booking): string {
+  return `Your Cayman Crane booking ${bookingRef(booking.id)} is approved`;
+}
+
+// The approval email: what they booked and the agreement they signed.
+export function contractText(booking: Booking): string {
+  const firstName = booking.customerName.split(/\s+/)[0];
+  return [
+    `Hi ${firstName},`,
+    "",
+    `Your booking request ${bookingRef(booking.id)} with Cayman Crane Company has been approved.`,
+    "Below is your booking summary and the rental agreement you signed. Please keep this email for your records.",
+    "",
+    "BOOKING SUMMARY",
+    "",
+    booking.requestText,
+    "",
+    "RENTAL AGREEMENT",
+    "",
+    booking.termsText,
+    "",
+    `Signed: ${booking.signature}`,
+    `Initials: ${booking.initials}`,
+    `Signed on: ${caymanTime(booking.createdAt)} (Cayman time)`,
+    "",
+    "Questions? Reply to this email or call (345) 916-0816.",
+    "",
+    "Cayman Crane Company",
+  ].join("\n");
+}
+
+export async function sendContract(booking: Booking): Promise<boolean> {
+  return sendEmail({ to: booking.customerEmail, replyTo: COMPANY_EMAIL, subject: contractSubject(booking), text: contractText(booking) });
 }

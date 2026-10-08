@@ -12,28 +12,87 @@ datasource db {
 enum BookingStatus {
   PENDING
   APPROVED
+  PAID
   DECLINED
   CANCELLED
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+// Customer and admin accounts. Email is stored lowercased.
+// rewardCreditCents lets an admin credit spend made outside the site.
+model User {
+  id                Int             @id @default(autoincrement())
+  email             String          @unique
+  passwordHash      String
+  name              String
+  phone             String?
+  company           String?
+  role              Role            @default(CUSTOMER)
+  rewardCreditCents Int             @default(0)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  sessions          Session[]
+  passwordResets    PasswordReset[]
+  bookings          Booking[]
+}
+
+// Session and reset ids are SHA-256 hashes of the token given to the browser,
+// so a database leak doesn't hand out working logins.
+model Session {
+  id        String   @id
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model PasswordReset {
+  id        String    @id
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 // A booking request submitted from the rentals page checkout.
 // requestText is the itemised summary the page builds; termsText is the
 // rental agreement exactly as the customer saw it when they signed.
+// rewardTier/discountPercent record the customer's tier when they booked;
+// amountPaidCents is entered by an admin and is what earns rewards points.
 model Booking {
-  id            Int           @id @default(autoincrement())
-  status        BookingStatus @default(PENDING)
-  customerName  String
-  customerEmail String
-  requestText   String
-  termsText     String
-  signature     String
-  initials      String
-  agreedToTerms Boolean
-  paymentAck    Boolean
-  alertSentAt   DateTime?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id              Int           @id @default(autoincrement())
+  status          BookingStatus @default(PENDING)
+  customerName    String
+  customerEmail   String
+  requestText     String
+  termsText       String
+  signature       String
+  initials        String
+  agreedToTerms   Boolean
+  paymentAck      Boolean
+  alertSentAt     DateTime?
+  userId          Int?
+  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  rewardTier      String?
+  discountPercent Int           @default(0)
+  adminNote       String?
+  approvedAt      DateTime?
+  contractSentAt  DateTime?
+  paidAt          DateTime?
+  amountPaidCents Int?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@index([status, createdAt])
   @@index([customerEmail])
+  @@index([userId])
 }
