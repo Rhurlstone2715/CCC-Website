@@ -4,7 +4,6 @@ import { getConnInfo } from "@hono/node-server/conninfo";
 import { Hono, type Context } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { secureHeaders } from "hono/secure-headers";
-import { trimTrailingSlash } from "hono/trailing-slash";
 import { fileURLToPath } from "node:url";
 import { prisma } from "./db.js";
 import { bookingRef, parseBooking, sendBookingAlert } from "./bookings.js";
@@ -14,7 +13,15 @@ const app = new Hono();
 
 app.use(secureHeaders());
 // "/rentals/" would break the page's relative asset paths, so send it to "/rentals".
-app.use(trimTrailingSlash());
+// The Location is relative so it stays on https behind Railway's proxy, and
+// leading slashes are collapsed so "//other.site/" can't become an off-site redirect.
+app.use(async (c, next) => {
+  await next();
+  const { path, method } = c.req;
+  if (c.res.status === 404 && (method === "GET" || method === "HEAD") && path !== "/" && path.endsWith("/")) {
+    c.res = c.redirect(`/${path.replace(/^\/+|\/+$/g, "")}${new URL(c.req.url).search}`, 301);
+  }
+});
 
 // Photos and load charts rarely change; pages, code and API responses always revalidate.
 app.use("/*", async (c, next) => {
