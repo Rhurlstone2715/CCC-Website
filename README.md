@@ -35,7 +35,7 @@ npm run dev             # http://localhost:3000/rentals
 
 ## Database changes
 
-Edit `prisma/schema.prisma`, then run `npx prisma migrate dev --name <change>` and commit the new folder in `prisma/migrations/`. Railway applies pending migrations before each deploy (`npm run db:deploy`).
+Edit `prisma/schema.prisma`, then run `npx prisma migrate dev --name <change>` and commit the new folder in `prisma/migrations/`. `npm start` applies any pending migrations before the server starts, so Railway picks them up on every deploy. If a migration fails, the new deploy never goes live and the previous one keeps serving.
 
 ## Environment variables
 
