@@ -5,11 +5,15 @@ import { secureHeaders } from "hono/secure-headers";
 import { fileURLToPath } from "node:url";
 import { type AppEnv, currentUser, sameOriginWrites } from "./auth.js";
 import { bookingRef, parseBooking, sendBookingAlert } from "./bookings.js";
+import { catalogScript, priceItems } from "./catalog.js";
 import { prisma } from "./db.js";
+import type { Prisma } from "./generated/prisma/client.js";
 import { clientIp, createLimiter } from "./ratelimit.js";
 import { rewardsForUser } from "./rewards.js";
 import { account } from "./routes/account.js";
 import { admin } from "./routes/admin.js";
+import { adminCalendar } from "./routes/admin-calendar.js";
+import { adminCatalog } from "./routes/admin-catalog.js";
 import { PrivacyPage } from "./views/privacy.js";
 
 const publicDir = fileURLToPath(new URL("../public", import.meta.url));
@@ -31,13 +35,19 @@ app.use(async (c, next) => {
   }
 });
 
-// Photos and load charts rarely change; public pages and code always revalidate;
-// anything personal (accounts, admin, API) is never stored by the browser or proxies.
+// Uploads never change (a new upload gets a new URL); photos and load charts
+// rarely do; public pages and code always revalidate; anything personal
+// (accounts, admin, API) is never stored by the browser or proxies.
 app.use("/*", async (c, next) => {
   await next();
   const path = c.req.path;
   if (/^\/(account|admin|api)(\/|$)/.test(path)) c.header("Cache-Control", "private, no-store");
-  else if (c.res.status === 200 || c.res.status === 206) c.header("Cache-Control", path.startsWith("/assets/") ? "public, max-age=86400" : "no-cache");
+  else if (c.res.status === 200 || c.res.status === 206) {
+    c.header(
+      "Cache-Control",
+      path.startsWith("/uploads/") ? "public, max-age=31536000, immutable" : path.startsWith("/assets/") ? "public, max-age=86400" : "no-cache",
+    );
+  }
 });
 
 app.get("/healthz", async c => {
@@ -58,7 +68,24 @@ app.get("/rentals", serveStatic({ root: publicDir, path: "rentals.html" }));
 
 app.get("/privacy", async c => c.html(<PrivacyPage user={await currentUser(c)} />));
 
+// The rentals page loads this before app.js to get the current catalog.
+app.get("/catalog.js", async c => {
+  c.header("Content-Type", "text/javascript; charset=utf-8");
+  return c.body(await catalogScript());
+});
+
+// Images and load charts uploaded in the admin catalog editor.
+app.get("/uploads/:id{[a-z0-9]+}", async c => {
+  const upload = await prisma.upload.findUnique({ where: { id: c.req.param("id") } });
+  if (!upload) return c.notFound();
+  c.header("Content-Type", upload.contentType);
+  c.header("Content-Length", String(upload.size));
+  return c.body(new Uint8Array(upload.data));
+});
+
 app.route("/account", account);
+app.route("/admin/catalog", adminCatalog);
+app.route("/admin/calendar", adminCalendar);
 app.route("/admin", admin);
 
 // The rentals page calls this on load. Signed-out visitors get a 401 and see
@@ -93,8 +120,26 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
   // from the server's own numbers so Cayman Crane can check any discount shown.
   const user = await currentUser(c);
   const rewards = user ? await rewardsForUser(user.id) : null;
+  const discountPercent = rewards?.discountPercent ?? 0;
+  // Lines are priced from the catalog here, not taken from the page, so the
+  // stored estimate reflects the prices in effect when the booking was made.
+  const { details, ...fields } = input;
+  const priced = details.items.length ? await priceItems(details.items, discountPercent) : null;
   const booking = await prisma.booking.create({
-    data: { ...input, userId: user?.id, rewardTier: rewards?.tier, discountPercent: rewards?.discountPercent ?? 0 },
+    data: {
+      ...fields,
+      userId: user?.id,
+      rewardTier: rewards?.tier,
+      discountPercent,
+      phone: details.phone,
+      company: details.company,
+      startDate: details.startDate,
+      startTime: details.startTime,
+      area: details.area,
+      siteAddress: details.siteAddress,
+      items: priced ? (priced.lines as unknown as Prisma.InputJsonValue) : undefined,
+      estimateCents: priced?.estimateCents ?? null,
+    },
   });
   const ref = bookingRef(booking.id);
 

@@ -1,0 +1,745 @@
+{
+ "products": [
+  {
+   "id": "rt890e",
+   "availableQuantity": 1,
+   "name": "Grove RT890E",
+   "category": "Rough Terrain Cranes",
+   "spec": "90 ton • 142' main boom • 206' with jib",
+   "desc": "High-capacity rough terrain crane for major commercial, industrial and structural lifts.",
+   "image": "assets/catalog/05-grove-rt890e-90-ton.png",
+   "chart": "assets/load-charts/grove-rt890e.pdf",
+   "photo": true,
+   "delivery": true,
+   "rates": {
+    "hourly": 200,
+    "daily": 1710,
+    "weekly": 8100,
+    "monthly": 30600
+   }
+  },
+  {
+   "id": "rt175",
+   "availableQuantity": 1,
+   "name": "Terex RT175",
+   "category": "Rough Terrain Cranes",
+   "spec": "75 ton • 126' main boom • 186' with jib",
+   "desc": "Versatile 75-ton crane with strong reach for construction and mechanical lifts.",
+   "image": "assets/catalog/06-terex-rt175.jpg",
+   "chart": "assets/load-charts/terex-rt175.pdf",
+   "photo": true,
+   "delivery": true,
+   "rates": {
+    "hourly": 175,
+    "daily": 1485,
+    "weekly": 6975,
+    "monthly": 24300
+   }
+  },
+  {
+   "id": "rt40",
+   "availableQuantity": 2,
+   "name": "Terex RT40",
+   "category": "Rough Terrain Cranes",
+   "spec": "40 ton • 82.5' main boom • 115' with jib",
+   "desc": "Compact rough terrain crane suited to active jobsites and restricted setup areas.",
+   "image": "assets/catalog/07-terex-rt40.png",
+   "chart": "assets/load-charts/terex-rt40.pdf",
+   "photo": true,
+   "delivery": true,
+   "rates": {
+    "hourly": 145,
+    "daily": 1215,
+    "weekly": 5625,
+    "monthly": 19800
+   }
+  },
+  {
+   "id": "rt635c",
+   "availableQuantity": 1,
+   "name": "Grove RT635C",
+   "category": "Rough Terrain Cranes",
+   "spec": "35 ton • 105' main boom",
+   "desc": "Dependable all-terrain jobsite lifting for materials, steel and mechanical equipment.",
+   "image": "assets/catalog/grove-rt635c-updated.png",
+   "chart": "assets/load-charts/grove-rt635c.pdf",
+   "photo": true,
+   "delivery": true,
+   "rates": {
+    "hourly": 135,
+    "daily": 1125,
+    "weekly": 5175,
+    "monthly": 18900
+   }
+  },
+  {
+   "id": "national1400",
+   "availableQuantity": 1,
+   "name": "National 1400H",
+   "category": "Boom Trucks",
+   "spec": "33 ton • 127' main boom • 155' with jib",
+   "desc": "Peterbilt 6×6 boom truck combining highway mobility with capable lifting reach.",
+   "image": "assets/catalog/09-national-1400h-33-ton.png",
+   "chart": "assets/load-charts/national-1400h.pdf",
+   "photo": true,
+   "delivery": true,
+   "rates": {
+    "hourly": 140,
+    "daily": 1170,
+    "weekly": 5400,
+    "monthly": 19800
+   }
+  },
+  {
+   "id": "altec2595",
+   "availableQuantity": 1,
+   "name": "Altec AC25-95B",
+   "category": "Boom Trucks",
+   "spec": "25 ton • 105' main boom • 150' with jib",
+   "desc": "Mobile boom truck for trusses, containers, landscaping and general construction lifts.",
+   "image": "assets/catalog/10-altec-ac25-95b-25-ton.jpg",
+   "chart": "assets/load-charts/altec-ac25-95b.pdf",
+   "photo": true,
+   "delivery": true,
+   "rates": {
+    "hourly": 125,
+    "daily": 1035,
+    "weekly": 4725,
+    "monthly": 17100
+   }
+  },
+  {
+   "id": "gth1056",
+   "availableQuantity": 2,
+   "name": "Genie GTH-1056",
+   "category": "Telehandlers",
+   "spec": "10,000 lb capacity • 56' lift",
+   "desc": "High-reach telehandler for elevated material placement and demanding site logistics.",
+   "image": "assets/catalog/11-genie-gth-1056-10-000-lbs.png",
+   "chart": "assets/load-charts/genie-gth-1056.pdf",
+   "delivery": true,
+   "rates": {
+    "daily": 525,
+    "weekly": 2250,
+    "monthly": 8000
+   }
+  },
+  {
+   "id": "gth844",
+   "availableQuantity": 3,
+   "name": "Genie GTH-844",
+   "category": "Telehandlers",
+   "spec": "8,000 lb capacity • 44' lift",
+   "desc": "Balanced reach and capacity for construction material handling.",
+   "image": "assets/catalog/12-genie-gth-844-8-000-lbs.jpg",
+   "chart": "assets/load-charts/genie-gth-844.pdf",
+   "delivery": true,
+   "rates": {
+    "daily": 400,
+    "weekly": 1750,
+    "monthly": 6500
+   }
+  },
+  {
+   "id": "gth636",
+   "availableQuantity": 3,
+   "name": "Genie GTH-636",
+   "category": "Telehandlers",
+   "spec": "6,000 lb capacity • 36' lift",
+   "desc": "Compact telehandler for everyday lifting, loading and jobsite support.",
+   "image": "assets/catalog/13-genie-gth-636-6-000-lbs.jpg",
+   "chart": "assets/load-charts/genie-gth-636.pdf",
+   "delivery": true,
+   "rates": {
+    "daily": 350,
+    "weekly": 1600,
+    "monthly": 5500
+   }
+  },
+  {
+   "id": "lowboy",
+   "name": "60 Ton Lowboy",
+   "category": "Heavy Hauling",
+   "spec": "120,000 lb capacity",
+   "desc": "Detachable-gooseneck heavy-haul trailer for machinery and oversized equipment.",
+   "image": "assets/catalog/38-60-ton-lowboy.png",
+   "chart": "assets/load-charts/60-ton-lowboy.pdf",
+   "rates": {
+    "hourly": 150,
+    "daily": 990
+   }
+  },
+  {
+   "id": "flatbed",
+   "name": "20 Ton Flatbed",
+   "category": "Heavy Hauling",
+   "spec": "40,000 lb capacity",
+   "desc": "Versatile transport for equipment, materials and jobsite loads.",
+   "image": "assets/catalog/39-globe-20-ton-flatbed-trailer.png",
+   "chart": "assets/load-charts/20-ton-flatbed.pdf",
+   "rates": {
+    "hourly": 110,
+    "daily": 765
+   }
+  },
+  {
+   "id": "fs600",
+   "availableQuantity": 3,
+   "name": "FASCUT FS-600",
+   "category": "Tools",
+   "spec": "Portable rebar cutter / bender combo",
+   "desc": "Rebar bending and cutting equipment for reinforcing-steel fabrication.",
+   "image": "assets/catalog/fascut-fs600.jpg",
+   "rates": {
+    "daily": 75,
+    "weekly": 250
+   }
+  },
+  {
+   "id": "fr800c",
+   "availableQuantity": 2,
+   "name": "FASCUT FR-800-C",
+   "category": "Tools",
+   "spec": "Rotary rebar cutter / bender combo",
+   "desc": "Rebar bending and cutting equipment for reinforcing-steel fabrication.",
+   "image": "assets/catalog/fascut-fr800c.jpg",
+   "rates": {
+    "daily": 150,
+    "weekly": 400
+   }
+  },
+  {
+   "id": "handheld-rebar",
+   "availableQuantity": 4,
+   "name": "Handheld ¾″ Rebar Cutter",
+   "category": "Tools",
+   "spec": "Portable electric-hydraulic rebar cutter",
+   "desc": "Portable rebar cutting equipment for convenient on-site reinforcing-steel work.",
+   "image": "assets/catalog/handheld-rebar.jpg",
+   "rates": {
+    "daily": 25,
+    "weekly": 80
+   }
+  },
+  {
+   "id": "wyco-995",
+   "availableQuantity": 4,
+   "name": "Wyco 995 Electric Vibrator Motor",
+   "category": "Tools",
+   "spec": "3 HP • 115 V • 15 A • model W995G1Q",
+   "desc": "Quick-disconnect electric motor with ergonomic grip and shoulder strap. 16 lb; 8¼″ body diameter; 12½″ overall length; 10,000–14,000 RPM; automatic thermal protection and ball bearings. Shaft and head rented separately.",
+   "image": "assets/catalog/wyco-motor.webp",
+   "rates": {
+    "daily": 35,
+    "weekly": 125
+   }
+  },
+  {
+   "id": "wyco-8914",
+   "availableQuantity": 2,
+   "name": "Wyco CK-8914 Pencil Head Shaft",
+   "category": "Tools",
+   "spec": "14 ft • CK-8900 series • quick disconnect",
+   "desc": "Reinforced pencil vibrator shaft with a strong outer casing and opposite-wound spring core to resist kinking and wear. Compatible with Wyco vibrator motors and CK-8900 pencil heads.",
+   "image": "assets/catalog/wyco-shaft.webp",
+   "rates": {
+    "daily": 15,
+    "weekly": 50
+   }
+  },
+  {
+   "id": "wyco-8920",
+   "availableQuantity": 2,
+   "name": "Wyco CK-8920 Pencil Head Shaft",
+   "category": "Tools",
+   "spec": "20 ft • CK-8900 series • quick disconnect",
+   "desc": "Reinforced pencil vibrator shaft with a strong outer casing and opposite-wound spring core to resist kinking and wear. Compatible with Wyco vibrator motors and CK-8900 pencil heads.",
+   "image": "assets/catalog/wyco-shaft.webp",
+   "rates": {
+    "daily": 20,
+    "weekly": 75
+   }
+  },
+  {
+   "id": "wyco-750d",
+   "availableQuantity": 2,
+   "name": "Wyco 750-D Pencil Square Head",
+   "category": "Tools",
+   "spec": "13/16″ square head • CK-8900 pencil series",
+   "desc": "Hardened-steel square head for CK-8900 pencil shafts. Changing vibration pattern gives 22% more displacement and 20–50% faster consolidation than a round head, according to Wyco; suited to low-slump concrete.",
+   "image": "assets/catalog/wyco-head.webp",
+   "rates": {
+    "daily": 5,
+    "weekly": 20
+   }
+  },
+  {
+   "id": "wyco-750eh",
+   "availableQuantity": 2,
+   "name": "Wyco 750-EH Pencil Square Head",
+   "category": "Tools",
+   "spec": "1″ square head • CK-8900 pencil series",
+   "desc": "Hardened-steel square head for CK-8900 pencil shafts. Changing vibration pattern gives 22% more displacement and 20–50% faster consolidation than a round head, according to Wyco; suited to low-slump concrete.",
+   "image": "assets/catalog/wyco-head.webp",
+   "rates": {
+    "daily": 5,
+    "weekly": 20
+   }
+  },
+  {
+   "id": "national-manbasket",
+   "name": "National 1400H Man Basket",
+   "category": "Attachments",
+   "spec": "Available only with the National 1400H Boom Truck",
+   "desc": "Boom-mounted personnel platform for the National 1400H. Select as an add-on with your National 1400H booking; CI$75 for a 4-hour minimum or CI$125 per day.",
+   "image": "assets/catalog/national-1400h-man-basket.jpeg",
+   "hidden": true,
+   "compatibleWith": [
+    "national1400"
+   ],
+   "rates": {
+    "fourhour": 75,
+    "daily": 125
+   }
+  },
+  {
+   "id": "manbasket",
+   "availableQuantity": 3,
+   "name": "Crane & Telehandler Man Basket",
+   "category": "Attachments",
+   "spec": "Personnel-access platform",
+   "desc": "Secure elevated work platform for compatible crane and telehandler applications.",
+   "image": "assets/catalog/14-crane-telehandler-man-baskets.jpg",
+   "rates": {
+    "daily": 25
+   }
+  },
+  {
+   "id": "bucket",
+   "availableQuantity": 1,
+   "name": "Telehandler Bucket",
+   "category": "Attachments",
+   "spec": "Material-handling bucket",
+   "desc": "Heavy-duty bucket for aggregate, debris and general jobsite loading.",
+   "image": "assets/catalog/15-telehandler-bucket.png",
+   "rates": {
+    "daily": 20
+   }
+  },
+  {
+   "id": "telehandler-blockfork",
+   "availableQuantity": 2,
+   "name": "Telehandler Block Fork",
+   "category": "Attachments",
+   "spec": "Telehandler attachment • Block handling",
+   "desc": "Block fork attachment for handling concrete blocks with a telehandler. Fit and availability confirmed before booking acceptance.",
+   "image": "assets/catalog/telehandler-block-fork.webp",
+   "rates": {
+    "daily": 25,
+    "weekly": 100,
+    "monthly": 300
+   }
+  },
+  {
+   "id": "jib",
+   "availableQuantity": 2,
+   "name": "Telehandler Jib Attachment",
+   "category": "Attachments",
+   "spec": "Suspended-load attachment",
+   "desc": "Extends telehandler versatility for lifting and positioning suspended loads.",
+   "image": "assets/catalog/16-telehandler-jib-attachment.jpg",
+   "rates": {
+    "daily": 25
+   }
+  },
+  {
+   "id": "bin",
+   "availableQuantity": 1,
+   "name": "Self-Dumping Crane Bin",
+   "category": "Attachments",
+   "spec": "Jobsite debris and bulk material",
+   "desc": "Self-dumping bin for lifting, positioning and emptying site materials.",
+   "image": "assets/catalog/17-self-dumping-crane-bin.webp",
+   "rates": {
+    "daily": 35
+   }
+  },
+  {
+   "id": "liftingbeams",
+   "name": "Lifting Beams",
+   "category": "Attachments",
+   "spec": "Multiple capacities available",
+   "desc": "Below-the-hook beams for controlled load handling and rigging.",
+   "image": "assets/catalog/18-lifting-beams.jpg",
+   "rates": {
+    "daily": 15
+   },
+   "from": true
+  },
+  {
+   "id": "spreaderbars",
+   "name": "Spreader Bars",
+   "category": "Attachments",
+   "spec": "Multiple capacities available",
+   "desc": "Improve load distribution, sling angles and stability during lifts.",
+   "image": "assets/catalog/19-spreader-bars.jpg",
+   "rates": {
+    "daily": 75
+   },
+   "from": true
+  },
+  {
+   "id": "spreaderbeams",
+   "name": "Spreader Beams",
+   "category": "Attachments",
+   "spec": "3 sizes available",
+   "desc": "Choose a beam size for your lifting arrangement.",
+   "image": "assets/catalog/spreader-beam-transparent.png",
+   "rates": {
+    "daily": 25
+   }
+  },
+  {
+   "id": "concrete-bottom",
+   "availableQuantity": 2,
+   "name": "Concrete Bucket — ¾ yd³ Bottom Chute",
+   "category": "Attachments",
+   "spec": "¾ cubic yard • Bottom chute",
+   "desc": "GAR-BRO concrete bucket for crane-assisted placement through a bottom discharge chute.",
+   "image": "assets/catalog/concrete-bucket-bottom-chute.png",
+   "rates": {
+    "daily": 100,
+    "weekly": 300,
+    "monthly": 850
+   }
+  },
+  {
+   "id": "concrete-side",
+   "availableQuantity": 1,
+   "name": "Concrete Bucket — ½ yd³ Side Chute",
+   "category": "Attachments",
+   "spec": "½ cubic yard • Side chute",
+   "desc": "GAR-BRO concrete bucket for crane-assisted placement through a side discharge chute.",
+   "image": "assets/catalog/concrete-bucket-side-chute.png",
+   "rates": {
+    "daily": 75,
+    "weekly": 225,
+    "monthly": 700
+   }
+  },
+  {
+   "id": "blockforks",
+   "availableQuantity": 3,
+   "name": "Concrete Block Forks",
+   "category": "Attachments",
+   "spec": "Palletized block handling",
+   "desc": "Crane fork attachment for concrete blocks and similar materials.",
+   "image": "assets/catalog/20-concrete-block-forks.jpg",
+   "rates": {
+    "daily": 50
+   }
+  },
+  {
+   "id": "palletjacks",
+   "availableQuantity": 2,
+   "name": "Pallet Jacks",
+   "category": "Tools",
+   "spec": "Manual warehouse handling",
+   "desc": "Move palletized materials efficiently around jobsites and warehouses.",
+   "image": "assets/catalog/21-pallet-jacks.jpg",
+   "rates": {
+    "daily": 20
+   }
+  },
+  {
+   "id": "compressor",
+   "availableQuantity": 1,
+   "name": "40 Gal Gas Air Compressor",
+   "category": "Tools",
+   "spec": "15 HP • 420 cc • 175 PSI",
+   "desc": "LandHero LDH-GAC40Y gasoline-powered jobsite air compressor.",
+   "image": "assets/catalog/22-landhero-ldh-gac40y-40-gal-gas-powered-air-compressor.jpg",
+   "rates": {
+    "daily": 75
+   }
+  },
+  {
+   "id": "rollers",
+   "availableQuantity": 4,
+   "name": "MultiRoll Mark 6P Roller Skid",
+   "category": "Tools",
+   "spec": "17,500 lb per skid • up to 70,000 lb four-skid kit",
+   "desc": "Non-marking polyurethane roller skids for moving machinery across suitable level floors.",
+   "image": "assets/catalog/26-multiroll-mark-6p-roller-skid-kit.jpg",
+   "rates": {
+    "daily": 25,
+    "weekly": 100
+   }
+  },
+  {
+   "id": "impactgun",
+   "availableQuantity": 2,
+   "name": "Pneumatic Impact Gun (1″ Drive)",
+   "category": "Tools",
+   "spec": "Heavy-duty pneumatic fastening",
+   "desc": "One-inch drive impact gun for demanding equipment, construction and maintenance work.",
+   "image": "assets/current-site/618c9a_fa86f44e4ca743e89087e8828e8b9f43~mv2.png",
+   "rates": {
+    "daily": 25
+   }
+  },
+  {
+   "id": "mini-welder",
+   "availableQuantity": 3,
+   "name": "Mini Gasless MIG/TIG/MMA Welder",
+   "category": "Tools",
+   "spec": "Compact multi-process welding",
+   "desc": "Portable gasless welding machine for light fabrication, repair and maintenance work.",
+   "image": "assets/current-site/618c9a_8b082a16f5744bcbb9fb8cc3cf0e8151~mv2.png",
+   "rates": {
+    "daily": 35
+   }
+  },
+  {
+   "id": "mini-plasma",
+   "availableQuantity": 2,
+   "name": "Mini Plasma Cutter",
+   "category": "Tools",
+   "spec": "Compact metal cutting",
+   "desc": "Portable plasma cutter for controlled metal cutting on fabrication and repair jobs.",
+   "image": "assets/current-site/618c9a_24cf52e7933c40b1bf20d66787063693~mv2.png",
+   "rates": {
+    "daily": 30
+   }
+  },
+  {
+   "id": "mats",
+   "availableQuantity": 60,
+   "name": "Ground Protection Mats",
+   "category": "Ground Protection",
+   "spec": "Heavy-duty ground protection",
+   "desc": "Protect finished surfaces and create stable access for vehicles and equipment.",
+   "image": "assets/catalog/23-ground-protection-mats-cayman-crane-company.jpg",
+   "rates": {
+    "daily": 5,
+    "monthly": 50
+   }
+  },
+  {
+   "id": "plumwall",
+   "availableQuantity": 350,
+   "name": "Plumwall All-In-One ICF Bracing",
+   "category": "Construction Plant / Equipment",
+   "spec": "Strongback, platform and adjustable outriggers",
+   "desc": "Fast, reusable all-in-one bracing system for ICF wall construction.",
+   "image": "assets/catalog/24-plumbwall-all-in-one-icf-bracing-system.jpg",
+   "rates": {
+    "daily": 4,
+    "weekly": 21,
+    "monthly": 56
+   }
+  },
+  {
+   "id": "scaffold",
+   "availableQuantity": 500,
+   "name": "Scaffolding Set",
+   "category": "Construction Plant / Equipment",
+   "spec": "5' W × 6'4\" H • includes 2 cross braces",
+   "desc": "Heavy-duty frame scaffolding for construction, maintenance and access.",
+   "image": "assets/catalog/33-5-ft-wide-by-6-ft-4-in-high-scaffolding-set.jpg",
+   "rates": {
+    "weekly": 5,
+    "monthly": 15
+   }
+  },
+  {
+   "id": "props",
+   "availableQuantity": 1250,
+   "name": "Post Shoring / Props",
+   "category": "Construction Plant / Equipment",
+   "spec": "6'6\"–11' • 41 lb",
+   "desc": "Adjustable steel props for temporary slab, beam and structural support.",
+   "image": "assets/catalog/34-post-shoring-props-stacked.jpg",
+   "rates": {
+    "weekly": 2,
+    "monthly": 7
+   }
+  },
+  {
+   "id": "ellis",
+   "availableQuantity": 150,
+   "name": "Ellis Wall & Column Turnbuckle Bracing",
+   "category": "Construction Plant / Equipment",
+   "spec": "Adjustable steel bracing",
+   "desc": "Temporary alignment and support for walls and columns during construction.",
+   "image": "assets/catalog/37-ellis-wb-wall-brace.jpg",
+   "rates": {
+    "daily": 1,
+    "monthly": 15
+   }
+  },
+  {
+   "id": "g100",
+   "availableQuantity": 2,
+   "name": "Wacker Neuson G100",
+   "category": "Power Generation",
+   "spec": "Trailer-mounted mobile generator",
+   "desc": "Larger construction, commercial and temporary-power applications.",
+   "image": "assets/catalog/27-wacker-neuson-g100.png",
+   "rates": {
+    "daily": 350,
+    "weekly": 1500,
+    "monthly": 5500
+   }
+  },
+  {
+   "id": "g25",
+   "availableQuantity": 1,
+   "name": "Wacker Neuson G25",
+   "category": "Power Generation",
+   "spec": "Compact mobile generator",
+   "desc": "Reliable, quiet power for construction sites, commercial projects and events.",
+   "image": "assets/catalog/28-wacker-neuson-g25.png",
+   "rates": {
+    "daily": 175,
+    "weekly": 775,
+    "monthly": 2450
+   }
+  },
+  {
+   "id": "powerbox",
+   "availableQuantity": 2,
+   "name": "Champion Power Distribution Box",
+   "category": "Power Generation",
+   "spec": "50-Amp portable distribution",
+   "desc": "Temporary power distribution for jobsites and events.",
+   "image": "assets/catalog/29-champion-power-distribution-box.jpg",
+   "rates": {
+    "daily": 50
+   }
+  },
+  {
+   "id": "50amp",
+   "availableQuantity": 2,
+   "name": "50-Amp Twist-Lock Extension",
+   "category": "Power Generation",
+   "spec": "125/250V • 50 ft",
+   "desc": "Spider Box generator power extension cord.",
+   "image": "assets/catalog/30-50-amp-twist-lock-generator-extension.jpg",
+   "rates": {
+    "daily": 50
+   }
+  },
+  {
+   "id": "cord100",
+   "availableQuantity": 8,
+   "name": "100 ft 12/3 Outdoor Extension Cord",
+   "category": "Power Generation",
+   "spec": "Waterproof heavy-duty cord",
+   "desc": "Jobsite-rated extension for temporary power distribution.",
+   "image": "assets/catalog/31-100-ft-12-3-outdoor-extension-cord.jpg",
+   "rates": {
+    "daily": 7,
+    "weekly": 20,
+    "monthly": 32
+   }
+  },
+  {
+   "id": "cord300",
+   "availableQuantity": 2,
+   "name": "300 ft 12/3 Outdoor Extension Cord",
+   "category": "Power Generation",
+   "spec": "Waterproof heavy-duty cord",
+   "desc": "Long-reach jobsite power extension.",
+   "image": "assets/catalog/32-300-ft-12-3-outdoor-extension-cord.jpg",
+   "rates": {
+    "daily": 11,
+    "weekly": 40,
+    "monthly": 65
+   }
+  },
+  {
+   "id": "telehandler-operator",
+   "name": "Telehandler Operator",
+   "category": "Operator Service",
+   "spec": "Optional operator for telehandler rentals",
+   "desc": "Operator service requested with a telehandler booking.",
+   "hidden": true,
+   "operatorService": true,
+   "rates": {
+    "hourly": 35,
+    "daily": 315
+   }
+  }
+ ],
+ "riggingSizes": {
+  "liftingbeams": [
+   {
+    "id": "lifting-10",
+    "size": "10′ × 8″",
+    "length": 10,
+    "depth": 8,
+    "price": 50
+   },
+   {
+    "id": "lifting-15",
+    "size": "15′ × 10″",
+    "length": 15,
+    "depth": 10,
+    "price": 75
+   },
+   {
+    "id": "lifting-20",
+    "size": "20′ × 12″",
+    "length": 20,
+    "depth": 12,
+    "price": 100
+   },
+   {
+    "id": "lifting-30",
+    "size": "30′ × 14″",
+    "length": 30,
+    "depth": 14,
+    "price": 150
+   }
+  ],
+  "spreaderbars": [
+   {
+    "id": "spreaderbar-9",
+    "size": "9′ × 5′ (4 way) · 20 Ton SWL",
+    "length": 9,
+    "width": 5,
+    "swl": 20,
+    "price": 75
+   },
+   {
+    "id": "spreaderbar-13",
+    "size": "13′ × 8′ (4 way) · 13 Ton SWL",
+    "length": 13,
+    "width": 8,
+    "swl": 13,
+    "price": 150
+   }
+  ],
+  "spreaderbeams": [
+   {
+    "id": "spreaderbeam-7",
+    "size": "4′",
+    "length": 4,
+    "price": 25
+   },
+   {
+    "id": "spreaderbeam-10",
+    "size": "6′",
+    "length": 6,
+    "price": 50
+   },
+   {
+    "id": "spreaderbeam-15",
+    "size": "8′",
+    "length": 8,
+    "price": 75
+   }
+  ]
+ }
+}

@@ -16,6 +16,11 @@ The rentals page is plain HTML, CSS and JavaScript in `public/`. A small Node se
 | `/privacy` | Privacy notice (`src/views/privacy.tsx`), linked from the footer, sign-up and checkout |
 | `/admin` | Admin area: bookings and customers |
 | `/admin/setup` | Creates an admin account, using `ADMIN_SETUP_CODE` |
+| `/admin/catalog` | Edit equipment, prices, quantities and photos |
+| `/admin/calendar` | Month view of bookings with clash warnings |
+| `/admin/bookings/export.csv` | Bookings and payments as a spreadsheet |
+| `/catalog.js` | The current catalog, loaded by the rentals page before `app.js` |
+| `/uploads/:id` | Photos and PDFs uploaded in the catalog editor |
 | `POST /api/bookings` | Saves a booking request and emails it to Cayman Crane |
 | `GET /api/rewards` | The signed-in customer's tier and details (401 when signed out) |
 | `/healthz` | Health check used by Railway (also checks the database) |
@@ -31,6 +36,18 @@ Customers earn one point for every CI$1 an admin marks as paid on a booking they
 To add an admin, set `ADMIN_SETUP_CODE` on the web service in Railway, open `/admin/setup`, and enter the code with the admin's name, email and password. If the email already has a customer account, its password is needed and the account becomes an admin. Remove the variable afterwards to turn setup off.
 
 In the admin area, a booking can be approved (which emails the customer their contract), declined, cancelled, marked as paid with the amount, given a private note, or deleted. Customers can be searched, edited, given rewards credit, sent a one-time password reset link, or deleted. Deleting a customer keeps their bookings as guest bookings unless the admin ticks the box to delete those too.
+
+## Catalog
+
+The equipment list lives in the `Product` and `RiggingOption` tables. On first start with an empty database, the server loads `prisma/catalog-seed.json`, which is the catalog the site launched with. After that, the admin catalog editor is the source of truth: the server serves it as `/catalog.js`, and `public/app.js` reads `window.CCC_CATALOG` in place of its old hard-coded list. The page's add-on groups, navigation tree and rigging-size logic still live in `app.js` and work on whatever the catalog contains. Equipment added in admin is placed in the navigation by its category.
+
+Bookings send their cart lines along with the readable request. The server prices each line from the catalog at that moment and stores the result on the booking, so later price changes don't alter past bookings.
+
+## Calendar and export
+
+The admin calendar shows active bookings on their confirmed rental dates, or on the customer's requested start date until an admin confirms dates on the booking. A day is flagged when more bookings need a piece of equipment than its available quantity. On phones the month grid becomes an agenda list.
+
+The bookings page can export the current status filter, optionally limited by the date received, as a CSV that opens in Excel, Numbers or Google Sheets. Amounts are plain numbers for adding up, and cells that a spreadsheet would treat as formulas are prefixed with an apostrophe.
 
 ## Booking alerts
 

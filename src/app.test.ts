@@ -8,9 +8,13 @@ import { randomUUID } from "node:crypto";
 import { after, before, beforeEach, describe, test } from "node:test";
 import { app } from "./app.js";
 import { hashPassword, safeNext, verifyPassword } from "./auth.js";
+import { parseDetails } from "./bookings.js";
+import { buildCatalog, ensureCatalogSeeded } from "./catalog.js";
 import { prisma } from "./db.js";
 import { rewardsForSpend } from "./rewards.js";
-import { parseAmount } from "./routes/admin.js";
+import { csvCell } from "./routes/admin.js";
+import { parseAmount } from "./views/admin-page.js";
+import { readFileSync } from "node:fs";
 
 const TEST_DB = process.env.TEST_DATABASE_URL;
 
@@ -55,6 +59,27 @@ describe("passwords and redirects", () => {
     assert.equal(await verifyPassword("wrong horse", hash), false);
   });
 
+  test("csv cells are quoted and formulas neutralised", () => {
+    assert.equal(csvCell('He said "hi"'), '"He said ""hi"""');
+    assert.equal(csvCell("=HYPERLINK(1)"), `"'=HYPERLINK(1)"`);
+    assert.equal(csvCell("+1 345 555 0100"), `"'+1 345 555 0100"`);
+    assert.equal(csvCell(12.5), "12.5");
+    assert.equal(csvCell(null), "");
+  });
+
+  test("booking details drop anything malformed", () => {
+    const d = parseDetails({
+      phone: "345 555 0100",
+      startDate: "2030-02-30",
+      startTime: "8am",
+      items: [{ id: "rt40", term: "hourly", qty: 4 }, { id: "x", term: "yearly", qty: 1 }, { id: "y", term: "daily", qty: -1 }, "junk"],
+    });
+    assert.equal(d.phone, "345 555 0100");
+    assert.equal(d.startDate, null);
+    assert.equal(d.startTime, null);
+    assert.deepEqual(d.items, [{ id: "rt40", term: "hourly", qty: 4 }]);
+  });
+
   test("safeNext only allows local paths", () => {
     assert.equal(safeNext("/rentals", "/x"), "/rentals");
     assert.equal(safeNext("//evil.example", "/x"), "/x");
@@ -71,7 +96,8 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   });
 
   beforeEach(async () => {
-    await prisma.$executeRawUnsafe('TRUNCATE "Booking", "Session", "PasswordReset", "User" RESTART IDENTITY CASCADE');
+    await prisma.$executeRawUnsafe('TRUNCATE "Booking", "Session", "PasswordReset", "User", "Product", "RiggingOption", "Upload" RESTART IDENTITY CASCADE');
+    await ensureCatalogSeeded();
     globalThis.fetch = realFetch;
     delete process.env.RESEND_API_KEY;
     delete process.env.EMAIL_FROM;
@@ -336,6 +362,169 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(await prisma.user.count(), 1);
   });
 
+  test("the database catalog matches the one the site launched with", async () => {
+    const seed = JSON.parse(readFileSync("prisma/catalog-seed.json", "utf8"));
+    const catalog = await buildCatalog();
+    assert.equal(catalog.products.length, seed.products.length);
+    for (const original of seed.products) {
+      const served = catalog.products.find(p => p.id === original.id);
+      assert.deepStrictEqual(served, original, original.id);
+      assert.deepEqual(Object.keys(served!.rates as object), Object.keys(original.rates), `${original.id} rate order`);
+    }
+    assert.deepStrictEqual(catalog.riggingSizes, seed.riggingSizes);
+    // Seeding again changes nothing.
+    await ensureCatalogSeeded();
+    assert.equal(await prisma.product.count(), seed.products.length);
+  });
+
+  test("catalog.js is served for the rentals page", async () => {
+    const res = await req("/catalog.js");
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get("content-type") ?? "", /javascript/);
+    const body = await res.text();
+    assert.match(body, /^window\.CCC_CATALOG=\{"products":\[/);
+    assert.ok(!body.includes("</"), "angle brackets are escaped");
+  });
+
+  test("bookings are priced on the server, with the tier discount on equipment only", async () => {
+    const customer = await signup();
+    const admin = await makeAdmin();
+    await prisma.user.update({ where: { id: 1 }, data: { rewardCreditCents: 5_000_00 } }); // Silver, 5%
+    const items = [
+      { id: "rt40", term: "hourly", qty: 4 }, // 145 × 4 = 580
+      { id: "telehandler-operator", term: "hourly", qty: 4 }, // operator, 35 × 4 = 140, no discount
+      { id: "lifting-10", term: "daily", qty: 1 }, // size option, 50
+      { id: "retired-thing", term: "daily", qty: 1 }, // unknown, unpriced
+    ];
+    await req("/api/bookings", { json: { ...booking, details: { phone: "345 555 0100", startDate: "2030-05-15", startTime: "08:00", area: "George Town", siteAddress: "1 Test Rd", items } }, cookie: customer });
+    const saved = await prisma.booking.findFirstOrThrow({ where: { userId: 1 } });
+    const lines = saved.items as { id: string; amount: number | null; operator: boolean; name: string }[];
+    assert.deepEqual(lines.map(l => l.amount), [580, 140, 50, null]);
+    assert.equal(lines[2].name, "Lifting Beams — 10′ × 8″");
+    assert.equal(saved.estimateCents, Math.round((580 + 50) * 100 * 0.95) + 140 * 100);
+    assert.equal(saved.startDate?.toISOString().slice(0, 10), "2030-05-15");
+    assert.equal(saved.area, "George Town");
+    const page = await (await req(`/admin/bookings/${saved.id}`, { cookie: admin })).text();
+    assert.match(page, /Job details/);
+    assert.match(page, /To be quoted/);
+  });
+
+  test("admin price changes reach the site and new bookings, not old ones", async () => {
+    const admin = await makeAdmin();
+    const items = [{ id: "rt40", term: "hourly", qty: 4 }];
+    await req("/api/bookings", { json: { ...booking, details: { items } } });
+    const form = { name: "Terex RT40", spec: "40 ton", description: "Compact crane.", rate_hourly: "150", rate_daily: "1,215", sortOrder: "30", listed: "on" };
+    const saved = await req("/admin/catalog/rt40", { form, cookie: admin });
+    assert.equal(saved.headers.get("location"), "/admin/catalog/rt40?notice=saved");
+    assert.match(await (await req("/catalog.js")).text(), /"id":"rt40"[^}]*"rates":\{"hourly":150,"daily":1215\}/);
+    await req("/api/bookings", { json: { ...booking, details: { items } } });
+    const [first, second] = await prisma.booking.findMany({ orderBy: { id: "asc" } });
+    assert.equal(first.estimateCents, 580_00);
+    assert.equal(second.estimateCents, 600_00);
+  });
+
+  test("catalog form validation", async () => {
+    const admin = await makeAdmin();
+    const base = { name: "Terex RT40", spec: "40 ton", description: "Compact crane.", rate_hourly: "150", sortOrder: "30" };
+    for (const form of [
+      { ...base, name: "<script>" },
+      { ...base, rate_hourly: "" },
+      { ...base, rate_hourly: "abc" },
+      { ...base, sortOrder: "x" },
+    ]) {
+      assert.equal((await req("/admin/catalog/rt40", { form, cookie: admin })).status, 400, JSON.stringify(form));
+    }
+  });
+
+  test("admins can add equipment with a photo, and delete it", async () => {
+    const admin = await makeAdmin();
+    const png = Buffer.from("89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da63f8ffff3f0005fe02fea7d6a4a00000000049454e44ae426082", "hex");
+    const make = async (file: Blob) => {
+      const fd = new FormData();
+      Object.entries({ name: "Mini Excavator", category: "Construction Plant / Equipment", spec: "1.7 ton", description: "Compact digger.", rate_daily: "250", sortOrder: "999", listed: "on" }).forEach(([k, v]) => fd.append(k, v));
+      fd.append("image", file, "digger.png");
+      return app.request("/admin/catalog/new", { method: "POST", body: fd, headers: { cookie: admin, "x-real-ip": randomUUID() } });
+    };
+    const fake = await make(new Blob(["<html>not an image</html>"], { type: "image/png" }));
+    assert.equal(fake.status, 400);
+    const res = await make(new Blob([png], { type: "image/png" }));
+    assert.equal(res.status, 302);
+    const product = await prisma.product.findFirstOrThrow({ where: { isCustom: true } });
+    assert.match(product.id, /^mini-excavator-[0-9a-f]{4}$/);
+    assert.match(product.image, /^\/uploads\/[a-z0-9]+$/);
+    const image = await req(product.image);
+    assert.equal(image.headers.get("content-type"), "image/png");
+    assert.equal(image.headers.get("cache-control"), "public, max-age=31536000, immutable");
+    assert.match(await (await req("/catalog.js")).text(), /"category":"Construction Plant \/ Equipment"/);
+
+    // Original items can't be deleted; custom ones can, with their upload.
+    await req("/admin/catalog/rt40/delete", { form: {}, cookie: admin });
+    assert.equal(await prisma.product.count({ where: { id: "rt40" } }), 1);
+    const del = await req(`/admin/catalog/${product.id}/delete`, { form: {}, cookie: admin });
+    assert.equal(del.headers.get("location"), "/admin/catalog?notice=deleted");
+    assert.equal(await prisma.upload.count(), 0);
+  });
+
+  test("size prices can be edited or set to priced on request", async () => {
+    const admin = await makeAdmin();
+    const options = await prisma.riggingOption.findMany({ where: { productId: "liftingbeams" }, orderBy: { sortOrder: "asc" } });
+    const form: Record<string, string> = {};
+    for (const o of options) {
+      form[`size_${o.id}`] = o.size;
+      form[`price_${o.id}`] = o.id === "lifting-10" ? "60" : o.id === "lifting-30" ? "" : String(o.price);
+    }
+    const res = await req("/admin/catalog/liftingbeams/sizes", { form, cookie: admin });
+    assert.equal(res.headers.get("location"), "/admin/catalog/liftingbeams?notice=sizes-saved");
+    const sizes = (await buildCatalog()).riggingSizes.liftingbeams;
+    assert.equal(sizes.find(o => o.id === "lifting-10")?.price, 60);
+    assert.equal("price" in sizes.find(o => o.id === "lifting-30")!, false);
+  });
+
+  test("calendar shows bookings on their dates and flags clashes", async () => {
+    const admin = await makeAdmin();
+    const crane = { items: [{ id: "rt890e", term: "daily", qty: 1 }] }; // one unit available
+    await req("/api/bookings", { json: { ...booking, details: { ...crane, startDate: "2030-05-15" } } });
+    await req("/api/bookings", { json: { ...booking, customerName: "Lee Bodden", details: { ...crane, startDate: "2030-05-14" } } });
+    let page = await (await req("/admin/calendar?month=2030-05", { cookie: admin })).text();
+    assert.match(page, /May 2030/);
+    assert.match(page, /00001/);
+    assert.doesNotMatch(page, /Possible clashes/);
+
+    // Confirm booking 2 for the 14th to the 16th: it now overlaps booking 1 on the 15th.
+    const bad = await req("/admin/bookings/2/schedule", { form: { scheduleStart: "2030-05-16", scheduleEnd: "2030-05-14" }, cookie: admin });
+    assert.equal(bad.headers.get("location"), "/admin/bookings/2?notice=bad-schedule");
+    await req("/admin/bookings/2/schedule", { form: { scheduleStart: "2030-05-14", scheduleEnd: "2030-05-16" }, cookie: admin });
+    page = await (await req("/admin/calendar?month=2030-05", { cookie: admin })).text();
+    assert.match(page, /Possible clashes/);
+    assert.match(page, /Grove RT890E, 2 bookings for 1 available/);
+
+    // Declined bookings drop off the calendar.
+    await req("/admin/bookings/1/decline", { form: {}, cookie: admin });
+    page = await (await req("/admin/calendar?month=2030-05", { cookie: admin })).text();
+    assert.doesNotMatch(page, /Possible clashes/);
+  });
+
+  test("bookings export as CSV for admins only", async () => {
+    const customer = await signup();
+    await req("/api/bookings", { json: { ...booking, customerName: "=HYPERLINK(\"x\")", details: { phone: "+1 345 555 0100", items: [{ id: "rt40", term: "hourly", qty: 4 }] } }, cookie: customer });
+    assert.equal((await req("/admin/bookings/export.csv", { cookie: customer })).status, 302);
+    const admin = await makeAdmin();
+    await req("/admin/bookings/1/approve", { form: {}, cookie: admin });
+    await req("/admin/bookings/1/paid", { form: { amount: "551" }, cookie: admin });
+    const res = await req("/admin/bookings/export.csv?status=paid", { cookie: admin });
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get("content-disposition") ?? "", /attachment; filename="ccc-bookings-paid-\d{4}-\d{2}-\d{2}\.csv"/);
+    const csv = await res.text();
+    const [header, row] = csv.replace(/^\uFEFF/, "").trim().split("\r\n");
+    assert.match(header, /^"Reference","Received \(Cayman time\)","Status"/);
+    assert.match(row, /^"CCC-00001",/);
+    assert.match(row, /"'=HYPERLINK\(""x""\)"/);
+    assert.match(row, /"'\+1 345 555 0100"/);
+    assert.match(row, /"Terex RT40 \(Hourly × 4\)",580,551,/);
+    const none = await (await req("/admin/bookings/export.csv?status=declined", { cookie: admin })).text();
+    assert.equal(none.replace(/^\uFEFF/, "").trim().split("\r\n").length, 1);
+  });
+
   test("forgot password without customer email shows how to get help", async () => {
     const page = await (await req("/account/forgot")).text();
     assert.match(page, /We&#39;ll reset it for you|We'll reset it for you/);
@@ -351,7 +540,20 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal((await req("/account/profile", { cookie: customer })).status, 200);
     const admin = await makeAdmin();
     await req("/api/bookings", { json: booking, cookie: customer });
-    for (const path of ["/admin/bookings", "/admin/bookings?status=all", "/admin/bookings/1", "/admin/customers", "/admin/customers?q=kim", "/admin/customers/1"]) {
+    for (const path of [
+      "/admin/bookings",
+      "/admin/bookings?status=all",
+      "/admin/bookings/1",
+      "/admin/customers",
+      "/admin/customers?q=kim",
+      "/admin/customers/1",
+      "/admin/calendar",
+      "/admin/calendar?month=2030-01",
+      "/admin/catalog",
+      "/admin/catalog/new",
+      "/admin/catalog/rt40",
+      "/admin/catalog/liftingbeams",
+    ]) {
       assert.equal((await req(path, { cookie: admin })).status, 200, path);
     }
   });

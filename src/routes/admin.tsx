@@ -14,12 +14,14 @@ import {
   startSession,
   verifyPassword,
 } from "../auth.js";
-import { bookingRef, contractSubject, contractText, sendContract } from "../bookings.js";
+import { bookingRef, contractSubject, contractText, parseDate, sendContract } from "../bookings.js";
+import { TERM_LABELS, type PricedLine } from "../catalog.js";
 import { prisma } from "../db.js";
 import { customerEmailsEnabled } from "../email.js";
 import type { Booking, BookingStatus, User } from "../generated/prisma/client.js";
 import { clientIp, createLimiter } from "../ratelimit.js";
 import { rewardsForSpend, rewardsForUser } from "../rewards.js";
+import { AdminPage, centsToInput, parseAmount, pendingCount } from "../views/admin-page.js";
 import { Field, Layout, Notice, STATUS_LABELS, StatusBadge, caymanDate, money } from "../views/layout.js";
 import { attemptLogin, parseProfile, text } from "./account.js";
 
@@ -47,6 +49,9 @@ const NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string
   "credit-saved": { tone: "success", text: "Rewards credit saved." },
   "bad-credit": { tone: "error", text: "Enter the credit in CI$, for example 2500. Use 0 to remove it." },
   "profile-saved": { tone: "success", text: "Customer details saved." },
+  "schedule-saved": { tone: "success", text: "Rental dates saved. The booking shows on those days in the calendar." },
+  "schedule-cleared": { tone: "success", text: "Rental dates cleared." },
+  "bad-schedule": { tone: "error", text: "Enter a first and last day, with the last day on or after the first, within a year." },
   "customer-deleted": { tone: "success", text: "Customer account deleted." },
   "cant-delete-self": { tone: "error", text: "You can't delete the account you're logged in with." },
   "last-admin": { tone: "error", text: "This is the only admin account, so it can't be deleted." },
@@ -57,26 +62,9 @@ function noticeFrom(c: Context): { tone: "success" | "error" | "info"; text: str
   return key ? NOTICES[key] : undefined;
 }
 
-// Accepts "1250", "1,250.50" or "CI$1,250". Returns cents, or null if invalid.
-export function parseAmount(value: unknown): number | null {
-  if (typeof value !== "string") return null;
-  const cleaned = value.replace(/ci\$|\$|,|\s/gi, "");
-  if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
-  const cents = Math.round(Number(cleaned) * 100);
-  return cents <= 100_000_000_00 ? cents : null;
-}
-
-function centsToInput(cents: number | null | undefined): string {
-  return cents ? (cents / 100).toFixed(cents % 100 ? 2 : 0) : "";
-}
-
-const pendingCount = () => prisma.booking.count({ where: { status: "PENDING" } });
-
-const AdminPage: FC<{ title: string; user: SessionUser; pending: number; active?: "bookings" | "customers"; children: any }> = ({ title, user, pending, active, children }) => (
-  <Layout title={title} area="admin" user={user} pendingCount={pending} active={active}>
-    {children}
-  </Layout>
-);
+// @db.Date values come back as UTC midnights.
+const calendarDate = (d: Date) => d.toLocaleDateString("en-US", { timeZone: "UTC", dateStyle: "medium" });
+const isoDate = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10) : "");
 
 // ---------- Login and first-time setup ----------
 
@@ -261,6 +249,30 @@ admin.get("/bookings", async c => {
           All <span>{total}</span>
         </a>
       </nav>
+      <details class="export">
+        <summary>Export to a spreadsheet</summary>
+        <form class="amount-form mt-3" method="get" action="/admin/bookings/export.csv">
+          <input type="hidden" name="status" value={status ? status.toLowerCase() : "all"} />
+          <div class="field">
+            <label for="from">
+              Received from <span class="optional">(optional)</span>
+            </label>
+            <input id="from" name="from" type="date" />
+          </div>
+          <div class="field">
+            <label for="to">
+              Received up to <span class="optional">(optional)</span>
+            </label>
+            <input id="to" name="to" type="date" />
+          </div>
+          <button class="button secondary" type="submit">
+            Download CSV
+          </button>
+        </form>
+        <p class="hint mt-3">
+          Exports {status ? `${STATUS_LABELS[status].admin.toLowerCase()} bookings` : "all bookings"} with customer details, equipment, estimates and payments. Opens in Excel, Numbers or Google Sheets.
+        </p>
+      </details>
       <section class="card table-card">
         {bookings.length ? (
           <table class="data-table">
@@ -277,7 +289,8 @@ admin.get("/bookings", async c => {
                 <tr>
                   <td data-label="Booking">
                     <a href={`/admin/bookings/${b.id}`}>{bookingRef(b.id)}</a>
-                    <span class="sub">{caymanDate(b.createdAt)}</span>
+                    <span class="sub">Received {caymanDate(b.createdAt)}</span>
+                    {b.scheduleStart ?? b.startDate ? <span class="sub">Starts {calendarDate((b.scheduleStart ?? b.startDate)!)}</span> : null}
                   </td>
                   <td data-label="Customer">
                     {b.customerName}
@@ -304,6 +317,168 @@ admin.get("/bookings", async c => {
       {bookings.length === 200 ? <p class="muted">Showing the 200 most recent.</p> : null}
     </AdminPage>,
   );
+});
+
+const JobDetails: FC<{ booking: Booking }> = ({ booking: b }) => {
+  const lines = (b.items ?? []) as unknown as PricedLine[];
+  const hasDetails = lines.length || b.startDate || b.area || b.siteAddress || b.phone || b.company;
+  return (
+    <section class="card">
+      <h2>Job details</h2>
+      {hasDetails ? (
+        <>
+          <dl class="facts mt-3">
+            <dt>Requested start</dt>
+            <dd>{b.startDate ? `${calendarDate(b.startDate)}${b.startTime ? ` at ${b.startTime}` : ""}` : "Not asked (no crane, boom truck or telehandler)"}</dd>
+            {b.area ? (
+              <>
+                <dt>Area</dt>
+                <dd>{b.area}</dd>
+              </>
+            ) : null}
+            {b.siteAddress ? (
+              <>
+                <dt>Site address</dt>
+                <dd>{b.siteAddress}</dd>
+              </>
+            ) : null}
+            {b.phone ? (
+              <>
+                <dt>Phone</dt>
+                <dd>
+                  <a href={`tel:${b.phone.replace(/[^\d+]/g, "")}`}>{b.phone}</a>
+                </dd>
+              </>
+            ) : null}
+            {b.company ? (
+              <>
+                <dt>Company</dt>
+                <dd>{b.company}</dd>
+              </>
+            ) : null}
+          </dl>
+          {lines.length ? (
+            <table class="data-table lines mt-3">
+              <thead>
+                <tr>
+                  <th scope="col">Item</th>
+                  <th scope="col">Term</th>
+                  <th scope="col">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lines.map(l => (
+                  <tr>
+                    <td data-label="Item">{l.name}</td>
+                    <td data-label="Term">
+                      {TERM_LABELS[l.term] ?? l.term} × {l.qty}
+                    </td>
+                    <td data-label="Amount">{l.amount === null ? <span class="muted">To be quoted</span> : money(Math.round(l.amount * 100))}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : null}
+          {b.estimateCents !== null ? (
+            <p class="mt-3">
+              <b>Estimate {money(b.estimateCents)}</b>{" "}
+              <span class="muted">
+                {b.discountPercent ? `after the ${b.rewardTier} ${b.discountPercent}% discount, ` : ""}before delivery. Priced from the catalog when the booking was made.
+              </span>
+            </p>
+          ) : null}
+        </>
+      ) : (
+        <p class="muted">This booking was made before job details were recorded separately. Everything is in the request below.</p>
+      )}
+    </section>
+  );
+};
+
+// ---------- Spreadsheet export ----------
+
+// Spreadsheet apps run cells that start with these as formulas, so they're
+// prefixed with an apostrophe to keep them as text.
+export function csvCell(value: string | number | null | undefined): string {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "number") return String(value);
+  const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+  return `"${safe.replace(/"/g, '""')}"`;
+}
+
+const caymanStamp = (d: Date | null) => (d ? new Date(d.getTime() - 5 * 60 * 60 * 1000).toISOString().slice(0, 16).replace("T", " ") : null);
+const dollars = (cents: number | null) => (cents === null ? null : cents / 100);
+
+const CSV_HEADER = [
+  "Reference",
+  "Received (Cayman time)",
+  "Status",
+  "Customer",
+  "Email",
+  "Phone",
+  "Company",
+  "Account email",
+  "Tier at booking",
+  "Discount %",
+  "Requested start",
+  "Start time",
+  "Area",
+  "Site address",
+  "Rental first day",
+  "Rental last day",
+  "Equipment",
+  "Estimate (CI$)",
+  "Amount paid (CI$)",
+  "Paid on",
+  "Approved on",
+  "Contract emailed on",
+  "Note",
+];
+
+admin.get("/bookings/export.csv", async c => {
+  const requested = (c.req.query("status") ?? "all").toUpperCase();
+  const status = STATUSES.includes(requested as BookingStatus) ? (requested as BookingStatus) : null;
+  const from = parseDate(c.req.query("from"));
+  const to = parseDate(c.req.query("to"));
+  // A Cayman day (UTC-5) runs from 05:00 to 05:00 UTC.
+  const fiveHours = 5 * 60 * 60 * 1000;
+  const createdAt = { ...(from ? { gte: new Date(from.getTime() + fiveHours) } : {}), ...(to ? { lt: new Date(to.getTime() + 24 * 60 * 60 * 1000 + fiveHours) } : {}) };
+  const bookings = await prisma.booking.findMany({
+    where: { ...(status ? { status } : {}), ...(from || to ? { createdAt } : {}) },
+    orderBy: { createdAt: "asc" },
+    include: { user: { select: { email: true } } },
+  });
+
+  const rows = bookings.map(b => [
+    bookingRef(b.id),
+    caymanStamp(b.createdAt),
+    STATUS_LABELS[b.status].admin,
+    b.customerName,
+    b.customerEmail,
+    b.phone,
+    b.company,
+    b.user?.email ?? null,
+    b.rewardTier,
+    b.discountPercent,
+    isoDate(b.startDate) || null,
+    b.startTime,
+    b.area,
+    b.siteAddress,
+    isoDate(b.scheduleStart) || null,
+    isoDate(b.scheduleEnd) || null,
+    ((b.items ?? []) as unknown as PricedLine[]).map(l => `${l.name} (${TERM_LABELS[l.term] ?? l.term} × ${l.qty})`).join("; ") || null,
+    dollars(b.estimateCents),
+    dollars(b.amountPaidCents),
+    caymanStamp(b.paidAt),
+    caymanStamp(b.approvedAt),
+    caymanStamp(b.contractSentAt),
+    b.adminNote,
+  ]);
+  const csv = "\uFEFF" + [CSV_HEADER, ...rows].map(row => row.map(csvCell).join(",")).join("\r\n") + "\r\n";
+  const stamp = new Date(Date.now() - fiveHours).toISOString().slice(0, 10);
+  c.header("Content-Type", "text/csv; charset=utf-8");
+  c.header("Content-Disposition", `attachment; filename="ccc-bookings-${status ? status.toLowerCase() + "-" : ""}${stamp}.csv"`);
+  return c.body(csv);
 });
 
 const ContractFallback: FC<{ booking: Booking }> = ({ booking }) => {
@@ -445,6 +620,7 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
       </div>
       <div class="grid-2">
         <div class="stack">
+          <JobDetails booking={booking} />
           <section class="card">
             <h2>Request</h2>
             <pre class="request">{booking.requestText}</pre>
@@ -491,6 +667,41 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
                 </p>
                 <button class="button secondary small" type="submit">
                   Link to {matchingAccount.name}'s account
+                </button>
+              </form>
+            ) : null}
+          </section>
+          <section class="card">
+            <h2>Rental dates</h2>
+            <p class="muted">
+              {booking.scheduleStart
+                ? "Confirmed dates, shown on the calendar."
+                : booking.startDate
+                  ? "Not confirmed yet. The calendar shows the requested start date until you save dates here."
+                  : "Set dates to place this booking on the calendar."}
+            </p>
+            <form class="form" method="post" action={`/admin/bookings/${booking.id}/schedule`}>
+              <div class="rate-grid">
+                <div class="field">
+                  <label for="scheduleStart">First day</label>
+                  <input id="scheduleStart" name="scheduleStart" type="date" value={isoDate(booking.scheduleStart ?? booking.startDate)} required />
+                </div>
+                <div class="field">
+                  <label for="scheduleEnd">Last day</label>
+                  <input id="scheduleEnd" name="scheduleEnd" type="date" value={isoDate(booking.scheduleEnd ?? booking.scheduleStart ?? booking.startDate)} />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="button secondary small" type="submit">
+                  Save dates
+                </button>
+              </div>
+            </form>
+            {booking.scheduleStart ? (
+              <form class="mt-3" method="post" action={`/admin/bookings/${booking.id}/schedule`}>
+                <input type="hidden" name="clear" value="1" />
+                <button class="link-button text-link" type="submit">
+                  Clear dates
                 </button>
               </form>
             ) : null}
@@ -584,6 +795,17 @@ admin.post("/bookings/:id{[0-9]+}/:action", async c => {
       if (!["DECLINED", "CANCELLED"].includes(booking.status)) return back("bad-transition");
       await update({ status: "PENDING", approvedAt: null });
       return back("reopened");
+    case "schedule": {
+      if (body.clear === "1") {
+        await update({ scheduleStart: null, scheduleEnd: null });
+        return back("schedule-cleared");
+      }
+      const start = parseDate(body.scheduleStart);
+      const end = parseDate(body.scheduleEnd) ?? start;
+      if (!start || !end || end < start || end.getTime() - start.getTime() > 366 * 24 * 60 * 60 * 1000) return back("bad-schedule");
+      await update({ scheduleStart: start, scheduleEnd: end });
+      return back("schedule-saved");
+    }
     case "note":
       await update({ adminNote: text(body.note).slice(0, 5000) || null });
       return back("note-saved");

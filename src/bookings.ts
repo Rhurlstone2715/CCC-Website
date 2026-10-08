@@ -1,5 +1,6 @@
-import type { Booking, User } from "./generated/prisma/client.js";
+import type { CartItem } from "./catalog.js";
 import { COMPANY_EMAIL, sendEmail } from "./email.js";
+import type { Booking, User } from "./generated/prisma/client.js";
 
 // Shape of the JSON the checkout form in public/app.js posts to /api/bookings.
 export type BookingInput = {
@@ -11,6 +12,19 @@ export type BookingInput = {
   initials: string;
   agreedToTerms: boolean;
   paymentAck: boolean;
+  details: BookingDetails;
+};
+
+// Structured copy of the checkout. Each field is optional and anything
+// malformed is dropped rather than failing the booking.
+export type BookingDetails = {
+  phone: string | null;
+  company: string | null;
+  startDate: Date | null;
+  startTime: string | null;
+  area: string | null;
+  siteAddress: string | null;
+  items: CartItem[];
 };
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -19,6 +33,40 @@ function text(value: unknown, max: number): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
   return trimmed.length > 0 && trimmed.length <= max ? trimmed : null;
+}
+
+// "2026-10-11" as a calendar date (stored at UTC midnight), or null.
+export function parseDate(value: unknown): Date | null {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const date = new Date(`${value}T00:00:00Z`);
+  return Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value ? null : date;
+}
+
+const TERM_PATTERN = /^(hourly|fourhour|daily|weekly|monthly|quote)$/;
+
+export function parseDetails(value: unknown): BookingDetails {
+  const d = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  const startTime = typeof d.startTime === "string" && /^\d{2}:\d{2}$/.test(d.startTime) ? d.startTime : null;
+  const items = Array.isArray(d.items)
+    ? d.items
+        .slice(0, 100)
+        .flatMap(i => {
+          const item = i && typeof i === "object" ? (i as Record<string, unknown>) : {};
+          const id = typeof item.id === "string" && item.id.length <= 80 ? item.id : null;
+          const term = typeof item.term === "string" && TERM_PATTERN.test(item.term) ? item.term : null;
+          const qty = typeof item.qty === "number" && Number.isInteger(item.qty) && item.qty > 0 && item.qty <= 10_000 ? item.qty : null;
+          return id && term && qty ? [{ id, term, qty }] : [];
+        })
+    : [];
+  return {
+    phone: text(d.phone, 40),
+    company: text(d.company, 120),
+    startDate: parseDate(d.startDate),
+    startTime,
+    area: text(d.area, 60),
+    siteAddress: text(d.siteAddress, 300),
+    items,
+  };
 }
 
 export function parseBooking(body: unknown): BookingInput | { error: string } {
@@ -40,7 +88,17 @@ export function parseBooking(body: unknown): BookingInput | { error: string } {
   if (b.agreement !== true) return { error: "The rental agreement must be accepted." };
   if (b.paymentAck !== true) return { error: "The payment terms must be acknowledged." };
 
-  return { customerName, customerEmail, requestText, termsText, signature, initials, agreedToTerms: true, paymentAck: true };
+  return {
+    customerName,
+    customerEmail,
+    requestText,
+    termsText,
+    signature,
+    initials,
+    agreedToTerms: true,
+    paymentAck: true,
+    details: parseDetails(b.details),
+  };
 }
 
 export function bookingRef(id: number): string {

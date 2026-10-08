@@ -83,7 +83,7 @@ type LayoutProps = {
   area: "account" | "admin";
   user?: SessionUser | null;
   pendingCount?: number;
-  active?: "bookings" | "customers";
+  active?: "bookings" | "calendar" | "customers" | "catalog";
   children: Child;
 };
 
@@ -132,8 +132,14 @@ export const Layout: FC<LayoutProps> = ({ title, area, user, pendingCount, activ
                   <a href="/admin/bookings" aria-current={active === "bookings" ? "page" : undefined}>
                     Bookings{pendingCount ? <span class="count">{pendingCount}</span> : null}
                   </a>
+                  <a href="/admin/calendar" aria-current={active === "calendar" ? "page" : undefined}>
+                    Calendar
+                  </a>
                   <a href="/admin/customers" aria-current={active === "customers" ? "page" : undefined}>
                     Customers
+                  </a>
+                  <a href="/admin/catalog" aria-current={active === "catalog" ? "page" : undefined}>
+                    Catalog
                   </a>
                   <a href="/rentals">View site</a>
                 </>

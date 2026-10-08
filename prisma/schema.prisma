@@ -89,10 +89,80 @@ model Booking {
   contractSentAt  DateTime?
   paidAt          DateTime?
   amountPaidCents Int?
+  // Structured copy of the checkout, sent alongside requestText.
+  phone           String?
+  company         String?
+  startDate       DateTime?     @db.Date
+  startTime       String?
+  area            String?
+  siteAddress     String?
+  // Lines priced by the server from the catalog at booking time:
+  // [{ id, name, term, qty, rate, amount, operator }] with rate/amount in CI$ (null = quoted manually).
+  items           Json?
+  // Priced equipment and operator lines after the tier discount, excluding delivery.
+  estimateCents   Int?
+  // The dates an admin has confirmed for the rental; drives the admin calendar.
+  scheduleStart   DateTime?     @db.Date
+  scheduleEnd     DateTime?     @db.Date
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
   @@index([status, createdAt])
   @@index([customerEmail])
   @@index([userId])
+  @@index([startDate])
+  @@index([scheduleStart])
+}
+
+// Equipment on the rentals page, served to it as /catalog.js. Rates are CI$
+// per term, e.g. {"hourly":200,"daily":1710}, in the order the page lists them.
+// extra keeps structural fields the page relies on (compatibleWith, from)
+// that the admin editor doesn't change.
+model Product {
+  id                String          @id
+  name              String
+  category          String
+  spec              String
+  description       String
+  image             String
+  chart             String?
+  photo             Boolean         @default(false)
+  delivery          Boolean         @default(false)
+  operatorService   Boolean         @default(false)
+  availableQuantity Int?
+  rates             Json
+  hidden            Boolean         @default(false)
+  sortOrder         Int
+  isCustom          Boolean         @default(false)
+  extra             Json?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  riggingOptions    RiggingOption[]
+}
+
+// Sizes for lifting beams, spreader bars and spreader beams. The page turns
+// each into its own bookable item and uses the dimensions to draw it.
+model RiggingOption {
+  id        String  @id
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size      String
+  length    Float
+  depth     Float?
+  width     Float?
+  swl       Float?
+  // CI$ per day; null means priced on request.
+  price     Float?
+  sortOrder Int
+
+  @@index([productId])
+}
+
+// Images and load charts uploaded in the admin area.
+model Upload {
+  id          String   @id @default(cuid())
+  contentType String
+  size        Int
+  data        Bytes
+  createdAt   DateTime @default(now())
 }
