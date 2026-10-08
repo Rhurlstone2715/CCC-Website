@@ -1,0 +1,39 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  DECLINED
+  CANCELLED
+}
+
+// A booking request submitted from the rentals page checkout.
+// requestText is the itemised summary the page builds; termsText is the
+// rental agreement exactly as the customer saw it when they signed.
+model Booking {
+  id            Int           @id @default(autoincrement())
+  status        BookingStatus @default(PENDING)
+  customerName  String
+  customerEmail String
+  requestText   String
+  termsText     String
+  signature     String
+  initials      String
+  agreedToTerms Boolean
+  paymentAck    Boolean
+  alertSentAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([status, createdAt])
+  @@index([customerEmail])
+}

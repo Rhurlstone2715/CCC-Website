@@ -1,0 +1,29 @@
+{
+  "name": "ccc-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cayman Crane Company rentals site and booking API",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env --watch dist/server.js",
+    "build": "prisma generate && tsc",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.1",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.4",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "hono": "^4.13.13",
+    "prisma": "^7.10.0"
+  }
+}
