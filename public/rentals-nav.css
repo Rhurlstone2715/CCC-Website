@@ -661,3 +661,40 @@ input,select,textarea{font-size:1rem}
 .stock-quantity b{color:#a3070b;font-size:.875rem}
 
 .addon-choice .stock-quantity{display:inline-flex;flex-direction:row;align-self:flex-start;margin-top:6px}.checkout-power-info .stock-quantity{margin:4px 0 6px}.checkout-power-info small{display:block}
+
+/* The closed cart drawer sits just past the right edge of the screen. Keep its
+   shadow (which otherwise greys the right side of the header) and its links
+   (which keyboard users could otherwise tab into) out of view until it opens. */
+.cart-drawer{visibility:hidden;box-shadow:none;transition:transform .25s,visibility 0s linear .25s}
+.cart-drawer.open{visibility:visible;box-shadow:-20px 0 60px rgba(0,0,0,.25);transition:transform .25s}
+
+/* Mobile menu: a button that matches the cart button, and a panel with the
+   equipment categories as tiles, page links as rows and the account link as a button. */
+@media (max-width:980px){
+  .site-header .menu-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 14px;border:1px solid var(--ink);border-radius:4px;background:#fff;color:var(--ink);font:800 .875rem/1 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;cursor:pointer}
+  .site-header .menu-button[aria-expanded="true"]{background:var(--ink);color:#fff}
+  .site-header .menu-button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+  .menu-icon,.menu-icon::before,.menu-icon::after{display:block;width:18px;height:2px;border-radius:1px;background:currentColor}
+  .menu-icon{position:relative}
+  .menu-icon::before,.menu-icon::after{content:"";position:absolute;left:0;transition:transform .15s ease-out,top .15s ease-out}
+  .menu-icon::before{top:-6px}
+  .menu-icon::after{top:6px}
+  .menu-button[aria-expanded="true"] .menu-icon{background:transparent}
+  .menu-button[aria-expanded="true"] .menu-icon::before{top:0;transform:rotate(45deg)}
+  .menu-button[aria-expanded="true"] .menu-icon::after{top:0;transform:rotate(-45deg)}
+
+  .site-header .mobile-nav.open{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;max-height:none;overflow:visible;padding:16px 20px 24px;border-top:1px solid var(--line);background:#fff;font-weight:800}
+  .site-header .mobile-nav > b{grid-column:1/-1;margin:0 0 4px;color:var(--red);font-size:.75rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+  .site-header .mobile-nav > a{display:flex;align-items:center;min-height:48px;margin:0;color:var(--ink);text-decoration:none}
+  .site-header .mobile-nav > [data-catalog-category]{padding:10px 12px;border:1px solid var(--line);border-left:1px solid var(--line);border-radius:4px;background:#fff;font-size:.9375rem;line-height:1.25}
+  .site-header .mobile-nav > [data-catalog-category]:hover{border-color:var(--ink)}
+  .site-header .mobile-nav > a:not([data-catalog-category]){grid-column:1/-1;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:1rem}
+  .site-header .mobile-nav > a:not([data-catalog-category])::after{content:"›";color:var(--muted);font-size:1.25rem;line-height:1}
+  .site-header .mobile-nav > [data-catalog-category] + a:not([data-catalog-category]){margin-top:12px;border-top:1px solid var(--line)}
+  .site-header .mobile-nav > a[href^="/account"]{justify-content:center;margin-top:16px;padding:12px 16px;border:1px solid var(--red2);border-radius:4px;color:var(--red2);font-size:.875rem;font-weight:900}
+  .site-header .mobile-nav > a[href^="/account"]::after{content:none}
+  .site-header .mobile-nav > a:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+}
+@media (prefers-reduced-motion:reduce){
+  .menu-icon::before,.menu-icon::after{transition:none}
+}
