@@ -132,6 +132,10 @@ model Product {
   availableQuantity Int?
   rates             Json
   hidden            Boolean         @default(false)
+  // Product ids offered in the "add extras" prompt when this item is added to the cart.
+  addOns            String[]        @default([])
+  // Electric equipment: generators are suggested at checkout only when the cart has one of these.
+  needsPower        Boolean         @default(false)
   sortOrder         Int
   isCustom          Boolean         @default(false)
   extra             Json?

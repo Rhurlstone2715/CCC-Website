@@ -423,6 +423,42 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(second.estimateCents, 600_00);
   });
 
+  test("add-ons and generator suggestions come from the catalog", async () => {
+    const catalog = await buildCatalog();
+    const byId = new Map(catalog.products.map(p => [p.id as string, p]));
+    assert.deepEqual(byId.get("rt40")!.addOns, ["bin", "liftingbeams", "spreaderbars", "spreaderbeams", "concrete-bottom", "concrete-side", "blockforks"]);
+    assert.deepEqual(byId.get("gth844")!.addOns, ["jib", "bucket", "manbasket", "telehandler-blockfork"]);
+    assert.equal(byId.get("rt40")!.needsPower, undefined);
+    assert.equal(byId.get("mini-welder")!.needsPower, true);
+    assert.equal(byId.get("compressor")!.needsPower, undefined); // petrol
+  });
+
+  test("admins choose which add-ons go with each item", async () => {
+    const admin = await makeAdmin();
+    const base = { name: "Terex RT40", spec: "40 ton", description: "Compact crane.", rate_hourly: "145", sortOrder: "30", listed: "on" };
+    const post = (extra: string) =>
+      app.request("/admin/catalog/rt40", {
+        method: "POST",
+        headers: { cookie: admin, "content-type": "application/x-www-form-urlencoded", "x-real-ip": randomUUID() },
+        body: `${new URLSearchParams(base)}&${extra}`,
+      });
+    // Keep three of the seven, tick the power box.
+    const saved = await post("addOns=blockforks&addOns=bin&addOns=liftingbeams&needsPower=on");
+    assert.equal(saved.headers.get("location"), "/admin/catalog/rt40?notice=saved");
+    let rt40 = await prisma.product.findUniqueOrThrow({ where: { id: "rt40" } });
+    assert.deepEqual(rt40.addOns, ["bin", "liftingbeams", "blockforks"], "existing order is kept");
+    assert.equal(rt40.needsPower, true);
+    // The man basket only fits the National 1400H, and unknown ids are refused.
+    assert.equal((await post("addOns=national-manbasket")).status, 400);
+    assert.equal((await post("addOns=not-a-product")).status, 400);
+    // Unticking everything means no prompt.
+    await post("");
+    rt40 = await prisma.product.findUniqueOrThrow({ where: { id: "rt40" } });
+    assert.deepEqual(rt40.addOns, []);
+    const page = await (await req("/admin/catalog/national1400", { cookie: admin })).text();
+    assert.match(page, /National 1400H Man Basket/);
+  });
+
   test("catalog form validation", async () => {
     const admin = await makeAdmin();
     const base = { name: "Terex RT40", spec: "40 ton", description: "Compact crane.", rate_hourly: "150", sortOrder: "30" };

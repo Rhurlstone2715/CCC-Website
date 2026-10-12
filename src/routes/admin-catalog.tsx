@@ -156,8 +156,39 @@ type ProductFields = {
   hidden: boolean;
   delivery: boolean;
   photo: boolean;
+  needsPower: boolean;
+  addOns: string[];
   sortOrder: number;
 };
+
+type Candidate = { id: string; name: string; category: string; note: string | null };
+
+// Items that can be offered in another item's "add extras" prompt: attachments,
+// tools and add-on-only items (the latter only with the equipment they fit).
+async function addOnCandidates(productId: string | null): Promise<Candidate[]> {
+  const all = await prisma.product.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }] });
+  return all
+    .filter(p => p.id !== productId && !p.operatorService)
+    .filter(p => {
+      const fits = extraOf(p).compatibleWith;
+      if (Array.isArray(fits)) return productId !== null && fits.includes(productId);
+      return p.category === "Attachments" || p.category === "Tools";
+    })
+    .map(p => ({ id: p.id, name: p.name, category: isAddOnOnly(p) ? "Only with this equipment" : p.category, note: p.hidden && !isAddOnOnly(p) ? "hidden from the site" : null }))
+    // Equipment-specific items first, then attachments, then tools.
+    .sort((a, b) => GROUP_ORDER.indexOf(a.category) - GROUP_ORDER.indexOf(b.category));
+}
+
+const GROUP_ORDER = ["Only with this equipment", "Attachments", "Tools"];
+
+// Ticked add-ons, keeping their current order and adding new ones in catalog order.
+function parseAddOns(value: unknown, candidates: Candidate[], current: string[]): string[] | { error: string } {
+  const picked = (Array.isArray(value) ? value : value === undefined ? [] : [value]).filter((v): v is string => typeof v === "string");
+  const allowed = new Set(candidates.map(c => c.id));
+  if (picked.some(id => !allowed.has(id))) return { error: "One of the add-ons isn't available for this item. Reload the page and try again." };
+  const chosen = new Set(picked);
+  return [...current.filter(id => chosen.has(id)), ...candidates.map(c => c.id).filter(id => chosen.has(id) && !current.includes(id))];
+}
 
 // The rentals page writes these values into its HTML, so angle brackets are refused.
 function plain(value: unknown, label: string, max: number, required: boolean): string | { error: string } {
@@ -168,7 +199,7 @@ function plain(value: unknown, label: string, max: number, required: boolean): s
   return v;
 }
 
-function parseFields(body: Record<string, unknown>, existing: ProductWithSizes | null): ProductFields | { error: string } {
+function parseFields(body: Record<string, unknown>, existing: ProductWithSizes | null, candidates: Candidate[]): ProductFields | { error: string } {
   const rigging = Boolean(existing?.riggingOptions.length);
   const name = plain(body.name, "Name", 120, true);
   if (typeof name !== "string") return name;
@@ -207,6 +238,9 @@ function parseFields(body: Record<string, unknown>, existing: ProductWithSizes |
   const orderRaw = text(body.sortOrder);
   if (!/^\d{1,6}$/.test(orderRaw)) return { error: "Display order must be a whole number." };
 
+  const addOns = existing && isAddOnOnly(existing) ? existing.addOns : parseAddOns(body.addOns, candidates, existing?.addOns ?? []);
+  if (!Array.isArray(addOns)) return addOns;
+
   return {
     name,
     category,
@@ -218,15 +252,45 @@ function parseFields(body: Record<string, unknown>, existing: ProductWithSizes |
     hidden: existing && isAddOnOnly(existing) ? true : body.listed !== "on",
     delivery: body.delivery === "on",
     photo: body.photo === "on",
+    needsPower: body.needsPower === "on",
+    addOns,
     sortOrder: Number(orderRaw),
   };
 }
 
 // ---------- Edit form ----------
 
-type FormState = { product: ProductWithSizes | null; values?: Partial<ProductFields>; error?: string };
+type FormState = { product: ProductWithSizes | null; values?: Partial<ProductFields>; error?: string; candidates?: Candidate[] };
 
-const ProductForm: FC<FormState & { nextOrder: number }> = ({ product, values, error, nextOrder }) => {
+const AddOnChecklist: FC<{ candidates: Candidate[]; selected: string[] }> = ({ candidates, selected }) => {
+  const groups = new Map<string, Candidate[]>();
+  for (const c of candidates) groups.set(c.category, [...(groups.get(c.category) ?? []), c]);
+  return (
+    <fieldset class="field">
+      <legend class="label">Add-ons offered with this</legend>
+      <small class="hint">
+        Shown in the "add extras" prompt when a customer adds this to their cart. Only tick what goes with this equipment. Leave everything unticked
+        for no prompt.
+      </small>
+      {[...groups].map(([group, items]) => (
+        <div class="addon-group">
+          <span class="addon-group-title">{group}</span>
+          {items.map(c => (
+            <label class="check">
+              <input type="checkbox" name="addOns" value={c.id} checked={selected.includes(c.id)} />
+              <span>
+                {c.name}
+                {c.note ? <span class="muted"> ({c.note})</span> : null}
+              </span>
+            </label>
+          ))}
+        </div>
+      ))}
+    </fieldset>
+  );
+};
+
+const ProductForm: FC<FormState & { nextOrder: number }> = ({ product, values, error, nextOrder, candidates = [] }) => {
   const v: Partial<ProductFields> = values ?? (product ? { ...product, rates: orderedRates(product.rates) } : { hidden: false, sortOrder: nextOrder });
   const rigging = Boolean(product?.riggingOptions.length);
   const addOn = product ? isAddOnOnly(product) : false;
@@ -324,6 +388,11 @@ const ProductForm: FC<FormState & { nextOrder: number }> = ({ product, values, e
         <input type="checkbox" name="delivery" checked={Boolean(v.delivery)} />
         <span>Charge the delivery fee (applies to cranes, boom trucks and telehandlers on hourly or daily terms)</span>
       </label>
+      <label class="check">
+        <input type="checkbox" name="needsPower" checked={Boolean(v.needsPower)} />
+        <span>Runs on electric power, so suggest generators at checkout when it's in the cart</span>
+      </label>
+      {addOn ? null : <AddOnChecklist candidates={candidates} selected={v.addOns ?? []} />}
       <div class="field">
         <label for="image">
           Photo <span class="optional">(optional)</span>
@@ -400,7 +469,7 @@ async function nextSortOrder(): Promise<number> {
 
 async function renderEdit(c: Context<AppEnv>, state: FormState, status: 200 | 400 = 200) {
   const user = (await currentUser(c))!;
-  const [pending, nextOrder] = await Promise.all([pendingCount(), nextSortOrder()]);
+  const [pending, nextOrder, candidates] = await Promise.all([pendingCount(), nextSortOrder(), state.candidates ?? addOnCandidates(state.product?.id ?? null)]);
   const product = state.product;
   const notice = NOTICES[c.req.query("notice") ?? ""];
   return c.html(
@@ -418,7 +487,7 @@ async function renderEdit(c: Context<AppEnv>, state: FormState, status: 200 | 40
       </div>
       <div class="grid-2">
         <section class="card">
-          <ProductForm {...state} nextOrder={nextOrder} />
+          <ProductForm {...state} candidates={candidates} nextOrder={nextOrder} />
         </section>
         <div class="stack">
           {product?.riggingOptions.length ? <SizesForm product={product} /> : null}
@@ -468,8 +537,9 @@ async function applyUploads(body: Record<string, unknown>, product: Product | nu
 }
 
 adminCatalog.post("/new", uploadLimit, async c => {
-  const body = await c.req.parseBody();
-  const fields = parseFields(body, null);
+  const body = await c.req.parseBody({ all: true });
+  const candidates = await addOnCandidates(null);
+  const fields = parseFields(body, null, candidates);
   if ("error" in fields) return renderEdit(c, { product: null, values: formValues(body), error: fields.error }, 400);
   const files = await applyUploads(body, null);
   if ("error" in files) return renderEdit(c, { product: null, values: { ...fields }, error: files.error }, 400);
@@ -499,6 +569,8 @@ function formValues(body: Record<string, unknown>): Partial<ProductFields> {
     hidden: body.listed !== "on",
     delivery: body.delivery === "on",
     photo: body.photo === "on",
+    needsPower: body.needsPower === "on",
+    addOns: (Array.isArray(body.addOns) ? body.addOns : body.addOns === undefined ? [] : [body.addOns]).filter((v): v is string => typeof v === "string"),
     sortOrder: Number(text(body.sortOrder)) || 0,
   };
 }
@@ -511,8 +583,8 @@ adminCatalog.get("/:id", async c => {
 adminCatalog.post("/:id", uploadLimit, async c => {
   const product = await loadProduct(c.req.param("id"));
   if (!product) return c.notFound();
-  const body = await c.req.parseBody();
-  const fields = parseFields(body, product);
+  const body = await c.req.parseBody({ all: true });
+  const fields = parseFields(body, product, await addOnCandidates(product.id));
   if ("error" in fields) return renderEdit(c, { product, values: formValues(body), error: fields.error }, 400);
   const files = await applyUploads(body, product);
   if ("error" in files) return renderEdit(c, { product, values: fields, error: files.error }, 400);

@@ -43,7 +43,7 @@ type SeedProduct = { id: string; name: string; category: string; spec: string; d
 type SeedOption = { id: string; size: string; length: number; depth?: number; width?: number; swl?: number; price?: number };
 
 const SEED_FILE = fileURLToPath(new URL("../prisma/catalog-seed.json", import.meta.url));
-const COLUMNS = new Set(["id", "name", "category", "spec", "desc", "image", "chart", "photo", "delivery", "availableQuantity", "rates", "hidden", "operatorService"]);
+const COLUMNS = new Set(["id", "name", "category", "spec", "desc", "image", "chart", "photo", "delivery", "availableQuantity", "rates", "hidden", "operatorService", "addOns", "needsPower"]);
 
 // Loads the catalog the site launched with, the first time the database has none.
 export async function ensureCatalogSeeded(): Promise<void> {
@@ -68,6 +68,8 @@ export async function ensureCatalogSeeded(): Promise<void> {
           availableQuantity: typeof p.availableQuantity === "number" ? p.availableQuantity : null,
           rates: orderedRates(p.rates),
           hidden: p.hidden === true,
+          addOns: Array.isArray(p.addOns) ? (p.addOns as string[]) : [],
+          needsPower: p.needsPower === true,
           sortOrder: (i + 1) * 10,
           extra: Object.keys(extra).length ? (extra as object) : undefined,
         };
@@ -105,6 +107,8 @@ export function clientProduct(p: Product): Record<string, unknown> {
   out.rates = orderedRates(p.rates);
   if (p.hidden) out.hidden = true;
   if (p.operatorService) out.operatorService = true;
+  if (p.addOns.length) out.addOns = p.addOns;
+  if (p.needsPower) out.needsPower = true;
   return out;
 }
 

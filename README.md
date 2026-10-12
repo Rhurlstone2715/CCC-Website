@@ -41,6 +41,8 @@ In the admin area, a booking can be approved (which emails the customer their co
 
 The equipment list lives in the `Product` and `RiggingOption` tables. On first start with an empty database, the server loads `prisma/catalog-seed.json`, which is the catalog the site launched with. After that, the admin catalog editor is the source of truth: the server serves it as `/catalog.js`, and `public/app.js` reads `window.CCC_CATALOG` in place of its old hard-coded list. The page's add-on groups, navigation tree and rigging-size logic still live in `app.js` and work on whatever the catalog contains. Equipment added in admin is placed in the navigation by its category.
 
+Each item's page in the catalog editor also sets which add-ons appear in the "add extras" prompt when a customer adds it to their cart (for example a crane's lifting accessories), and whether it runs on electric power. Generators are only suggested at checkout when the cart contains an item marked as electric.
+
 Bookings send their cart lines along with the readable request. The server prices each line from the catalog at that moment and stores the result on the booking, so later price changes don't alter past bookings.
 
 ## Calendar and export

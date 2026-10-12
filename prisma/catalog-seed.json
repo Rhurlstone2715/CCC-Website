@@ -16,7 +16,16 @@
     "daily": 1710,
     "weekly": 8100,
     "monthly": 30600
-   }
+   },
+   "addOns": [
+    "bin",
+    "liftingbeams",
+    "spreaderbars",
+    "spreaderbeams",
+    "concrete-bottom",
+    "concrete-side",
+    "blockforks"
+   ]
   },
   {
    "id": "rt175",
@@ -34,7 +43,16 @@
     "daily": 1485,
     "weekly": 6975,
     "monthly": 24300
-   }
+   },
+   "addOns": [
+    "bin",
+    "liftingbeams",
+    "spreaderbars",
+    "spreaderbeams",
+    "concrete-bottom",
+    "concrete-side",
+    "blockforks"
+   ]
   },
   {
    "id": "rt40",
@@ -52,7 +70,16 @@
     "daily": 1215,
     "weekly": 5625,
     "monthly": 19800
-   }
+   },
+   "addOns": [
+    "bin",
+    "liftingbeams",
+    "spreaderbars",
+    "spreaderbeams",
+    "concrete-bottom",
+    "concrete-side",
+    "blockforks"
+   ]
   },
   {
    "id": "rt635c",
@@ -70,7 +97,16 @@
     "daily": 1125,
     "weekly": 5175,
     "monthly": 18900
-   }
+   },
+   "addOns": [
+    "bin",
+    "liftingbeams",
+    "spreaderbars",
+    "spreaderbeams",
+    "concrete-bottom",
+    "concrete-side",
+    "blockforks"
+   ]
   },
   {
    "id": "national1400",
@@ -88,7 +124,17 @@
     "daily": 1170,
     "weekly": 5400,
     "monthly": 19800
-   }
+   },
+   "addOns": [
+    "national-manbasket",
+    "bin",
+    "liftingbeams",
+    "spreaderbars",
+    "spreaderbeams",
+    "concrete-bottom",
+    "concrete-side",
+    "blockforks"
+   ]
   },
   {
    "id": "altec2595",
@@ -106,7 +152,16 @@
     "daily": 1035,
     "weekly": 4725,
     "monthly": 17100
-   }
+   },
+   "addOns": [
+    "bin",
+    "liftingbeams",
+    "spreaderbars",
+    "spreaderbeams",
+    "concrete-bottom",
+    "concrete-side",
+    "blockforks"
+   ]
   },
   {
    "id": "gth1056",
@@ -122,7 +177,13 @@
     "daily": 525,
     "weekly": 2250,
     "monthly": 8000
-   }
+   },
+   "addOns": [
+    "jib",
+    "bucket",
+    "manbasket",
+    "telehandler-blockfork"
+   ]
   },
   {
    "id": "gth844",
@@ -138,7 +199,13 @@
     "daily": 400,
     "weekly": 1750,
     "monthly": 6500
-   }
+   },
+   "addOns": [
+    "jib",
+    "bucket",
+    "manbasket",
+    "telehandler-blockfork"
+   ]
   },
   {
    "id": "gth636",
@@ -154,7 +221,13 @@
     "daily": 350,
     "weekly": 1600,
     "monthly": 5500
-   }
+   },
+   "addOns": [
+    "jib",
+    "bucket",
+    "manbasket",
+    "telehandler-blockfork"
+   ]
   },
   {
    "id": "lowboy",
@@ -193,7 +266,8 @@
    "rates": {
     "daily": 75,
     "weekly": 250
-   }
+   },
+   "needsPower": true
   },
   {
    "id": "fr800c",
@@ -206,7 +280,8 @@
    "rates": {
     "daily": 150,
     "weekly": 400
-   }
+   },
+   "needsPower": true
   },
   {
    "id": "handheld-rebar",
@@ -219,7 +294,8 @@
    "rates": {
     "daily": 25,
     "weekly": 80
-   }
+   },
+   "needsPower": true
   },
   {
    "id": "wyco-995",
@@ -232,7 +308,14 @@
    "rates": {
     "daily": 35,
     "weekly": 125
-   }
+   },
+   "addOns": [
+    "wyco-8914",
+    "wyco-8920",
+    "wyco-750d",
+    "wyco-750eh"
+   ],
+   "needsPower": true
   },
   {
    "id": "wyco-8914",
@@ -461,7 +544,10 @@
    "image": "assets/catalog/22-landhero-ldh-gac40y-40-gal-gas-powered-air-compressor.jpg",
    "rates": {
     "daily": 75
-   }
+   },
+   "addOns": [
+    "impactgun"
+   ]
   },
   {
    "id": "rollers",
@@ -498,7 +584,8 @@
    "image": "assets/current-site/618c9a_8b082a16f5744bcbb9fb8cc3cf0e8151~mv2.png",
    "rates": {
     "daily": 35
-   }
+   },
+   "needsPower": true
   },
   {
    "id": "mini-plasma",
@@ -510,7 +597,8 @@
    "image": "assets/current-site/618c9a_24cf52e7933c40b1bf20d66787063693~mv2.png",
    "rates": {
     "daily": 30
-   }
+   },
+   "needsPower": true
   },
   {
    "id": "mats",

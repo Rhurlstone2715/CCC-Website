@@ -698,3 +698,5 @@ input,select,textarea{font-size:1rem}
 @media (prefers-reduced-motion:reduce){
   .menu-icon::before,.menu-icon::after{transition:none}
 }
+
+.checkout-power[hidden]{display:none}

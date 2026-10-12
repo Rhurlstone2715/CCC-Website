@@ -1054,6 +1054,25 @@ a.cal-entry:hover {
   padding: var(--space-1) var(--space-2);
 }
 
+.addon-group {
+  display: grid;
+  margin-top: var(--space-2);
+}
+
+.addon-group-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: var(--space-2);
+}
+
+.addon-group label.check {
+  min-height: 40px;
+  align-items: center;
+}
+
 /* Long-form text, e.g. the privacy notice */
 .prose {
   max-width: 720px;

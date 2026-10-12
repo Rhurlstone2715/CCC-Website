@@ -73,14 +73,16 @@ const catalogTree={
  "Construction Plant / Equipment":{label:"Construction Plant / Equipment",ids:["props","plumwall","ellis","scaffold"]},
  "Ground Protection":{label:"Ground Protection",ids:["mats"]}
 };
-const telehandlerAttachmentIds=["jib","bucket","manbasket","telehandler-blockfork"];
+// Titles for the "add extras" prompt. Which items each piece of equipment
+// offers comes from the catalog (addOns), set in the admin catalog editor.
 const addonGroups={
- compressor:{title:"Add a pneumatic impact gun",intro:"The air compressor is in your cart. Add the 1″ drive pneumatic impact gun for CI$25 per day, or continue without it.",ids:["impactgun"]},
- "wyco-995":{title:"Choose a shaft and head",intro:"The motor is in your cart. Choose a pencil shaft and matching square head for the pour; each component is requested separately.",ids:["wyco-8914","wyco-8920","wyco-750d","wyco-750eh"]},
- telehandler:{title:"Add telehandler attachments",intro:"Choose the attachments needed for this telehandler booking. We will confirm fit and availability before acceptance.",ids:telehandlerAttachmentIds},
- crane:{title:"Add lifting accessories",intro:"Choose accessories and attachments for this crane or boom truck booking. Our team will confirm equipment compatibility and suitability before acceptance.",ids:products.filter(p=>p.category==="Attachments"&&!p.hidden&&!telehandlerAttachmentIds.includes(p.id)).map(p=>p.id)}
+ compressor:{title:"Add a pneumatic impact gun",intro:"The air compressor is in your cart. Add the 1″ drive pneumatic impact gun, or continue without it."},
+ "wyco-995":{title:"Choose a shaft and head",intro:"The motor is in your cart. Choose a pencil shaft and matching square head for the pour; each component is requested separately."},
+ telehandler:{title:"Add telehandler attachments",intro:"Choose the attachments needed for this telehandler booking. We will confirm fit and availability before acceptance."},
+ crane:{title:"Add lifting accessories",intro:"Choose accessories and attachments for this crane or boom truck booking. Our team will confirm equipment compatibility and suitability before acceptance."},
+ other:{title:"Add extras",intro:"Choose anything else you need with this booking. We will confirm fit and availability before acceptance."}
 };
-addonGroups.national1400={...addonGroups.crane,intro:"Choose lifting accessories for the National 1400H. This man basket is available only with this boom truck at CI$75 for a 4-hour minimum or CI$125 per day.",ids:["national-manbasket",...addonGroups.crane.ids]};
+addonGroups.national1400={...addonGroups.crane,intro:"Choose lifting accessories for the National 1400H. The man basket is available only with this boom truck."};
 // Equipment added in the admin area isn't listed in the tree above; place it by category.
 const categoryNav={"Rough Terrain Cranes":[["Services","Rough Terrain Cranes"]],"Boom Trucks":[["Services","Boom Trucks"]],"Telehandlers":[["Services","Telehandlers"],["Rentals","Telehandlers"]],"Heavy Hauling":[["Services","Heavy Transport — Lowboy & Trailer"]],"Tools":[["Tools"],["Rentals","Tools"]],"Power Generation":[["Power Generation"],["Rentals","Power Generation"]],"Attachments":[["Attachments"],["Rentals","Attachments"]],"Construction Plant / Equipment":[["Construction Plant / Equipment"],["Rentals","Construction Plant"]],"Ground Protection":[["Ground Protection"]]};
 const listedIds=new Set(Object.values(catalogTree).flatMap(b=>b.ids||Object.values(b.children).flat()));
@@ -112,14 +114,16 @@ function productCard(p){const terms=Object.keys(p.rates),first=terms[0],badgeTex
 function renderProducts(){const allowed=new Set(categoryIds()),list=products.filter(p=>!p.hidden&&allowed.has(p.id)&&(`${p.name} ${p.category} ${p.spec} ${p.desc}`.toLowerCase().includes(query)));$("#productGrid").innerHTML=list.map(productCard).join("");$("#emptyState").hidden=!!list.length;$$('.product-card').forEach(card=>{let p=products.find(x=>x.id===card.dataset.id);const baseProduct=p,select=card.querySelector('.term-select'),qty=card.querySelector('.qty-input'),price=card.querySelector('.rate-price'),operatorToggle=card.querySelector('.operator-toggle'),operatorOption=card.querySelector('.operator-option'),operatorTerms=[...card.querySelectorAll('.operator-term')],operatorQty=card.querySelector('.operator-qty'),operatorCharge=card.querySelector('.operator-charge b'),operatorQtyLabel=card.querySelector('.operator-qty-label');const sizeSelect=card.querySelector(".rigging-size");if(sizeSelect){p=products.find(x=>x.id===sizeSelect.value);sizeSelect.onchange=()=>{p=products.find(x=>x.id===sizeSelect.value);card.querySelector(".rigging-preview").innerHTML=riggingIllustration(p.rigging);if(price)price.innerHTML=`<small>Daily</small><b>${money(p.rates.daily)}</b>`;};}if(select)select.onchange=()=>{const t=select.value;price.innerHTML=`<small>${p.from?"From ":""}${termLabels[t]}</small><b>${money(p.rates[t])}</b>`;qty.value=t==="hourly"?4:1};const updateOperator=()=>{const term=operatorTerms.find(x=>x.checked)?.value||"daily",amount=Math.max(Number(operatorQty?.value)||1,1),rate=products.find(x=>x.id==="telehandler-operator").rates[term];if(operatorQtyLabel)operatorQtyLabel.textContent=term==="hourly"?"Hours":"Days";if(operatorCharge)operatorCharge.textContent=money(rate*amount)};if(operatorToggle){operatorToggle.onchange=()=>{operatorOption.classList.toggle("selected",operatorToggle.checked);updateOperator()};operatorTerms.forEach(x=>x.onchange=updateOperator);operatorQty.oninput=updateOperator}card.querySelector('.add-button').onclick=()=>{const term=p.quoteOnly?"quote":select.value,equipmentKey=`${p.id}:${term}`;addLine(p.id,term,p.quoteOnly?1:Math.max(Number(qty.value)||1,term==="hourly"?4:1));if(operatorToggle?.checked){const operatorTerm=operatorTerms.find(x=>x.checked).value,operatorAmount=Math.max(Number(operatorQty.value)||1,1);addLine("telehandler-operator",operatorTerm,operatorAmount,{parentKey:equipmentKey,label:`Operator for ${p.name}`})}saveCart();showAddons(p,equipmentKey,term);toast(p.quoteOnly?"Item added for manual pricing":operatorToggle?.checked?"Equipment and operator added separately":"Equipment added to cart")}})}
 let addonParentKey="";
 function showAddons(p,parentKey,parentTerm){
- const group=addonGroups[p.id]|| (p.category==="Telehandlers"?addonGroups.telehandler:null) || (["Rough Terrain Cranes","Boom Trucks"].includes(p.category)?addonGroups.crane:null);
- if(!group){openCart();return}
+ // Hidden items are skipped unless they're add-on-only (tied to specific equipment).
+ const ids=(p.addOns||[]).filter(id=>{const item=products.find(x=>x.id===id);return item&&(!item.hidden||item.compatibleWith)&&(!item.compatibleWith||item.compatibleWith.includes(p.id))});
+ if(!ids.length){openCart();return}
+ const group=addonGroups[p.id]||(p.category==="Telehandlers"?addonGroups.telehandler:null)||(["Rough Terrain Cranes","Boom Trucks"].includes(p.category)?addonGroups.crane:null)||addonGroups.other;
  addonParentKey=parentKey;
  $("#addonTitle").textContent=group.title;
  $("#addonIntro").textContent=group.intro;
- $("#addonList").innerHTML=group.ids.map((id,index)=>{
+ $("#addonList").innerHTML=ids.map(id=>{
   const item=products.find(x=>x.id===id),terms=Object.keys(item.rates);
-  const groupLabel=group===addonGroups["wyco-995"]?(index<2?"Pencil shaft":"Square head"):group===addonGroups.compressor?"Pneumatic tool":"Attachment";
+  const groupLabel=/^wyco-89/.test(id)?"Pencil shaft":/^wyco-750/.test(id)?"Square head":item.category==="Tools"?(group===addonGroups.compressor?"Pneumatic tool":"Tool"):"Attachment";
   return `<div class="addon-item" data-addon-id="${id}"><label class="addon-choice"><input type="checkbox" class="addon-check"><img src="${item.image}" alt=""><span><small>${groupLabel}</small><b>${item.name}</b><em>${item.spec}</em>${inventoryLabel(item)}</span></label><div class="addon-rigging">${riggingSelector(item)}</div><div class="addon-config">${item.quoteOnly?`<strong>Rate to be confirmed</strong>`:`<label>Rental term<select class="addon-term" aria-label="Rental term for ${item.name}">${terms.map(t=>`<option value="${t}" ${t===parentTerm?"selected":""}>${termLabels[t]} · ${money(item.rates[t])}</option>`).join("")}</select></label>`}<label>Quantity<input class="addon-qty" type="number" min="1" value="1" aria-label="Quantity of ${item.name}"></label></div></div>`
  }).join("");
  $$("#addonList .rigging-size").forEach(select=>select.onchange=()=>{const row=select.closest('.addon-item'),variant=products.find(p=>p.id===select.value);row.querySelector('.rigging-preview').innerHTML=riggingIllustration(variant.rigging);const term=row.querySelector('.addon-term');if(term)term.innerHTML=`<option value="daily">Daily · ${money(variant.rates.daily)}</option>`;});
@@ -166,7 +170,11 @@ function checkoutTermsText(){const terms=$(".contract").innerText;return hasHour
 function needsJobDetails(){return cart.some(i=>["Rough Terrain Cranes","Boom Trucks","Telehandlers"].includes(products.find(p=>p.id===i.id)?.category))}
 function deliveryEstimate(){const area=$("#areaSelect").value,eligible=cart.some(deliveryEligible);if(!eligible)return 0;if(area in deliveryFees)return deliveryFees[area];return null}
 function renderPowerAddons(){
+ // Generators are only suggested when the cart has electric equipment (needsPower in the catalog).
+ const show=cart.some(i=>products.find(p=>p.id===i.id)?.needsPower);
+ $(".checkout-power").hidden=!show;
  $("#checkoutPowerStatus").textContent="";
+ if(!show){$("#checkoutPowerAddons").innerHTML="";return}
  $("#checkoutPowerAddons").innerHTML=products.filter(p=>p.category==="Power Generation"&&!p.hidden).map(p=>`<article class="checkout-power-item" data-power-id="${p.id}"><div class="checkout-power-info"><img src="${p.image}" alt="" loading="lazy"><div><h3>${p.name}</h3>${inventoryLabel(p)}<small>${p.spec}</small></div></div><div class="checkout-power-controls"><label>Rental term<select class="power-term" aria-label="Rental term for ${p.name}">${Object.keys(p.rates).map(t=>`<option value="${t}">${termLabels[t]} · ${money(p.rates[t])}</option>`).join("")}</select></label><label>Quantity<input class="power-qty" type="number" min="1" step="1" value="1" aria-label="Quantity for ${p.name}"></label><button type="button" class="button primary" data-add-power="${p.id}" aria-label="Add ${p.name} to booking">Add</button></div></article>`).join("");
 }
 $("#checkoutPowerAddons").addEventListener("click",e=>{
