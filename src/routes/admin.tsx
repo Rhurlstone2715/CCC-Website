@@ -1,36 +1,20 @@
-import { createHash, timingSafeEqual } from "node:crypto";
 import { Hono, type Context } from "hono";
 import type { FC } from "hono/jsx";
-import {
-  type AppEnv,
-  type SessionUser,
-  PASSWORD_MIN,
-  createResetLink,
-  currentUser,
-  hashPassword,
-  passwordProblem,
-  requireAdmin,
-  safeNext,
-  startSession,
-  verifyPassword,
-} from "../auth.js";
+import { type AppEnv, createResetLink, currentUser, requireAdmin, safeNext } from "../auth.js";
 import { bookingRef, contractSubject, contractText, parseDate, sendContract } from "../bookings.js";
 import { TERM_LABELS, type PricedLine } from "../catalog.js";
 import { prisma } from "../db.js";
 import { customerEmailsEnabled } from "../email.js";
 import type { Booking, BookingStatus, User } from "../generated/prisma/client.js";
-import { clientIp, createLimiter } from "../ratelimit.js";
 import { rewardsForSpend, rewardsForUser } from "../rewards.js";
 import { AdminPage, centsToInput, parseAmount, pendingCount } from "../views/admin-page.js";
-import { Field, Layout, Notice, STATUS_LABELS, StatusBadge, caymanDate, money } from "../views/layout.js";
-import { attemptLogin, parseProfile, text } from "./account.js";
+import { Field, Notice, STATUS_LABELS, StatusBadge, caymanDate, money } from "../views/layout.js";
+import { parseProfile, text } from "./account.js";
 
 export const admin = new Hono<AppEnv>();
 
-const setupByIp = createLimiter(10, 60 * 60_000);
 
 const NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string }> = {
-  "admin-ready": { tone: "success", text: "Admin access is set up. New bookings will appear here." },
   "approved-sent": { tone: "success", text: "Booking approved. The customer has been emailed their contract." },
   "approved-manual": { tone: "info", text: "Booking approved. Customer emails aren't set up yet, so send the contract below from your own inbox." },
   "approved-failed": { tone: "error", text: "Booking approved, but the contract email didn't send. Send it below from your own inbox." },
@@ -55,6 +39,10 @@ const NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string
   "customer-deleted": { tone: "success", text: "Customer account deleted." },
   "cant-delete-self": { tone: "error", text: "You can't delete the account you're logged in with." },
   "last-admin": { tone: "error", text: "This is the only admin account, so it can't be deleted." },
+  "made-admin": { tone: "success", text: "Admin access given. They can now log in through the normal login and use the admin area." },
+  "removed-admin": { tone: "success", text: "Admin access removed. Their customer account is unchanged." },
+  "cant-change-self": { tone: "error", text: "You can't remove your own admin access." },
+  "admin-needed": { tone: "error", text: "There has to be at least one admin, so this account keeps admin access." },
 };
 
 function noticeFrom(c: Context): { tone: "success" | "error" | "info"; text: string } | undefined {
@@ -66,145 +54,14 @@ function noticeFrom(c: Context): { tone: "success" | "error" | "info"; text: str
 const calendarDate = (d: Date) => d.toLocaleDateString("en-US", { timeZone: "UTC", dateStyle: "medium" });
 const isoDate = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10) : "");
 
-// ---------- Login and first-time setup ----------
+// ---------- Login ----------
 
-const AdminLoginPage: FC<{ next: string; email?: string; error?: string; info?: string; user?: SessionUser | null }> = ({ next, email, error, info, user }) => (
-  <Layout title="Admin log in" area="admin" user={user}>
-    <div class="narrow">
-      <div class="page-head">
-        <p class="eyebrow">Cayman Crane admin</p>
-        <h1>Admin log in</h1>
-      </div>
-      <section class="card">
-        {info ? <Notice tone="info">{info}</Notice> : null}
-        <form class="form flush" method="post" action="/admin/login">
-          {error ? <Notice tone="error">{error}</Notice> : null}
-          <input type="hidden" name="next" value={next} />
-          <Field label="Email" name="email" type="email" value={email} required autocomplete="email" />
-          <Field label="Password" name="password" type="password" required autocomplete="current-password" />
-          <div class="form-actions">
-            <button class="button primary" type="submit">
-              Log in
-            </button>
-            <a class="text-link" href="/admin/setup">
-              Set up admin access
-            </a>
-          </div>
-        </form>
-      </section>
-    </div>
-  </Layout>
-);
-
-admin.get("/login", async c => {
-  const next = safeNext(c.req.query("next"), "/admin/bookings");
-  const user = await currentUser(c);
-  if (user?.role === "ADMIN") return c.redirect(next);
-  const info = c.req.query("notice") === "not-admin" || user ? "You're logged in to an account without admin access. Log in with an admin account to continue." : undefined;
-  return c.html(<AdminLoginPage next={next} info={info} user={user} />);
-});
-
-admin.post("/login", async c => {
-  const body = await c.req.parseBody();
-  const next = safeNext(body.next, "/admin/bookings");
-  const email = text(body.email);
-  const result = await attemptLogin(c, email, typeof body.password === "string" ? body.password : "");
-  if ("error" in result) return c.html(<AdminLoginPage next={next} email={email} error={result.error} />, 401);
-  if (result.user.role !== "ADMIN") {
-    return c.html(<AdminLoginPage next={next} email={email} error="That account doesn't have admin access." user={result.user} />, 403);
-  }
-  return c.redirect(next);
-});
-
-function setupCodeMatches(input: string): boolean {
-  const code = process.env.ADMIN_SETUP_CODE;
-  if (!code) return false;
-  const a = createHash("sha256").update(input).digest();
-  const b = createHash("sha256").update(code).digest();
-  return timingSafeEqual(a, b);
-}
-
-const SetupPage: FC<{ error?: string; values?: { name?: string; email?: string } }> = ({ error, values }) => (
-  <Layout title="Set up admin access" area="admin">
-    <div class="narrow">
-      <div class="page-head">
-        <p class="eyebrow">Cayman Crane admin</p>
-        <h1>Set up admin access</h1>
-      </div>
-      <section class="card">
-        {process.env.ADMIN_SETUP_CODE ? (
-          <form class="form flush" method="post" action="/admin/setup">
-            {error ? <Notice tone="error">{error}</Notice> : null}
-            <p class="muted flush">
-              You'll need the setup code from the ADMIN_SETUP_CODE variable on the web service in Railway. If you already have a customer account,
-              use its email and password and it will be given admin access.
-            </p>
-            <Field label="Setup code" name="code" type="password" required autocomplete="off" />
-            <Field label="Full name" name="name" value={values?.name} required autocomplete="name" maxlength={120} />
-            <Field label="Email" name="email" type="email" value={values?.email} required autocomplete="email" maxlength={254} />
-            <Field
-              label="Password"
-              name="password"
-              type="password"
-              required
-              autocomplete="new-password"
-              minlength={PASSWORD_MIN}
-              hint={`At least ${PASSWORD_MIN} characters.`}
-            />
-            <div class="form-actions">
-              <button class="button primary" type="submit">
-                Set up admin access
-              </button>
-              <a class="text-link" href="/admin/login">
-                Back to log in
-              </a>
-            </div>
-          </form>
-        ) : (
-          <>
-            <h2>Setup is turned off</h2>
-            <p class="muted">To add an admin, set an ADMIN_SETUP_CODE variable on the web service in Railway, then come back to this page.</p>
-          </>
-        )}
-      </section>
-    </div>
-  </Layout>
-);
-
-admin.get("/setup", c => c.html(<SetupPage />));
-
-admin.post("/setup", async c => {
-  const body = await c.req.parseBody();
-  const values = { name: text(body.name), email: text(body.email) };
-  if (!process.env.ADMIN_SETUP_CODE) return c.html(<SetupPage />, 403);
-  if (setupByIp(clientIp(c))) return c.html(<SetupPage error="Too many attempts. Try again in an hour." values={values} />, 429);
-  if (!setupCodeMatches(text(body.code))) return c.html(<SetupPage error="That setup code isn't right." values={values} />, 403);
-
-  const profile = parseProfile({ name: body.name, email: body.email });
-  if ("error" in profile) return c.html(<SetupPage error={profile.error} values={values} />, 400);
-  const password = typeof body.password === "string" ? body.password : "";
-
-  const existing = await prisma.user.findUnique({ where: { email: profile.email } });
-  let userId: number;
-  if (existing) {
-    if (!(await verifyPassword(password, existing.passwordHash))) {
-      return c.html(<SetupPage error="There's already an account with that email. Enter its current password to give it admin access." values={values} />, 401);
-    }
-    await prisma.user.update({ where: { id: existing.id }, data: { role: "ADMIN" } });
-    userId = existing.id;
-  } else {
-    const problem = passwordProblem(password);
-    if (problem) return c.html(<SetupPage error={problem} values={values} />, 400);
-    const user = await prisma.user.create({ data: { name: profile.name, email: profile.email, role: "ADMIN", passwordHash: await hashPassword(password) } });
-    userId = user.id;
-  }
-  await startSession(c, userId);
-  return c.redirect("/admin/bookings?notice=admin-ready");
-});
+// Admins log in through the normal account page; old admin login links land there.
+admin.get("/login", c => c.redirect(`/account?next=${encodeURIComponent(safeNext(c.req.query("next"), "/admin"))}`));
 
 // Everything below needs an admin session.
 admin.use("/*", async (c, next) => {
-  if (["/admin/login", "/admin/setup"].includes(c.req.path)) return next();
+  if (c.req.path === "/admin/login") return next();
   return requireAdmin(c, next);
 });
 
@@ -1024,6 +881,43 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { reset
               <p class="muted">No bookings on this account yet.</p>
             )}
           </section>
+          <section class="card">
+            <h2>Admin access</h2>
+            {customer.role === "ADMIN" ? (
+              <>
+                <p class="muted">
+                  {customer.id === user.id
+                    ? "This is your account. You can't remove your own admin access."
+                    : `${customer.name} can use the admin area: bookings, customers, the calendar and the catalog.`}
+                </p>
+                {customer.id !== user.id ? (
+                  <form method="post" action={`/admin/customers/${customer.id}/role`} data-confirm={`Remove ${customer.name}'s admin access?`}>
+                    <input type="hidden" name="role" value="CUSTOMER" />
+                    <button class="button secondary small" type="submit">
+                      Remove admin access
+                    </button>
+                  </form>
+                ) : null}
+              </>
+            ) : (
+              <>
+                <p class="muted">
+                  Admins log in through the normal login and can see every booking and customer, and change prices. Only give access to Cayman Crane
+                  staff.
+                </p>
+                <form
+                  method="post"
+                  action={`/admin/customers/${customer.id}/role`}
+                  data-confirm={`Give ${customer.name} admin access? They'll see every booking and customer and can change prices.`}
+                >
+                  <input type="hidden" name="role" value="ADMIN" />
+                  <button class="button secondary small" type="submit">
+                    Give admin access
+                  </button>
+                </form>
+              </>
+            )}
+          </section>
           {customer.id !== user.id ? (
             <section class="card danger-zone">
               <h2>Delete account</h2>
@@ -1087,6 +981,15 @@ admin.post("/customers/:id{[0-9]+}/:action", async c => {
       }
       await prisma.user.update({ where: { id }, data: profile });
       return back("profile-saved");
+    }
+    case "role": {
+      const role = body.role === "ADMIN" ? "ADMIN" : "CUSTOMER";
+      if (role === "CUSTOMER") {
+        if (id === (await currentUser(c))!.id) return back("cant-change-self");
+        if (customer.role === "ADMIN" && (await prisma.user.count({ where: { role: "ADMIN" } })) <= 1) return back("admin-needed");
+      }
+      await prisma.user.update({ where: { id }, data: { role } });
+      return back(role === "ADMIN" ? "made-admin" : "removed-admin");
     }
     case "reset-link":
       return renderCustomer(c, customer, { resetLink: await createResetLink(c, id, 72) });

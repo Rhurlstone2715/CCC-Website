@@ -148,7 +148,7 @@ export const Layout: FC<LayoutProps> = ({ title, area, user, pendingCount, activ
               )}
               {user ? (
                 <form method="post" action="/account/logout" class="inline-form">
-                  <input type="hidden" name="next" value={area === "admin" ? "/admin/login" : "/rentals"} />
+                  <input type="hidden" name="next" value="/rentals" />
                   <button type="submit" class="link-button">
                     Log out
                   </button>

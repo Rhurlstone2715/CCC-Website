@@ -136,9 +136,11 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     return sessionCookie(res);
   }
 
+  // Admins log in through the normal login, which sends them to the admin area.
   async function makeAdmin() {
-    const res = await req("/admin/setup", { form: { code: "test-setup-code", name: "Ric Admin", email: "admin@example.com", password: "adminpass123" } });
-    assert.equal(res.status, 302);
+    await prisma.user.create({ data: { name: "Ric Admin", email: "admin@example.com", role: "ADMIN", passwordHash: await hashPassword("adminpass123") } });
+    const res = await req("/account/login", { form: { email: "admin@example.com", password: "adminpass123" } });
+    assert.equal(res.headers.get("location"), "/admin");
     return sessionCookie(res);
   }
 
@@ -208,6 +210,14 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal((await req("/api/rewards", { cookie })).status, 401);
   });
 
+  test("successful logins don't count toward the login limit", async () => {
+    await signup();
+    for (let i = 0; i < 12; i++) {
+      const ok = await req("/account/login", { form: { email: "kim@example.com", password: "longenough1" } });
+      assert.equal(ok.status, 302, `login ${i + 1}`);
+    }
+  });
+
   test("login is rate limited per email", async () => {
     // Its own email: the limiter is per process, so this must not lock out other tests.
     await signup("limited@example.com");
@@ -264,15 +274,34 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const cookie = await signup();
     const res = await req("/admin/bookings", { cookie });
     assert.equal(res.status, 302);
-    assert.equal(res.headers.get("location"), "/admin/login?notice=not-admin");
-    assert.equal((await req("/admin/bookings")).headers.get("location"), "/admin/login?next=%2Fadmin%2Fbookings");
+    assert.equal(res.headers.get("location"), "/account/profile?notice=not-admin");
+    assert.equal((await req("/admin/bookings")).headers.get("location"), "/account?next=%2Fadmin%2Fbookings");
+    assert.equal((await (await req("/api/rewards", { cookie })).json()).admin, false);
   });
 
-  test("admin setup needs the right code", async () => {
-    const bad = await req("/admin/setup", { form: { code: "wrong", name: "X", email: "x@example.com", password: "adminpass123" } });
-    assert.equal(bad.status, 403);
+  test("admins log in through the normal login; there's no setup page", async () => {
+    assert.equal((await req("/admin/login")).headers.get("location"), "/account?next=%2Fadmin");
     const cookie = await makeAdmin();
+    assert.equal((await req("/admin/setup", { cookie })).status, 404);
     assert.equal((await req("/admin/bookings", { cookie })).status, 200);
+    assert.equal((await req("/account", { cookie })).headers.get("location"), "/admin");
+    assert.equal((await (await req("/api/rewards", { cookie })).json()).admin, true);
+    // A page asked for before logging in still wins.
+    const deep = await req("/account/login", { form: { email: "admin@example.com", password: "adminpass123", next: "/admin/catalog" } });
+    assert.equal(deep.headers.get("location"), "/admin/catalog");
+  });
+
+  test("admins can give and remove admin access", async () => {
+    const kim = await signup();
+    const admin = await makeAdmin(); // user 2
+    const made = await req("/admin/customers/1/role", { form: { role: "ADMIN" }, cookie: admin });
+    assert.equal(made.headers.get("location"), "/admin/customers/1?notice=made-admin");
+    assert.equal((await req("/admin/bookings", { cookie: kim })).status, 200);
+    const self = await req("/admin/customers/2/role", { form: { role: "CUSTOMER" }, cookie: admin });
+    assert.equal(self.headers.get("location"), "/admin/customers/2?notice=cant-change-self");
+    const removed = await req("/admin/customers/2/role", { form: { role: "CUSTOMER" }, cookie: kim });
+    assert.equal(removed.headers.get("location"), "/admin/customers/2?notice=removed-admin");
+    assert.equal((await req("/admin/bookings", { cookie: admin })).headers.get("location"), "/account/profile?notice=not-admin");
   });
 
   test("approve, mark paid, and rewards follow", async () => {
@@ -584,7 +613,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   });
 
   test("pages render", async () => {
-    for (const path of ["/account", "/account/forgot", "/admin/login", "/admin/setup", "/privacy"]) {
+    for (const path of ["/account", "/account/forgot", "/privacy"]) {
       const res = await req(path);
       assert.equal(res.status, 200, path);
       assert.match(await res.text(), /^<!doctype html>/);

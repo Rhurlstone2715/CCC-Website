@@ -51,6 +51,8 @@ export async function attemptLogin(c: Context<AppEnv>, emailInput: string, passw
   if (!(await verifyPassword(password, user.passwordHash))) {
     return { error: "That email and password don't match an account." };
   }
+  // Only wrong guesses should count toward the limit.
+  loginByEmail.reset(email);
   await startSession(c, user.id);
   return { user };
 }
@@ -76,6 +78,7 @@ const NOTICES: Record<string, { tone: "success" | "info"; text: string }> = {
   saved: { tone: "success", text: "Your details are saved." },
   "password-changed": { tone: "success", text: "Your password has been changed." },
   "password-reset": { tone: "success", text: "Your password has been reset and you're logged in." },
+  "not-admin": { tone: "info", text: "That page is for Cayman Crane staff. Here's your account." },
 };
 
 // ---------- Log in / sign up ----------
@@ -152,24 +155,28 @@ const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupE
   </Layout>
 );
 
+// Where to go after logging in when no page was asked for: admins to the admin area.
+const homeFor = (user: SessionUser) => (user.role === "ADMIN" ? "/admin" : "/account/profile");
+
 account.get("/", async c => {
-  const next = safeNext(c.req.query("next"), "/account/profile");
-  if (await currentUser(c)) return c.redirect(next);
+  const next = safeNext(c.req.query("next"), "");
+  const user = await currentUser(c);
+  if (user) return c.redirect(next || homeFor(user));
   return c.html(<AuthPage next={next} />);
 });
 
 account.post("/login", async c => {
   const body = await c.req.parseBody();
-  const next = safeNext(body.next, "/account/profile");
+  const next = safeNext(body.next, "");
   const email = text(body.email);
   const result = await attemptLogin(c, email, typeof body.password === "string" ? body.password : "");
   if ("error" in result) return c.html(<AuthPage next={next} loginEmail={email} loginError={result.error} />, 401);
-  return c.redirect(next);
+  return c.redirect(next || homeFor(result.user));
 });
 
 account.post("/signup", async c => {
   const body = await c.req.parseBody();
-  const next = safeNext(body.next, "/account/profile");
+  const next = safeNext(body.next, "");
   const profile = parseProfile(body);
   const password = typeof body.password === "string" ? body.password : "";
   const fail = (error: string, values: Partial<ProfileInput>, status: 400 | 409 | 429 = 400) =>
@@ -185,7 +192,7 @@ account.post("/signup", async c => {
 
   const user = await prisma.user.create({ data: { ...profile, passwordHash: await hashPassword(password) } });
   await startSession(c, user.id);
-  return c.redirect(next === "/account/profile" ? "/account/profile?notice=welcome" : next);
+  return c.redirect(next || "/account/profile?notice=welcome");
 });
 
 account.post("/logout", async c => {

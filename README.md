@@ -15,7 +15,6 @@ The rentals page is plain HTML, CSS and JavaScript in `public/`. A small Node se
 | `/account/forgot`, `/account/reset` | Password reset |
 | `/privacy` | Privacy notice (`src/views/privacy.tsx`), linked from the footer, sign-up and checkout |
 | `/admin` | Admin area: bookings and customers |
-| `/admin/setup` | Creates an admin account, using `ADMIN_SETUP_CODE` |
 | `/admin/catalog` | Edit equipment, prices, quantities and photos |
 | `/admin/calendar` | Month view of bookings with clash warnings |
 | `/admin/bookings/export.csv` | Bookings and payments as a spreadsheet |
@@ -33,7 +32,7 @@ Customers earn one point for every CI$1 an admin marks as paid on a booking they
 
 ## Admin area
 
-To add an admin, set `ADMIN_SETUP_CODE` on the web service in Railway, open `/admin/setup`, and enter the code with the admin's name, email and password. If the email already has a customer account, its password is needed and the account becomes an admin. Remove the variable afterwards to turn setup off.
+Admins log in through the normal login at `/account`, which takes them to the admin area. To add an admin, have them sign up as a customer, then open their page under Admin → Customers and choose "Give admin access". An admin can't remove their own access, and the last admin can't be removed.
 
 In the admin area, a booking can be approved (which emails the customer their contract), declined, cancelled, marked as paid with the amount, given a private note, or deleted. Customers can be searched, edited, given rewards credit, sent a one-time password reset link, or deleted. Deleting a customer keeps their bookings as guest bookings unless the admin ticks the box to delete those too.
 
@@ -87,6 +86,5 @@ Edit `prisma/schema.prisma`, then run `npx prisma migrate dev --name <change>` a
 | `RESEND_API_KEY` | Optional. Enables email through Resend. |
 | `BOOKING_ALERT_TO` | Where booking alerts go. Defaults to caymancrane@gmail.com. |
 | `EMAIL_FROM` | Sender on a domain verified in Resend. Turns on customer emails. |
-| `ADMIN_SETUP_CODE` | Turns on `/admin/setup`. Remove it once admins exist. |
 | `PUBLIC_URL` | The site's own address (https://www.caymancrane.com). Used for links in emails, and page visits to the Railway address are redirected there. |
 | `TEST_DATABASE_URL` | Local only. A separate database for `npm test`. |

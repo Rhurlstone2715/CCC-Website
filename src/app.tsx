@@ -118,6 +118,7 @@ app.get("/api/rewards", async c => {
       points: rewards.points,
     },
     profile: { name: user.name, email: user.email, phone: user.phone, company: user.company },
+    admin: user.role === "ADMIN",
   });
 });
 

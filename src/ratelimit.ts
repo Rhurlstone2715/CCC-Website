@@ -12,13 +12,15 @@ export function createLimiter(limit: number, windowMs: number) {
   }, windowMs).unref();
 
   // Returns true when the key is over its limit. Every call counts as an attempt.
-  return (key: string): boolean => {
+  const attempt = (key: string): boolean => {
     const now = Date.now();
     const recent = (hits.get(key) ?? []).filter(t => now - t < windowMs);
     recent.push(now);
     hits.set(key, recent);
     return recent.length > limit;
   };
+  // Forgets a key's attempts, e.g. after a successful login.
+  return Object.assign(attempt, { reset: (key: string) => void hits.delete(key) });
 }
 
 export function clientIp(c: Context): string {

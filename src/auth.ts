@@ -127,8 +127,8 @@ export const requireCustomer: MiddlewareHandler<AppEnv> = async (c, next) => {
 
 export const requireAdmin: MiddlewareHandler<AppEnv> = async (c, next) => {
   const user = await currentUser(c);
-  if (!user) return c.redirect(`/admin/login?next=${encodeURIComponent(c.req.path)}`);
-  if (user.role !== "ADMIN") return c.redirect("/admin/login?notice=not-admin");
+  if (!user) return c.redirect(`/account?next=${encodeURIComponent(c.req.path)}`);
+  if (user.role !== "ADMIN") return c.redirect("/account/profile?notice=not-admin");
   await next();
 };
 
