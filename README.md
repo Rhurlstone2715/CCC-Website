@@ -88,5 +88,5 @@ Edit `prisma/schema.prisma`, then run `npx prisma migrate dev --name <change>` a
 | `BOOKING_ALERT_TO` | Where booking alerts go. Defaults to caymancrane@gmail.com. |
 | `EMAIL_FROM` | Sender on a domain verified in Resend. Turns on customer emails. |
 | `ADMIN_SETUP_CODE` | Turns on `/admin/setup`. Remove it once admins exist. |
-| `PUBLIC_URL` | Base URL for links in emails. Defaults to the Railway domain. |
+| `PUBLIC_URL` | The site's own address (https://www.caymancrane.com). Used for links in emails, and page visits to the Railway address are redirected there. |
 | `TEST_DATABASE_URL` | Local only. A separate database for `npm test`. |

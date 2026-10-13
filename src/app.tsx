@@ -22,6 +22,20 @@ export const app = new Hono<AppEnv>();
 // The default "no-referrer" makes browsers send "Origin: null" on form posts,
 // which hides where a request came from; use the browsers' standard policy.
 app.use(secureHeaders({ referrerPolicy: "strict-origin-when-cross-origin" }));
+
+// Once the site has its own domain (PUBLIC_URL), page visits to the Railway
+// address are sent there, so links, logins and search engines use one address.
+// Form posts are left alone so a page that was already open still works.
+app.use(async (c, next) => {
+  const publicUrl = process.env.PUBLIC_URL?.replace(/\/$/, "");
+  const host = (c.req.header("x-forwarded-host") || c.req.header("host") || "").toLowerCase();
+  if (publicUrl && host.endsWith(".up.railway.app") && ["GET", "HEAD"].includes(c.req.method) && c.req.path !== "/healthz") {
+    const url = new URL(c.req.url);
+    return c.redirect(`${publicUrl}${url.pathname}${url.search}`, 301);
+  }
+  await next();
+});
+
 app.use(sameOriginWrites);
 
 // "/rentals/" would break the page's relative asset paths, so send it to "/rentals".

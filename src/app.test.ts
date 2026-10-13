@@ -153,6 +153,23 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     paymentAck: true,
   };
 
+  test("page visits to the Railway address go to the public domain", async () => {
+    process.env.PUBLIC_URL = "https://www.caymancrane.com";
+    try {
+      const railway = { "x-forwarded-host": "web-production-470031.up.railway.app" };
+      const page = await app.request("/rentals?ref=ad", { headers: railway });
+      assert.equal(page.status, 301);
+      assert.equal(page.headers.get("location"), "https://www.caymancrane.com/rentals?ref=ad");
+      assert.equal((await app.request("/healthz", { headers: railway })).status, 200);
+      const post = await app.request("/api/bookings", { method: "POST", headers: { ...railway, "content-type": "application/json" }, body: "{}" });
+      assert.equal(post.status, 400, "form posts are served, not redirected");
+      const own = await app.request("/rentals", { headers: { "x-forwarded-host": "www.caymancrane.com" } });
+      assert.equal(own.status, 200);
+    } finally {
+      delete process.env.PUBLIC_URL;
+    }
+  });
+
   test("signed-out visitors get a 401 from rewards", async () => {
     const res = await req("/api/rewards");
     assert.equal(res.status, 401);
