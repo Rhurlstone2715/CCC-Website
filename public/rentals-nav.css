@@ -683,16 +683,18 @@ input,select,textarea{font-size:1rem}
   .menu-button[aria-expanded="true"] .menu-icon::before{top:0;transform:rotate(45deg)}
   .menu-button[aria-expanded="true"] .menu-icon::after{top:0;transform:rotate(-45deg)}
 
-  .site-header .mobile-nav.open{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;max-height:none;overflow:visible;padding:16px 20px 24px;border-top:1px solid var(--line);background:#fff;font-weight:800}
-  .site-header .mobile-nav > b{grid-column:1/-1;margin:0 0 4px;color:var(--red);font-size:.75rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
-  .site-header .mobile-nav > a{display:flex;align-items:center;min-height:48px;margin:0;color:var(--ink);text-decoration:none}
-  .site-header .mobile-nav > [data-catalog-category]{padding:10px 12px;border:1px solid var(--line);border-left:1px solid var(--line);border-radius:4px;background:#fff;font-size:.9375rem;line-height:1.25}
-  .site-header .mobile-nav > [data-catalog-category]:hover{border-color:var(--ink)}
-  .site-header .mobile-nav > a:not([data-catalog-category]){grid-column:1/-1;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:1rem}
-  .site-header .mobile-nav > a:not([data-catalog-category])::after{content:"›";color:var(--muted);font-size:1.25rem;line-height:1}
-  .site-header .mobile-nav > [data-catalog-category] + a:not([data-catalog-category]){margin-top:12px;border-top:1px solid var(--line)}
-  .site-header .mobile-nav > a[href^="/account"]{justify-content:center;margin-top:16px;padding:12px 16px;border:1px solid var(--red2);border-radius:4px;color:var(--red2);font-size:.875rem;font-weight:900}
-  .site-header .mobile-nav > a[href^="/account"]::after{content:none}
+  /* Header: sticks to the top with just its cart and menu row showing, hides
+     while scrolling down and comes back when scrolling up (see app.js). */
+  .site-header{position:sticky;top:calc(-1 * var(--pin-offset,0px));z-index:40;transition:transform .2s ease-out,box-shadow .2s ease-out}
+  .site-header.header-hidden{transform:translateY(-100%)}
+  .site-header.header-stuck{box-shadow:0 2px 8px rgba(0,0,0,.08)}
+  html{scroll-padding-top:76px}
+
+  /* Menu: a plain list of the page's sections, dropping down over the page. */
+  .site-header .mobile-nav.open{position:absolute;top:100%;left:0;right:0;display:flex;flex-direction:column;gap:0;max-height:75dvh;overflow-y:auto;overscroll-behavior:contain;padding:4px 20px 20px;background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);box-shadow:0 16px 32px rgba(0,0,0,.14);font-weight:800}
+  .site-header .mobile-nav > a{display:flex;align-items:center;min-height:52px;margin:0;padding:0;border-bottom:1px solid var(--line);color:var(--ink);font-size:1.0625rem;text-decoration:none}
+  .site-header .mobile-nav > a:active{color:var(--red)}
+  .site-header .mobile-nav > a[href^="/account"]{justify-content:center;margin-top:16px;min-height:48px;border:1px solid var(--red2);border-radius:4px;color:var(--red2);font-size:.9375rem;font-weight:900}
   .site-header .mobile-nav > a:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 }
 @media (prefers-reduced-motion:reduce){

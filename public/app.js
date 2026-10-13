@@ -192,6 +192,35 @@ function toast(msg){let t=document.querySelector('.toast');if(!t){t=document.cre
 function renderGallery(){$("#galleryGrid").innerHTML=galleryImages.map((x,i)=>`<figure class="${i<8?"visible":""}"><button class="gallery-enlarge image-enlarge" type="button" aria-label="Enlarge equipment photo ${i+1}"><img src="${A+x}" alt="Cayman Crane Company equipment at work ${i+1}" loading="lazy"></button></figure>`).join("")}
 $("#searchInput").oninput=e=>{query=e.target.value.trim().toLowerCase();renderProducts()};$("#cartButton").onclick=openCart;$("#closeCart").onclick=closeCart;$("#drawerBackdrop").onclick=closeCart;$("#browseButton").onclick=closeCart;$("#menuButton").onclick=()=>setMenu(!$("#mobileNav").classList.contains("open"));$$('[data-catalog-category]').forEach(a=>a.onclick=()=>{activeCategory=a.dataset.catalogCategory;activeSubcategory=a.dataset.catalogSubcategory||"All";renderFilters();renderProducts();setMenu(false)});$$('#mobileNav a:not([data-catalog-category])').forEach(a=>a.onclick=()=>setMenu(false));
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#mobileNav").classList.contains("open")){setMenu(false);$("#menuButton").focus()}});
+document.addEventListener("click",e=>{if($("#mobileNav").classList.contains("open")&&!e.target.closest(".site-header"))setMenu(false)});
+// Phones and tablets: the header scrolls away until just its cart and menu row is
+// left stuck at the top, slides out of view while scrolling down, and comes back
+// when scrolling up. Desktop keeps its always-visible header.
+(()=>{
+ const header=$(".site-header"),small=matchMedia("(max-width:980px)");
+ let lastY=window.scrollY,pinOffset=0;
+ function measure(){
+  if(!small.matches){header.style.removeProperty("--pin-offset");header.classList.remove("header-hidden","header-stuck");return}
+  const top=header.getBoundingClientRect().top,cart=$("#cartButton").getBoundingClientRect(),brand=header.querySelector(".brand").getBoundingClientRect();
+  // Where the cart sits on its own row under the logo, keep only that row; otherwise drop just the phone/WhatsApp strip.
+  pinOffset=Math.max(0,Math.round(cart.top>=brand.bottom-1?brand.bottom-top:header.querySelector(".utility").offsetHeight));
+  header.style.setProperty("--pin-offset",`${pinOffset}px`);
+ }
+ function update(){
+  if(!small.matches)return;
+  const y=Math.max(0,Math.min(window.scrollY,document.documentElement.scrollHeight-window.innerHeight)),delta=y-lastY;
+  header.classList.toggle("header-stuck",y>pinOffset);
+  if(Math.abs(delta)<6)return;
+  lastY=y;
+  header.classList.toggle("header-hidden",delta>0&&y>header.offsetHeight&&!$("#mobileNav").classList.contains("open"));
+ }
+ window.addEventListener("scroll",update,{passive:true});
+ window.addEventListener("resize",measure);
+ small.addEventListener("change",measure);
+ header.addEventListener("focusin",()=>header.classList.remove("header-hidden"));
+ measure();
+ if(document.fonts)document.fonts.ready.then(measure);
+})();
 $("#checkoutButton").onclick=()=>{closeCart();renderPowerAddons();renderCheckout();$("#checkoutDialog").showModal()};$("#closeCheckout").onclick=()=>$("#checkoutDialog").close();$("#areaSelect").onchange=renderCheckout;
 $("#checkoutForm").onsubmit=async e=>{e.preventDefault();if(!e.currentTarget.reportValidity())return;const submitButton=e.currentTarget.querySelector('[type="submit"]'),form=new FormData(e.currentTarget);lastRequest=formRequest();lastMailto=`mailto:${CONFIG.email}?subject=${encodeURIComponent("New Equipment Booking Request")}&body=${encodeURIComponent(lastRequest)}`;submitButton.disabled=true;submitButton.textContent="Sending booking…";let delivered=false;try{const response=await fetch("/api/bookings",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({customerName:form.get("customer_name"),customerEmail:form.get("email"),requestText:lastRequest,termsText:checkoutTermsText(),signature:form.get("signature"),initials:form.get("initials"),agreement:form.get("agreement")==="on",paymentAck:form.get("payment_ack")==="on",details:{phone:form.get("phone"),company:form.get("company"),startDate:form.get("start_date"),startTime:form.get("start_time"),area:form.get("area"),siteAddress:form.get("site_address"),items:cart.map(i=>({id:i.id,term:i.term,qty:i.qty}))}})});delivered=response.ok}catch(error){console.info("Automatic booking email unavailable",error)}finally{submitButton.disabled=false;submitButton.textContent="Submit booking request"}$("#successTitle").textContent=delivered?"Booking request sent":"One more step to send";$("#successMessage").innerHTML=delivered?`Your booking is saved for admin review. Once approved, your contract, signature and initials will be emailed to you.`:`Automatic delivery was unavailable. Open the prepared email to send your request to <b>${CONFIG.email}</b>.`;$("#openEmailButton").hidden=delivered;$("#checkoutDialog").close();$("#successDialog").showModal()};
 $("#openEmailButton").onclick=()=>{window.location.href=lastMailto;const timing=new FormData($("#checkoutForm")).get("payment_timing");if(timing==="deposit"&&CONFIG.stripePaymentLink)setTimeout(()=>window.open(CONFIG.stripePaymentLink,"_blank","noopener"),900)};$("#copyRequestButton").onclick=async()=>{await navigator.clipboard.writeText(lastRequest);toast("Booking request copied")};$("#closeSuccess").onclick=()=>$("#successDialog").close();
