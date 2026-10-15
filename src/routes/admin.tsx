@@ -15,7 +15,7 @@ export const admin = new Hono<AppEnv>();
 
 
 const NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string }> = {
-  "approved-sent": { tone: "success", text: "Booking approved. The customer has been emailed their contract." },
+  "approved-sent": { tone: "success", text: "Booking approved. The customer has been emailed their confirmation and contract." },
   "approved-manual": { tone: "info", text: "Booking approved. Customer emails aren't set up yet, so send the contract below from your own inbox." },
   "approved-failed": { tone: "error", text: "Booking approved, but the contract email didn't send. Send it below from your own inbox." },
   "contract-sent": { tone: "success", text: "Contract emailed to the customer." },
@@ -369,13 +369,13 @@ const BookingActions: FC<{ booking: Booking }> = ({ booking }) => {
         <>
           <p class="muted">
             {emails
-              ? `Approving emails ${booking.customerEmail} their booking summary and the agreement they signed.`
+              ? `Approving emails ${booking.customerEmail} a confirmation with their booking summary and the agreement they signed. Save the rental dates first to include them.`
               : "Customer emails aren't set up yet, so after approving you'll send the contract from your own inbox."}
           </p>
           <div class="actions-row">
             <form method="post" action={action("approve")}>
               <button class="button primary" type="submit">
-                {emails ? "Approve and email contract" : "Approve"}
+                {emails ? "Approve and email confirmation" : "Approve"}
               </button>
             </form>
             <form method="post" action={action("decline")} data-confirm="Decline this booking?">

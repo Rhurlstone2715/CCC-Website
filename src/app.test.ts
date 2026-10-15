@@ -375,11 +375,13 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(sent[0].to[0], "caymancrane@gmail.com");
 
     const admin = await makeAdmin();
+    await req("/admin/bookings/1/schedule", { form: { scheduleStart: "2026-11-02", scheduleEnd: "2026-11-04" }, cookie: admin });
     const approve = await req("/admin/bookings/1/approve", { form: {}, cookie: admin });
     assert.equal(approve.headers.get("location"), "/admin/bookings/1?notice=approved-sent");
     const contract = sent.at(-1)!;
     assert.equal(contract.to[0], "kim@example.com");
-    assert.match(contract.subject, /CCC-00001 is approved/);
+    assert.match(contract.subject, /CCC-00001 is confirmed/);
+    assert.match(contract.text, /Rental dates: Nov 2, 2026 to Nov 4, 2026/);
     assert.match(contract.text, /Rental terms/);
     assert.ok((await prisma.booking.findUniqueOrThrow({ where: { id: 1 } })).contractSentAt);
   });

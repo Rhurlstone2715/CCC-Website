@@ -139,16 +139,22 @@ export async function sendBookingAlert(booking: Booking, account: Pick<User, "na
 }
 
 export function contractSubject(booking: Booking): string {
-  return `Your Cayman Crane booking ${bookingRef(booking.id)} is approved`;
+  return `Your Cayman Crane booking ${bookingRef(booking.id)} is confirmed`;
 }
 
-// The approval email: what they booked and the agreement they signed.
+// Rental dates are stored as plain dates (UTC midnight), so they're shown in UTC.
+const rentalDate = (d: Date) => d.toLocaleDateString("en-US", { timeZone: "UTC", dateStyle: "medium" });
+
+// The approval email: confirmation, any dates the admin set, what they booked and the agreement they signed.
 export function contractText(booking: Booking): string {
   const firstName = booking.customerName.split(/\s+/)[0];
+  const { scheduleStart: start, scheduleEnd: end } = booking;
+  const dates = start ? (end && end > start ? `${rentalDate(start)} to ${rentalDate(end)}` : rentalDate(start)) : null;
   return [
     `Hi ${firstName},`,
     "",
-    `Your booking request ${bookingRef(booking.id)} with Cayman Crane Company has been approved.`,
+    `Your booking ${bookingRef(booking.id)} with Cayman Crane Company has been approved and is confirmed.`,
+    ...(dates ? [`Rental dates: ${dates}`] : []),
     "Below is your booking summary and the rental agreement you signed. Please keep this email for your records.",
     "",
     "BOOKING SUMMARY",
