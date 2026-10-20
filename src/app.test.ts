@@ -9,7 +9,7 @@ import { after, before, beforeEach, describe, test } from "node:test";
 import { app } from "./app.js";
 import { hashPassword, safeNext, verifyPassword } from "./auth.js";
 import { parseDetails } from "./bookings.js";
-import { buildCatalog, ensureCatalogSeeded } from "./catalog.js";
+import { buildCatalog, ensureCatalogSeeded, setProblem } from "./catalog.js";
 import { prisma } from "./db.js";
 import { rewardsForSpend } from "./rewards.js";
 import { csvCell } from "./routes/admin.js";
@@ -78,6 +78,26 @@ describe("passwords and redirects", () => {
     assert.equal(d.startDate, null);
     assert.equal(d.startTime, null);
     assert.deepEqual(d.items, [{ id: "rt40", term: "hourly", qty: 4 }]);
+  });
+
+  test("vibrator motors are rented as sets of motor, shaft and head", () => {
+    const products = [
+      { id: "motor", name: "Vibrator Motor", hidden: false, addOns: ["shaft14", "shaft20", "head1", "head2", "strap"], setPart: null },
+      { id: "shaft14", name: "14 ft shaft", hidden: false, addOns: [], setPart: "Shaft" },
+      { id: "shaft20", name: "20 ft shaft", hidden: false, addOns: [], setPart: "Shaft" },
+      { id: "head1", name: "Head 1", hidden: false, addOns: [], setPart: "Head" },
+      { id: "head2", name: "Head 2", hidden: false, addOns: [], setPart: "Head" },
+      { id: "strap", name: "Strap", hidden: false, addOns: [], setPart: null },
+      { id: "loose", name: "Unoffered part", hidden: false, addOns: [], setPart: "Head" },
+    ];
+    const line = (id: string, qty = 1, term = "daily") => ({ id, term, qty });
+    assert.equal(setProblem([line("motor"), line("shaft14"), line("head1")], products), null);
+    assert.equal(setProblem([line("motor", 2), line("shaft14"), line("shaft20"), line("head2", 2), line("strap")], products), null);
+    assert.match(setProblem([line("motor")], products)!, /Vibrator Motor has to be rented as a set, with one shaft and one head/);
+    assert.ok(setProblem([line("shaft14")], products), "a part on its own");
+    assert.ok(setProblem([line("motor", 2), line("shaft14"), line("head1")], products), "two motors, one set of parts");
+    assert.ok(setProblem([line("motor", 1, "weekly"), line("shaft14"), line("head1")], products), "parts on a different term");
+    assert.equal(setProblem([line("loose")], products), null, "a part nothing offers is an ordinary item");
   });
 
   test("safeNext only allows local paths", () => {
@@ -593,6 +613,29 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const [first, second] = await prisma.booking.findMany({ orderBy: { id: "asc" } });
     assert.equal(first.estimateCents, 580_00);
     assert.equal(second.estimateCents, 600_00);
+  });
+
+  test("bookings refuse an incomplete vibrator set, and set parts are edited in the catalog", async () => {
+    const cookie = await signup();
+    const motorOnly = await req("/api/bookings", { json: { ...booking, details: { items: [{ id: "wyco-995", term: "daily", qty: 1 }] } }, cookie });
+    assert.equal(motorOnly.status, 400);
+    assert.match((await motorOnly.json()).error, /Wyco 995 Electric Vibrator Motor has to be rented as a set, with one shaft and one head/);
+    assert.equal(await prisma.booking.count(), 0);
+    const set = [
+      { id: "wyco-995", term: "daily", qty: 1 },
+      { id: "wyco-8920", term: "daily", qty: 1 },
+      { id: "wyco-750d", term: "daily", qty: 1 },
+    ];
+    assert.equal((await req("/api/bookings", { json: { ...booking, details: { items: set } }, cookie })).status, 503, "saved (the alert can't send in tests)");
+    assert.equal((await buildCatalog()).products.find(p => p.id === "wyco-8920")?.setPart, "Shaft");
+
+    // Clearing a head's set part in the editor makes it an ordinary item again.
+    const admin = await makeAdmin();
+    const form = { name: "Wyco 750-D Pencil Square Head", spec: "13/16″ square head", description: "Square head.", rate_daily: "5", rate_weekly: "20", sortOrder: "500", listed: "on", setPart: "" };
+    const saved = await req("/admin/catalog/wyco-750d", { form, cookie: admin });
+    assert.equal(saved.headers.get("location"), "/admin/catalog/wyco-750d?notice=saved");
+    assert.equal((await prisma.product.findUniqueOrThrow({ where: { id: "wyco-750d" } })).setPart, null);
+    assert.equal((await req("/api/bookings", { json: { ...booking, details: { items: [{ id: "wyco-750d", term: "daily", qty: 1 }] } }, cookie })).status, 503);
   });
 
   test("add-ons and generator suggestions come from the catalog", async () => {

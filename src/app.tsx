@@ -5,7 +5,7 @@ import { secureHeaders } from "hono/secure-headers";
 import { fileURLToPath } from "node:url";
 import { type AppEnv, currentUser, mustConfirmEmail, sameOriginWrites } from "./auth.js";
 import { bookingRef, parseBooking, sendBookingAlert } from "./bookings.js";
-import { catalogScript, priceItems } from "./catalog.js";
+import { catalogScript, checkSets, priceItems } from "./catalog.js";
 import { prisma } from "./db.js";
 import type { Prisma } from "./generated/prisma/client.js";
 import { clientIp, createLimiter } from "./ratelimit.js";
@@ -137,6 +137,8 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
 
   const input = parseBooking(await c.req.json().catch(() => null));
   if ("error" in input) return c.json(input, 400);
+  const setIssue = await checkSets(input.details.items);
+  if (setIssue) return c.json({ error: setIssue }, 400);
 
   // The tier is recorded from the server's own numbers so Cayman Crane can check any discount shown.
   const rewards = await rewardsForUser(user.id);

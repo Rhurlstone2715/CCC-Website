@@ -13,6 +13,7 @@ The rentals page is plain HTML, CSS and JavaScript in `public/`. A small Node se
 | `/account` | Customer log in and sign up |
 | `/account/profile` | Rewards tier, booking history, details and password |
 | `/account/forgot`, `/account/reset` | Password reset |
+| `/account/verify` | Confirm an email address (from the emailed link), or the "check your email" page |
 | `/privacy` | Privacy notice (`src/views/privacy.tsx`), linked from the footer, sign-up and checkout |
 | `/admin` | Admin area: bookings and customers |
 | `/admin/catalog` | Edit equipment, prices, quantities and photos |
@@ -28,7 +29,11 @@ The rentals page is plain HTML, CSS and JavaScript in `public/`. A small Node se
 
 Booking needs an account, so Cayman Crane always knows who is asking. Signed-out visitors can browse and fill a cart, but the cart's checkout button sends them to log in or sign up, then back to `/rentals?checkout=1`, which reopens checkout with the same cart (it's kept in the browser). The server refuses bookings without a session, and each booking uses the account's email rather than whatever the form says. Bookings made before this rule show as guest bookings in admin.
 
-Customers sign up with their name, email, phone number and a password (company is optional). Accounts made before phone numbers were required pick theirs up from their next checkout. Passwords are hashed with scrypt, and sessions are stored in the `Session` table behind an HttpOnly cookie that lasts 30 days.
+Customers sign up with their name, email, phone number and a password (company is optional). Accounts made before phone numbers were required pick theirs up from their next checkout.
+
+New customers also confirm their email before they can book: sign-up emails a link (valid 48 hours) to `/account/verify`, and until it's clicked the cart sends them to a "check your email" page with a button for a new link. Changing the email on an account means confirming the new one. Admins are exempt, accounts that existed before this count as confirmed, and an admin can confirm an email by hand from the customer's page. The check is skipped while customer emails are off, since no link could be sent.
+
+Sign-up and the account page have an unticked "offers and news" box. The customer's choice and the date they agreed are stored on their account. Admin → Customers shows who agreed and offers the opted-in customers as a CSV (`/admin/customers/marketing.csv`) for a mailing tool; an admin can stop marketing for a customer who asks, but only the customer can opt in. Passwords are hashed with scrypt, and sessions are stored in the `Session` table behind an HttpOnly cookie that lasts 30 days.
 
 Customers earn one point for every CI$1 an admin marks as paid on a booking they made while logged in. Tiers match the rentals page: Silver at CI$5,000 (5% off), Gold at CI$15,000 (10%) and Platinum at CI$25,000 (15%). The discount applies to equipment in the cart, and the tier at booking time is saved on each booking so an admin can check it. Admins can also add rewards credit to a customer for spend made outside the site.
 
@@ -43,6 +48,8 @@ In the admin area, a booking can be approved (which emails the customer their co
 The equipment list lives in the `Product` and `RiggingOption` tables. On first start with an empty database, the server loads `prisma/catalog-seed.json`, which is the catalog the site launched with. After that, the admin catalog editor is the source of truth: the server serves it as `/catalog.js`, and `public/app.js` reads `window.CCC_CATALOG` in place of its old hard-coded list. The page's add-on groups, navigation tree and rigging-size logic still live in `app.js` and work on whatever the catalog contains. Equipment added in admin is placed in the navigation by its category.
 
 Each item's page in the catalog editor also sets which add-ons appear in the "add extras" prompt when a customer adds it to their cart (for example a crane's lifting accessories), and whether it runs on electric power. Generators are only suggested at checkout when the cart contains an item marked as electric.
+
+Some items only work together, like the concrete vibrator's motor, shaft and head. In the catalog editor a part gets a "set part" kind (Shaft, Head), and any item that offers set parts as add-ons is then rented as a set: adding it opens a picker that needs one of each kind, the parts follow the main item's term and quantity in the cart, and parts can't be booked on their own. The server checks the totals again on every booking.
 
 Bookings send their cart lines along with the readable request. The server prices each line from the catalog at that moment and stores the result on the booking, so later price changes don't alter past bookings.
 

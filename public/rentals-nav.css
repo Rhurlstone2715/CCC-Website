@@ -708,3 +708,16 @@ input,select,textarea{font-size:1rem}
 .checkout-fields .field-note{font-weight:500;color:var(--muted);font-size:.75rem}
 .checkout-fields input[readonly]{background:#f3f3f1;color:#45474b}
 .checkout-error{margin:0 0 12px;padding:10px 12px;border-radius:8px;background:#fbeced;color:#8a0609;font-size:.85rem;font-weight:600;line-height:1.4}
+
+/* Sets: a main item rented with one of each kind of part (vibrator motor, shaft and head). */
+.set-note{margin:8px 0 0;font-size:.8rem;line-height:1.4;color:#5f0507;font-weight:600}
+.cart-item.set-line{margin-left:16px;border-left:3px solid #e6c9ca}
+.cart-item.set-line .set-note{margin:0;font-weight:500;color:#6d6f74}
+.set-group{border:0;margin:0 0 14px;padding:0;display:grid;gap:8px}
+.set-group legend{font-weight:800;font-size:.95rem;margin-bottom:8px;padding:0}
+.set-group legend span{font-weight:500;color:#6d6f74;font-size:.8rem;margin-left:6px}
+.set-choice{cursor:pointer}
+.set-choice:has(input:checked){outline:2px solid #a3070b;outline-offset:-2px;border-radius:10px}
+.set-choice em+em{font-style:normal;font-weight:700}
+.set-missing{margin:0;font-size:.85rem;color:#6d6f74}
+.set-extras{margin:8px 0 6px;font-weight:800;font-size:.95rem}

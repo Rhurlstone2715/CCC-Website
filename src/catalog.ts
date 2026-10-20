@@ -43,7 +43,7 @@ type SeedProduct = { id: string; name: string; category: string; spec: string; d
 type SeedOption = { id: string; size: string; length: number; depth?: number; width?: number; swl?: number; price?: number };
 
 const SEED_FILE = fileURLToPath(new URL("../prisma/catalog-seed.json", import.meta.url));
-const COLUMNS = new Set(["id", "name", "category", "spec", "desc", "image", "chart", "photo", "delivery", "availableQuantity", "rates", "hidden", "operatorService", "addOns", "needsPower"]);
+const COLUMNS = new Set(["id", "name", "category", "spec", "desc", "image", "chart", "photo", "delivery", "availableQuantity", "rates", "hidden", "operatorService", "addOns", "needsPower", "setPart"]);
 
 // Loads the catalog the site launched with, the first time the database has none.
 export async function ensureCatalogSeeded(): Promise<void> {
@@ -70,6 +70,7 @@ export async function ensureCatalogSeeded(): Promise<void> {
           hidden: p.hidden === true,
           addOns: Array.isArray(p.addOns) ? (p.addOns as string[]) : [],
           needsPower: p.needsPower === true,
+          setPart: typeof p.setPart === "string" ? p.setPart : null,
           sortOrder: (i + 1) * 10,
           extra: Object.keys(extra).length ? (extra as object) : undefined,
         };
@@ -109,6 +110,7 @@ export function clientProduct(p: Product): Record<string, unknown> {
   if (p.operatorService) out.operatorService = true;
   if (p.addOns.length) out.addOns = p.addOns;
   if (p.needsPower) out.needsPower = true;
+  if (p.setPart) out.setPart = p.setPart;
   return out;
 }
 
@@ -187,6 +189,52 @@ export async function priceItems(items: CartItem[], discountPercent: number): Pr
 
   const estimateCents = anyPriced ? Math.round((equipmentCents * (100 - discountPercent)) / 100) + operatorCents : null;
   return { lines, estimateCents };
+}
+
+// ---- Sets: a main item that only works with its parts (vibrator motor, shaft and head) ----
+
+type SetProduct = Pick<Product, "id" | "name" | "hidden" | "addOns" | "setPart">;
+
+// The kinds of part an item has to be rented with, from the set parts among its add-ons.
+export function setGroups(product: SetProduct, byId: Map<string, SetProduct>): string[] {
+  const groups: string[] = [];
+  for (const id of product.addOns) {
+    const part = byId.get(id)?.setPart;
+    if (part && !groups.includes(part)) groups.push(part);
+  }
+  return groups;
+}
+
+// The cart doesn't say which part goes with which motor, so this checks the
+// totals: per term, each kind of part adds up to the quantity of main items that
+// need it. A part nothing offers as a set part is treated as an ordinary item.
+export function setProblem(items: CartItem[], products: SetProduct[]): string | null {
+  const byId = new Map(products.map(p => [p.id, p]));
+  const parents = products.filter(p => !p.hidden && setGroups(p, byId).length);
+  const required = new Map<string, number>();
+  const supplied = new Map<string, number>();
+  const add = (map: Map<string, number>, key: string, qty: number) => map.set(key, (map.get(key) ?? 0) + qty);
+  for (const item of items) {
+    const product = byId.get(item.id);
+    if (!product) continue;
+    const parent = parents.find(p => p.id === product.id);
+    if (parent) for (const group of setGroups(parent, byId)) add(required, `${group}|${item.term}`, item.qty);
+    if (product.setPart && parents.some(p => p.addOns.includes(product.id))) add(supplied, `${product.setPart}|${item.term}`, item.qty);
+  }
+  for (const key of new Set([...required.keys(), ...supplied.keys()])) {
+    if ((required.get(key) ?? 0) === (supplied.get(key) ?? 0)) continue;
+    const group = key.split("|")[0];
+    const parent = parents.find(p => setGroups(p, byId).includes(group))!;
+    const kinds = setGroups(parent, byId).map(g => `one ${g.toLowerCase()}`);
+    return `The ${parent.name} has to be rented as a set, with ${kinds.join(" and ")} for each one. Please remove it from your cart and add it again to choose the set.`;
+  }
+  return null;
+}
+
+export async function checkSets(items: CartItem[]): Promise<string | null> {
+  if (!items.length) return null;
+  const products = await prisma.product.findMany({ select: { id: true, name: true, hidden: true, addOns: true, setPart: true } });
+  return setProblem(items, products);
 }
 
 export function describeLines(lines: PricedLine[]): string {

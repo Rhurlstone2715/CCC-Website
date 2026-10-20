@@ -154,6 +154,9 @@ model Product {
   addOns            String[]        @default([])
   // Electric equipment: generators are suggested at checkout only when the cart has one of these.
   needsPower        Boolean         @default(false)
+  // Parts that only work with a main item (a vibrator's shaft or head). Anything
+  // offering set parts as add-ons is rented with one of each kind, never alone.
+  setPart           String?
   sortOrder         Int
   isCustom          Boolean         @default(false)
   extra             Json?

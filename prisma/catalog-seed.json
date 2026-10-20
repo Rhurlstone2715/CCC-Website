@@ -303,7 +303,7 @@
    "name": "Wyco 995 Electric Vibrator Motor",
    "category": "Tools",
    "spec": "3 HP • 115 V • 15 A • model W995G1Q",
-   "desc": "Quick-disconnect electric motor with ergonomic grip and shoulder strap. 16 lb; 8¼″ body diameter; 12½″ overall length; 10,000–14,000 RPM; automatic thermal protection and ball bearings. Shaft and head rented separately.",
+   "desc": "Quick-disconnect electric motor with ergonomic grip and shoulder strap. 16 lb; 8¼″ body diameter; 12½″ overall length; 10,000–14,000 RPM; automatic thermal protection and ball bearings. Rented as a set with one shaft and one head.",
    "image": "assets/catalog/wyco-motor.webp",
    "rates": {
     "daily": 35,
@@ -328,7 +328,8 @@
    "rates": {
     "daily": 15,
     "weekly": 50
-   }
+   },
+   "setPart": "Shaft"
   },
   {
    "id": "wyco-8920",
@@ -341,7 +342,8 @@
    "rates": {
     "daily": 20,
     "weekly": 75
-   }
+   },
+   "setPart": "Shaft"
   },
   {
    "id": "wyco-750d",
@@ -354,7 +356,8 @@
    "rates": {
     "daily": 5,
     "weekly": 20
-   }
+   },
+   "setPart": "Head"
   },
   {
    "id": "wyco-750eh",
@@ -367,7 +370,8 @@
    "rates": {
     "daily": 5,
     "weekly": 20
-   }
+   },
+   "setPart": "Head"
   },
   {
    "id": "national-manbasket",

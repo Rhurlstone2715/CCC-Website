@@ -157,11 +157,12 @@ type ProductFields = {
   delivery: boolean;
   photo: boolean;
   needsPower: boolean;
+  setPart: string | null;
   addOns: string[];
   sortOrder: number;
 };
 
-type Candidate = { id: string; name: string; category: string; note: string | null };
+type Candidate = { id: string; name: string; category: string; note: string | null; setPart: string | null };
 
 // Items that can be offered in another item's "add extras" prompt: attachments,
 // tools and add-on-only items (the latter only with the equipment they fit).
@@ -174,7 +175,13 @@ async function addOnCandidates(productId: string | null): Promise<Candidate[]> {
       if (Array.isArray(fits)) return productId !== null && fits.includes(productId);
       return p.category === "Attachments" || p.category === "Tools";
     })
-    .map(p => ({ id: p.id, name: p.name, category: isAddOnOnly(p) ? "Only with this equipment" : p.category, note: p.hidden && !isAddOnOnly(p) ? "hidden from the site" : null }))
+    .map(p => ({
+      id: p.id,
+      name: p.name,
+      category: isAddOnOnly(p) ? "Only with this equipment" : p.category,
+      note: p.hidden && !isAddOnOnly(p) ? "hidden from the site" : null,
+      setPart: p.setPart,
+    }))
     // Equipment-specific items first, then attachments, then tools.
     .sort((a, b) => GROUP_ORDER.indexOf(a.category) - GROUP_ORDER.indexOf(b.category));
 }
@@ -240,6 +247,8 @@ function parseFields(body: Record<string, unknown>, existing: ProductWithSizes |
 
   const addOns = existing && isAddOnOnly(existing) ? existing.addOns : parseAddOns(body.addOns, candidates, existing?.addOns ?? []);
   if (!Array.isArray(addOns)) return addOns;
+  const setPart = plain(body.setPart, "Set part", 40, false);
+  if (typeof setPart !== "string") return setPart;
 
   return {
     name,
@@ -253,6 +262,7 @@ function parseFields(body: Record<string, unknown>, existing: ProductWithSizes |
     delivery: body.delivery === "on",
     photo: body.photo === "on",
     needsPower: body.needsPower === "on",
+    setPart: setPart || null,
     addOns,
     sortOrder: Number(orderRaw),
   };
@@ -270,7 +280,7 @@ const AddOnChecklist: FC<{ candidates: Candidate[]; selected: string[] }> = ({ c
       <legend class="label">Add-ons offered with this</legend>
       <small class="hint">
         Shown in the "add extras" prompt when a customer adds this to their cart. Only tick what goes with this equipment. Leave everything unticked
-        for no prompt.
+        for no prompt. Ticking set parts (marked below) means customers have to choose one of each kind every time they rent this.
       </small>
       {[...groups].map(([group, items]) => (
         <div class="addon-group">
@@ -281,6 +291,7 @@ const AddOnChecklist: FC<{ candidates: Candidate[]; selected: string[] }> = ({ c
               <span>
                 {c.name}
                 {c.note ? <span class="muted"> ({c.note})</span> : null}
+                {c.setPart ? <span class="muted"> (set part: {c.setPart})</span> : null}
               </span>
             </label>
           ))}
@@ -392,6 +403,16 @@ const ProductForm: FC<FormState & { nextOrder: number }> = ({ product, values, e
         <input type="checkbox" name="needsPower" checked={Boolean(v.needsPower)} />
         <span>Runs on electric power, so suggest generators at checkout when it's in the cart</span>
       </label>
+      <div class="field">
+        <label for="setPart">
+          Set part <span class="optional">(optional)</span>
+        </label>
+        <input id="setPart" name="setPart" type="text" value={v.setPart ?? ""} maxlength={40} aria-describedby="setPart-hint" />
+        <small id="setPart-hint" class="hint">
+          Only for parts that don't work on their own, like a vibrator shaft or head. Type the kind of part, for example Shaft. Customers can then only
+          rent it as part of a set with the item that offers it as an add-on.
+        </small>
+      </div>
       {addOn ? null : <AddOnChecklist candidates={candidates} selected={v.addOns ?? []} />}
       <div class="field">
         <label for="image">
@@ -570,6 +591,7 @@ function formValues(body: Record<string, unknown>): Partial<ProductFields> {
     delivery: body.delivery === "on",
     photo: body.photo === "on",
     needsPower: body.needsPower === "on",
+    setPart: text(body.setPart) || null,
     addOns: (Array.isArray(body.addOns) ? body.addOns : body.addOns === undefined ? [] : [body.addOns]).filter((v): v is string => typeof v === "string"),
     sortOrder: Number(text(body.sortOrder)) || 0,
   };
