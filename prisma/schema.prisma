@@ -25,19 +25,25 @@ enum Role {
 // Customer and admin accounts. Email is stored lowercased.
 // rewardCreditCents lets an admin credit spend made outside the site.
 model User {
-  id                Int             @id @default(autoincrement())
-  email             String          @unique
-  passwordHash      String
-  name              String
-  phone             String?
-  company           String?
-  role              Role            @default(CUSTOMER)
-  rewardCreditCents Int             @default(0)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  sessions          Session[]
-  passwordResets    PasswordReset[]
-  bookings          Booking[]
+  id                 Int                 @id @default(autoincrement())
+  email              String              @unique
+  passwordHash       String
+  name               String
+  phone              String?
+  company            String?
+  role               Role                @default(CUSTOMER)
+  rewardCreditCents  Int                 @default(0)
+  // Set when the customer clicks the link in their confirmation email (or an admin confirms it).
+  emailVerifiedAt    DateTime?
+  // Agreed at sign-up or on their profile to get offers and news; the date is when they agreed.
+  marketingOptIn     Boolean             @default(false)
+  marketingOptInAt   DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  sessions           Session[]
+  passwordResets     PasswordReset[]
+  emailVerifications EmailVerification[]
+  bookings           Booking[]
 }
 
 // Session and reset ids are SHA-256 hashes of the token given to the browser,
@@ -68,6 +74,18 @@ model PasswordReset {
 // rental agreement exactly as the customer saw it when they signed.
 // rewardTier/discountPercent record the customer's tier when they booked;
 // amountPaidCents is entered by an admin and is what earns rewards points.
+// Links emailed to confirm an address. Only valid while the account still has that email.
+model EmailVerification {
+  id        String   @id
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
 model Booking {
   id              Int           @id @default(autoincrement())
   status          BookingStatus @default(PENDING)

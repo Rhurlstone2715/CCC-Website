@@ -5,17 +5,21 @@ import {
   type SessionUser,
   EMAIL_PATTERN,
   PASSWORD_MIN,
+  createConfirmLink,
   createResetLink,
   currentUser,
   endAllSessions,
   endSession,
   findValidReset,
   hashPassword,
+  marketingChange,
+  mustConfirmEmail,
   normalizeEmail,
   passwordProblem,
   requireCustomer,
   safeNext,
   startSession,
+  useConfirmLink,
   verifyAgainstDummy,
   verifyPassword,
 } from "../auth.js";
@@ -32,6 +36,7 @@ const loginByIp = createLimiter(20, 15 * 60_000);
 const loginByEmail = createLimiter(10, 15 * 60_000);
 const signupByIp = createLimiter(10, 60 * 60_000);
 const forgotByIp = createLimiter(5, 15 * 60_000);
+const confirmsByUser = createLimiter(5, 60 * 60_000);
 
 export function text(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
@@ -74,7 +79,9 @@ export function parseProfile(body: Record<string, unknown>): ProfileInput | { er
 }
 
 const NOTICES: Record<string, { tone: "success" | "info"; text: string }> = {
-  welcome: { tone: "success", text: "Your account is ready. Book while you're logged in and every paid rental counts toward your rewards." },
+  welcome: { tone: "success", text: "Your account is ready. Every paid rental you book counts toward your rewards." },
+  "email-confirmed": { tone: "success", text: "Thanks, your email is confirmed. You can book equipment now." },
+  "email-changed": { tone: "info", text: "Your details are saved. We've sent a link to your new email address; confirm it before your next booking." },
   saved: { tone: "success", text: "Your details are saved." },
   "password-changed": { tone: "success", text: "Your password has been changed." },
   "password-reset": { tone: "success", text: "Your password has been reset and you're logged in." },
@@ -87,9 +94,37 @@ type AuthState = {
   next: string;
   loginEmail?: string;
   loginError?: string;
-  signup?: Partial<ProfileInput>;
+  signup?: Partial<ProfileInput> & { marketing?: boolean };
   signupError?: string;
 };
+
+// Unticked unless the customer ticks it: marketing needs their say-so.
+const MarketingChoice: FC<{ checked?: boolean }> = ({ checked }) => (
+  <label class="check">
+    <input type="checkbox" name="marketing" checked={Boolean(checked)} />
+    <span>Email me offers and news from Cayman Crane. You can stop them at any time from your account.</span>
+  </label>
+);
+
+// Emails a link that confirms the account's address; `next` is where the link leads afterwards.
+async function sendConfirmEmail(c: Context, user: { id: number; email: string; name: string }, next: string): Promise<boolean> {
+  const link = await createConfirmLink(c, user, next);
+  return sendEmail({
+    to: user.email,
+    subject: "Confirm your email for Cayman Crane",
+    text: [
+      `Hi ${user.name.split(/\s+/)[0]},`,
+      "",
+      "Please confirm this is your email address so you can book equipment with Cayman Crane. Open this link (it works for 48 hours):",
+      "",
+      link,
+      "",
+      "If you didn't create a Cayman Crane account, you can ignore this email.",
+      "",
+      "Cayman Crane Company",
+    ].join("\n"),
+  });
+}
 
 const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupError }) => (
   <Layout title="Log in or create an account" area="account">
@@ -146,6 +181,7 @@ const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupE
             minlength={PASSWORD_MIN}
             hint={`At least ${PASSWORD_MIN} characters.`}
           />
+          <MarketingChoice checked={signup?.marketing} />
           <div class="form-actions">
             <button class="button primary" type="submit">
               Create account
@@ -188,8 +224,9 @@ account.post("/signup", async c => {
   const next = safeNext(body.next, "");
   const profile = parseProfile(body);
   const password = typeof body.password === "string" ? body.password : "";
+  const marketing = body.marketing === "on";
   const fail = (error: string, values: Partial<ProfileInput>, status: 400 | 409 | 429 = 400) =>
-    c.html(<AuthPage next={next} signup={values} signupError={error} />, status);
+    c.html(<AuthPage next={next} signup={{ ...values, marketing }} signupError={error} />, status);
 
   if (signupByIp(clientIp(c))) return fail("Too many new accounts from this connection. Try again later.", { name: text(body.name), email: text(body.email) }, 429);
   if ("error" in profile) return fail(profile.error, profile.values);
@@ -200,8 +237,13 @@ account.post("/signup", async c => {
     return fail("There's already an account with that email. Log in, or reset your password if you've forgotten it.", profile, 409);
   }
 
-  const user = await prisma.user.create({ data: { ...profile, passwordHash: await hashPassword(password) } });
+  const user = await prisma.user.create({ data: { ...profile, ...marketingChange(false, marketing), passwordHash: await hashPassword(password) } });
   await startSession(c, user.id);
+  if (mustConfirmEmail(user)) {
+    await sendConfirmEmail(c, user, next);
+    // Signing up on the way to checkout: show where to look before going back to book.
+    if (next) return c.redirect(`/account/verify?next=${encodeURIComponent(next)}`);
+  }
   return c.redirect(next || "/account/profile?notice=welcome");
 });
 
@@ -274,6 +316,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
   return c.html(
     <Layout title="Your account" area="account" user={user}>
       {notice ? <Notice tone={notice.tone}>{notice.text}</Notice> : null}
+      {mustConfirmEmail(user) ? <ConfirmReminder email={user.email} next="" /> : null}
       <div class="page-head">
         <p class="eyebrow">Your account</p>
         <h1>Hi, {firstName}</h1>
@@ -335,6 +378,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
             <Field label="Email" name="email" type="email" value={details.email} required autocomplete="email" maxlength={254} />
             <Field label="Phone" name="phone" type="tel" value={details.phone} autocomplete="tel" maxlength={40} />
             <Field label="Company" name="company" value={details.company} autocomplete="organization" maxlength={120} />
+            <MarketingChoice checked={user.marketingOptIn} />
             <div class="form-actions">
               <button class="button secondary" type="submit">
                 Save details
@@ -375,12 +419,22 @@ account.get("/profile", requireCustomer, async c => {
 
 account.post("/profile", requireCustomer, async c => {
   const user = (await currentUser(c))!;
-  const profile = parseProfile(await c.req.parseBody());
+  const body = await c.req.parseBody();
+  const profile = parseProfile(body);
   if ("error" in profile) return renderProfile(c, user, { detailsError: profile.error, detailsValues: profile.values }, 400);
-  if (profile.email !== user.email && (await prisma.user.findUnique({ where: { email: profile.email } }))) {
+  const emailChanged = profile.email !== user.email;
+  if (emailChanged && (await prisma.user.findUnique({ where: { email: profile.email } }))) {
     return renderProfile(c, user, { detailsError: "Another account already uses that email.", detailsValues: profile }, 409);
   }
-  await prisma.user.update({ where: { id: user.id }, data: profile });
+  // A new address has to be confirmed again before the next booking.
+  const updated = await prisma.user.update({
+    where: { id: user.id },
+    data: { ...profile, ...marketingChange(user.marketingOptIn, body.marketing === "on"), ...(emailChanged ? { emailVerifiedAt: null } : {}) },
+  });
+  if (emailChanged && mustConfirmEmail(updated)) {
+    await sendConfirmEmail(c, updated, "");
+    return c.redirect("/account/profile?notice=email-changed");
+  }
   return c.redirect("/account/profile?notice=saved");
 });
 
@@ -399,6 +453,116 @@ account.post("/password", requireCustomer, async c => {
   await endAllSessions(user.id);
   await startSession(c, user.id);
   return c.redirect("/account/profile?notice=password-changed");
+});
+
+// ---------- Email confirmation ----------
+
+const CONFIRM_NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string }> = {
+  resent: { tone: "success", text: "We've sent you a new link." },
+  "send-failed": { tone: "error", text: "The email didn't send. Try again in a minute, or call us." },
+  "too-many": { tone: "error", text: "We've sent several links already. Check your spam folder, or try again in an hour." },
+};
+
+const ResendForm: FC<{ next: string; label: string }> = ({ next, label }) => (
+  <form method="post" action="/account/verify/resend">
+    <input type="hidden" name="next" value={next} />
+    <button class="button secondary small" type="submit">
+      {label}
+    </button>
+  </form>
+);
+
+const ConfirmReminder: FC<{ email: string; next: string }> = ({ email, next }) => (
+  <Notice tone="info">
+    <p>Confirm your email address to book equipment. We sent a link to {email}.</p>
+    <ResendForm next={next} label="Send a new link" />
+  </Notice>
+);
+
+const CheckEmailPage: FC<{ user: SessionUser; next: string; notice?: string }> = ({ user, next, notice }) => {
+  const shown = notice ? CONFIRM_NOTICES[notice] : undefined;
+  return (
+    <Layout title="Confirm your email" area="account" user={user}>
+      <div class="narrow">
+        <div class="page-head">
+          <p class="eyebrow">One more step</p>
+          <h1>Confirm your email</h1>
+        </div>
+        <section class="card stack">
+          {shown ? <Notice tone={shown.tone}>{shown.text}</Notice> : null}
+          <p>
+            We've sent a link to <b>{user.email}</b>. Open it to confirm your email address, then you can book.
+            {next.startsWith("/rentals") ? " Your cart is saved, and checkout opens again when you click the link on this device." : null}
+          </p>
+          <p class="muted">The link works for 48 hours. Can't find it? Check your spam or junk folder.</p>
+          <div class="actions-row">
+            <ResendForm next={next} label="Send a new link" />
+            <a class="text-link" href="/account/profile">
+              Wrong email? Change it on your account
+            </a>
+          </div>
+        </section>
+      </div>
+    </Layout>
+  );
+};
+
+const ConfirmResultPage: FC<{ ok: boolean; next: string; signedIn: boolean }> = ({ ok, next, signedIn }) => (
+  <Layout title={ok ? "Email confirmed" : "Link expired"} area="account">
+    <div class="narrow">
+      <div class="page-head">
+        <p class="eyebrow">Your account</p>
+        <h1>{ok ? "Email confirmed" : "This link has expired"}</h1>
+      </div>
+      <section class="card stack">
+        {ok ? (
+          <>
+            <p>Thanks, your email address is confirmed. Log in to book equipment.</p>
+            <a class="button primary" href={`/account${next ? `?next=${encodeURIComponent(next)}` : ""}`}>
+              Log in
+            </a>
+          </>
+        ) : (
+          <>
+            <p>This confirmation link has expired, has already been used, or was for an email address the account no longer uses.</p>
+            {signedIn ? (
+              <ResendForm next={next} label="Send a new link" />
+            ) : (
+              <a class="button primary" href={`/account?next=${encodeURIComponent("/account/verify")}`}>
+                Log in to get a new link
+              </a>
+            )}
+          </>
+        )}
+      </section>
+    </div>
+  </Layout>
+);
+
+account.get("/verify", async c => {
+  const token = c.req.query("token");
+  const next = safeNext(c.req.query("next"), "");
+  const user = await currentUser(c);
+  if (token) {
+    const userId = await useConfirmLink(token);
+    if (userId === null) return c.html(<ConfirmResultPage ok={false} next={next} signedIn={Boolean(user)} />, 400);
+    // Opened in the browser they're logged in on: straight back to what they were doing.
+    if (user?.id === userId) return c.redirect(next || "/account/profile?notice=email-confirmed");
+    return c.html(<ConfirmResultPage ok next={next} signedIn={false} />);
+  }
+  const here = `/account/verify${next ? `?next=${encodeURIComponent(next)}` : ""}`;
+  if (!user) return c.redirect(`/account?next=${encodeURIComponent(here)}`);
+  if (!mustConfirmEmail(user)) return c.redirect(next || "/account/profile");
+  return c.html(<CheckEmailPage user={user} next={next} notice={c.req.query("notice")} />);
+});
+
+account.post("/verify/resend", requireCustomer, async c => {
+  const user = (await currentUser(c))!;
+  const next = safeNext((await c.req.parseBody()).next, "");
+  if (!mustConfirmEmail(user)) return c.redirect(next || "/account/profile");
+  const back = (notice: string) => c.redirect(`/account/verify?notice=${notice}${next ? `&next=${encodeURIComponent(next)}` : ""}`);
+  if (confirmsByUser(String(user.id))) return back("too-many");
+  return back((await sendConfirmEmail(c, user, next)) ? "resent" : "send-failed");
 });
 
 // ---------- Password reset ----------

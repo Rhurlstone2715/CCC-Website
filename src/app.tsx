@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { secureHeaders } from "hono/secure-headers";
 import { fileURLToPath } from "node:url";
-import { type AppEnv, currentUser, sameOriginWrites } from "./auth.js";
+import { type AppEnv, currentUser, mustConfirmEmail, sameOriginWrites } from "./auth.js";
 import { bookingRef, parseBooking, sendBookingAlert } from "./bookings.js";
 import { catalogScript, priceItems } from "./catalog.js";
 import { prisma } from "./db.js";
@@ -118,7 +118,7 @@ app.get("/api/rewards", async c => {
       amountToNextCents: rewards.amountToNextCents,
       points: rewards.points,
     },
-    profile: { name: user.name, email: user.email, phone: user.phone, company: user.company },
+    profile: { name: user.name, email: user.email, phone: user.phone, company: user.company, emailConfirmed: !mustConfirmEmail(user) },
     admin: user.role === "ADMIN",
   });
 });
@@ -133,6 +133,7 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
   // page sends signed-out visitors to log in before checkout; this is the backstop.
   const user = await currentUser(c);
   if (!user) return c.json({ error: "Log in or create an account to book.", signIn: true }, 401);
+  if (mustConfirmEmail(user)) return c.json({ error: "Confirm your email address to book.", confirmEmail: true }, 403);
 
   const input = parseBooking(await c.req.json().catch(() => null));
   if ("error" in input) return c.json(input, 400);

@@ -32,7 +32,8 @@ export const PrivacyPage: FC<{ user: SessionUser | null }> = ({ user }) => (
         <ul>
           <li>
             <b>Account details.</b> You need an account to book. We keep your name, email address, phone number and password, and your company
-            if you give it. Passwords are stored only in a scrambled (hashed) form that can't be turned back into the password.
+            if you give it. Passwords are stored only in a scrambled (hashed) form that can't be turned back into the password. We also record
+            when you confirm your email address, and whether and when you agreed to get offers and news from us.
           </li>
           <li>
             <b>Booking requests.</b> Your name, company, email, phone number, requested start date and time, job site area and address, job
@@ -58,9 +59,14 @@ export const PrivacyPage: FC<{ user: SessionUser | null }> = ({ user }) => (
           <li>To review and reply to your booking requests, prepare your rental agreement and carry out the rental.</li>
           <li>To run your account and work out your rewards tier and discount.</li>
           <li>To keep records of bookings and payments for our business, accounting and legal obligations.</li>
+          <li>To confirm the email address on your account belongs to you before you book, so we know who we're renting to.</li>
           <li>To keep the website secure and stop misuse.</li>
+          <li>To email you offers and news from Cayman Crane, but only if you tick the box for them when you sign up or on your account page.</li>
         </ul>
-        <p>We don't sell your personal information, and we don't use it for marketing without asking you first.</p>
+        <p>
+          We don't sell your personal information, and we only send marketing emails to customers who've asked for them. You can stop them at
+          any time by unticking the box on your account page, using the unsubscribe link in a marketing email, or asking us.
+        </p>
       </section>
 
       <section>
@@ -71,7 +77,8 @@ export const PrivacyPage: FC<{ user: SessionUser | null }> = ({ user }) => (
             <b>Railway</b> (railway.com) hosts the website and its database.
           </li>
           <li>
-            <b>Resend</b> (resend.com) delivers the website's emails, such as booking alerts, approved booking contracts and password reset links.
+            <b>Resend</b> (resend.com) delivers the website's emails, such as booking alerts, booking confirmations, email confirmation links and
+            password reset links.
           </li>
         </ul>
         <p>

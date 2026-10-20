@@ -707,3 +707,4 @@ input,select,textarea{font-size:1rem}
 .cart-login-note{margin:0 0 12px;padding:10px 12px;border-radius:8px;background:#fbeced;color:#5f0507;font-size:.84rem;line-height:1.45}
 .checkout-fields .field-note{font-weight:500;color:var(--muted);font-size:.75rem}
 .checkout-fields input[readonly]{background:#f3f3f1;color:#45474b}
+.checkout-error{margin:0 0 12px;padding:10px 12px;border-radius:8px;background:#fbeced;color:#8a0609;font-size:.85rem;font-weight:600;line-height:1.4}

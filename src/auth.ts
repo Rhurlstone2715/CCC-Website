@@ -2,9 +2,19 @@ import { createHash, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import type { Context, MiddlewareHandler } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { prisma } from "./db.js";
+import { customerEmailsEnabled } from "./email.js";
 import type { Role } from "./generated/prisma/client.js";
 
-export type SessionUser = { id: number; email: string; name: string; phone: string | null; company: string | null; role: Role };
+export type SessionUser = {
+  id: number;
+  email: string;
+  name: string;
+  phone: string | null;
+  company: string | null;
+  role: Role;
+  emailVerifiedAt: Date | null;
+  marketingOptIn: boolean;
+};
 export type AppEnv = { Variables: { user?: SessionUser | null } };
 
 const SESSION_COOKIE = "ccc_session";
@@ -100,7 +110,7 @@ export async function currentUser(c: Context<AppEnv>): Promise<SessionUser | nul
   if (token) {
     const session = await prisma.session.findUnique({
       where: { id: hashToken(token) },
-      include: { user: { select: { id: true, email: true, name: true, phone: true, company: true, role: true } } },
+      include: { user: { select: { id: true, email: true, name: true, phone: true, company: true, role: true, emailVerifiedAt: true, marketingOptIn: true } } },
     });
     if (session && session.expiresAt.getTime() > Date.now()) {
       user = session.user;
@@ -174,4 +184,36 @@ export async function createResetLink(c: Context, userId: number, hours: number)
 export async function findValidReset(token: string) {
   const reset = await prisma.passwordReset.findUnique({ where: { id: hashToken(token) } });
   return reset && !reset.usedAt && reset.expiresAt.getTime() > Date.now() ? reset : null;
+}
+
+// ---- Email confirmation ----
+
+// Customers confirm their email before they can book. Admins are exempt, and so
+// is everyone while customer emails are switched off, since no link could reach them.
+export function mustConfirmEmail(user: Pick<SessionUser, "emailVerifiedAt" | "role">): boolean {
+  return customerEmailsEnabled() && !user.emailVerifiedAt && user.role !== "ADMIN";
+}
+
+const CONFIRM_HOURS = 48;
+
+export async function createConfirmLink(c: Context, user: { id: number; email: string }, next: string): Promise<string> {
+  const { token, id } = newToken();
+  await prisma.emailVerification.create({ data: { id, userId: user.id, email: user.email, expiresAt: new Date(Date.now() + CONFIRM_HOURS * 60 * 60 * 1000) } });
+  return `${publicUrl(c)}/account/verify?token=${token}${next ? `&next=${encodeURIComponent(next)}` : ""}`;
+}
+
+// A link only counts while the account still has the address it was sent to.
+export async function useConfirmLink(token: string): Promise<number | null> {
+  const record = await prisma.emailVerification.findUnique({ where: { id: hashToken(token) }, include: { user: { select: { email: true } } } });
+  if (!record || record.expiresAt.getTime() <= Date.now() || record.user.email !== record.email) return null;
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: record.userId }, data: { emailVerifiedAt: new Date() } }),
+    prisma.emailVerification.deleteMany({ where: { userId: record.userId } }),
+  ]);
+  return record.userId;
+}
+
+// Fields to save when the marketing choice changes; the date records when they agreed.
+export function marketingChange(was: boolean, now: boolean) {
+  return was === now ? {} : { marketingOptIn: now, marketingOptInAt: now ? new Date() : null };
 }

@@ -96,7 +96,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   });
 
   beforeEach(async () => {
-    await prisma.$executeRawUnsafe('TRUNCATE "Booking", "Session", "PasswordReset", "User", "Product", "RiggingOption", "Upload" RESTART IDENTITY CASCADE');
+    await prisma.$executeRawUnsafe('TRUNCATE "Booking", "Session", "PasswordReset", "EmailVerification", "User", "Product", "RiggingOption", "Upload" RESTART IDENTITY CASCADE');
     await ensureCatalogSeeded();
     globalThis.fetch = realFetch;
     delete process.env.RESEND_API_KEY;
@@ -286,6 +286,105 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(user.company, "Old Co");
   });
 
+  // Turns customer emails on and records what would have been sent.
+  function captureEmails() {
+    process.env.RESEND_API_KEY = "re_test";
+    process.env.EMAIL_FROM = "Cayman Crane <bookings@example.com>";
+    const sent: { to: string[]; subject: string; text: string }[] = [];
+    globalThis.fetch = (async (_url: string, init: RequestInit) => {
+      sent.push(JSON.parse(String(init.body)));
+      return new Response("{}", { status: 200 });
+    }) as typeof fetch;
+    return sent;
+  }
+  const confirmPath = (text: string) => {
+    const link = text.match(/https?:\/\/\S+\/account\/verify\?token=\S+/)?.[0];
+    assert.ok(link, "expected a confirmation link");
+    const url = new URL(link);
+    return url.pathname + url.search;
+  };
+
+  test("new customers confirm their email before booking", async () => {
+    const sent = captureEmails();
+    const res = await req("/account/signup", {
+      form: { name: "Kim Ebanks", email: "kim@example.com", phone: "345 555 0100", password: "longenough1", next: "/rentals?checkout=1" },
+    });
+    assert.equal(res.headers.get("location"), "/account/verify?next=%2Frentals%3Fcheckout%3D1");
+    const cookie = sessionCookie(res);
+    assert.equal(sent[0].to[0], "kim@example.com");
+    assert.match(sent[0].subject, /Confirm your email/);
+    const link = confirmPath(sent[0].text);
+    assert.match(link, /next=%2Frentals%3Fcheckout%3D1/);
+
+    assert.equal((await (await req("/api/rewards", { cookie })).json()).profile.emailConfirmed, false);
+    const blocked = await req("/api/bookings", { json: booking, cookie });
+    assert.equal(blocked.status, 403);
+    assert.equal((await blocked.json()).confirmEmail, true);
+    assert.match(await (await req("/account/verify?next=%2Frentals%3Fcheckout%3D1", { cookie })).text(), /sent a link to <b>kim@example.com<\/b>/);
+
+    const confirmed = await req(link, { cookie });
+    assert.equal(confirmed.headers.get("location"), "/rentals?checkout=1");
+    assert.equal((await (await req("/api/rewards", { cookie })).json()).profile.emailConfirmed, true);
+    assert.equal((await req("/api/bookings", { json: booking, cookie })).status, 201);
+    assert.equal((await req(link)).status, 400, "links work once");
+  });
+
+  test("a new email address has to be confirmed again", async () => {
+    const sent = captureEmails();
+    const signupRes = await req("/account/signup", { form: { name: "Kim Ebanks", email: "kim@example.com", phone: "345 555 0100", password: "longenough1" } });
+    assert.equal(signupRes.headers.get("location"), "/account/profile?notice=welcome");
+    const cookie = sessionCookie(signupRes);
+    const oldLink = confirmPath(sent[0].text);
+    const changed = await req("/account/profile", { form: { name: "Kim Ebanks", email: "kim.new@example.com", phone: "345 555 0100" }, cookie });
+    assert.equal(changed.headers.get("location"), "/account/profile?notice=email-changed");
+    assert.equal(sent.at(-1)!.to[0], "kim.new@example.com");
+    // The first link was for the old address, so it no longer confirms anything.
+    assert.equal((await req(oldLink)).status, 400);
+    const opened = await req(confirmPath(sent.at(-1)!.text));
+    assert.equal(opened.status, 200, "opened without being logged in");
+    assert.match(await opened.text(), /Email confirmed/);
+    assert.ok((await prisma.user.findUniqueOrThrow({ where: { id: 1 } })).emailVerifiedAt);
+  });
+
+  test("marketing needs the customer's say-so, and admins can list and stop it", async () => {
+    await signup();
+    const lee = await req("/account/signup", { form: { name: "Lee Bodden", email: "lee@example.com", phone: "345 555 0101", password: "longenough1", marketing: "on" } });
+    const leeCookie = sessionCookie(lee);
+    const leeUser = await prisma.user.findUniqueOrThrow({ where: { email: "lee@example.com" } });
+    assert.equal(leeUser.marketingOptIn, true);
+    assert.ok(leeUser.marketingOptInAt);
+    assert.equal((await prisma.user.findUniqueOrThrow({ where: { email: "kim@example.com" } })).marketingOptIn, false);
+    assert.equal((await req("/admin/customers/marketing.csv", { cookie: leeCookie })).status, 302, "customers can't download it");
+
+    const admin = await makeAdmin();
+    const csv = await (await req("/admin/customers/marketing.csv", { cookie: admin })).text();
+    assert.match(csv, /"Lee Bodden","lee@example.com","'?345 555 0101"/);
+    assert.doesNotMatch(csv, /kim@example.com/);
+
+    // Unticking on the profile opts out.
+    await req("/account/profile", { form: { name: "Lee Bodden", email: "lee@example.com", phone: "345 555 0101" }, cookie: leeCookie });
+    assert.equal((await prisma.user.findUniqueOrThrow({ where: { id: leeUser.id } })).marketingOptIn, false);
+    await req("/account/profile", { form: { name: "Lee Bodden", email: "lee@example.com", phone: "345 555 0101", marketing: "on" }, cookie: leeCookie });
+    const stop = await req(`/admin/customers/${leeUser.id}/marketing-off`, { form: {}, cookie: admin });
+    assert.equal(stop.headers.get("location"), `/admin/customers/${leeUser.id}?notice=marketing-off`);
+    const after = await prisma.user.findUniqueOrThrow({ where: { id: leeUser.id } });
+    assert.equal(after.marketingOptIn, false);
+    assert.equal(after.marketingOptInAt, null);
+  });
+
+  test("admins can confirm an email by hand", async () => {
+    captureEmails();
+    const res = await req("/account/signup", { form: { name: "Kim Ebanks", email: "kim@example.com", phone: "345 555 0100", password: "longenough1" } });
+    const cookie = sessionCookie(res);
+    assert.equal((await req("/api/bookings", { json: booking, cookie })).status, 403);
+    const admin = await makeAdmin();
+    const page = await (await req("/admin/customers/1", { cookie: admin })).text();
+    assert.match(page, /Not confirmed yet/);
+    const done = await req("/admin/customers/1/confirm-email", { form: {}, cookie: admin });
+    assert.equal(done.headers.get("location"), "/admin/customers/1?notice=email-confirmed");
+    assert.equal((await req("/api/bookings", { json: booking, cookie })).status, 201);
+  });
+
   test("the login page explains why when sent from checkout", async () => {
     const page = await (await req("/account?next=%2Frentals%3Fcheckout%3D1")).text();
     assert.match(page, /Log in or create an account to send your booking request/);
@@ -385,6 +484,8 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   });
 
   test("with email set up, approval emails the contract and bookings alert the company", async () => {
+    const kim = await signup();
+    await prisma.user.update({ where: { id: 1 }, data: { emailVerifiedAt: new Date() } });
     process.env.RESEND_API_KEY = "re_test";
     process.env.EMAIL_FROM = "Cayman Crane <bookings@example.com>";
     const sent: { to: string[]; subject: string; text: string }[] = [];
@@ -393,7 +494,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
       return new Response("{}", { status: 200 });
     }) as typeof fetch;
 
-    const created = await req("/api/bookings", { json: booking, cookie: await signup() });
+    const created = await req("/api/bookings", { json: booking, cookie: kim });
     assert.equal(created.status, 201);
     assert.equal(sent[0].to[0], "caymancrane@gmail.com");
 

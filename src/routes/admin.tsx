@@ -1,6 +1,6 @@
 import { Hono, type Context } from "hono";
 import type { FC } from "hono/jsx";
-import { type AppEnv, createResetLink, currentUser, requireAdmin, safeNext } from "../auth.js";
+import { type AppEnv, createResetLink, currentUser, marketingChange, requireAdmin, safeNext } from "../auth.js";
 import { bookingRef, contractSubject, contractText, parseDate, sendContract } from "../bookings.js";
 import { TERM_LABELS, type PricedLine } from "../catalog.js";
 import { prisma } from "../db.js";
@@ -43,6 +43,8 @@ const NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string
   "removed-admin": { tone: "success", text: "Admin access removed. Their customer account is unchanged." },
   "cant-change-self": { tone: "error", text: "You can't remove your own admin access." },
   "admin-needed": { tone: "error", text: "There has to be at least one admin, so this account keeps admin access." },
+  "email-confirmed": { tone: "success", text: "Email marked as confirmed. They can book now." },
+  "marketing-off": { tone: "success", text: "Marketing emails stopped. Leave them off the next marketing list you download." },
 };
 
 function noticeFrom(c: Context): { tone: "success" | "error" | "info"; text: string } | undefined {
@@ -702,9 +704,10 @@ admin.get("/customers", async c => {
         ],
       }
     : {};
-  const [pending, customers] = await Promise.all([
+  const [pending, customers, optedIn] = await Promise.all([
     pendingCount(),
     prisma.user.findMany({ where, orderBy: { createdAt: "desc" }, take: 200, include: { _count: { select: { bookings: true } } } }),
+    prisma.user.count({ where: { marketingOptIn: true } }),
   ]);
   const paid = await paidByUser(customers.map(u => u.id));
   const notice = noticeFrom(c);
@@ -722,6 +725,14 @@ admin.get("/customers", async c => {
           Search
         </button>
       </form>
+      <p class="muted">
+        {optedIn === 1 ? "1 customer has" : `${optedIn} customers have`} agreed to offers and news.{" "}
+        {optedIn ? (
+          <a class="text-link" href="/admin/customers/marketing.csv">
+            Download the marketing list (CSV)
+          </a>
+        ) : null}
+      </p>
       <section class="card table-card">
         {customers.length ? (
           <table class="data-table">
@@ -747,6 +758,8 @@ admin.get("/customers", async c => {
                       {u.email}
                       {u.phone ? <span class="sub">{u.phone}</span> : null}
                       {u.company ? <span class="sub">{u.company}</span> : null}
+                      {u.emailVerifiedAt ? null : <span class="sub">Email not confirmed</span>}
+                      {u.marketingOptIn ? <span class="sub">Agreed to offers</span> : null}
                     </td>
                     <td data-label="Rewards">
                       {rewards.tier}
@@ -766,6 +779,19 @@ admin.get("/customers", async c => {
       </section>
     </AdminPage>,
   );
+});
+
+// Only customers who ticked "offers and news" are listed, with the date they agreed.
+admin.get("/customers/marketing.csv", async c => {
+  const people = await prisma.user.findMany({ where: { marketingOptIn: true }, orderBy: { marketingOptInAt: "asc" } });
+  const rows = [
+    ["Name", "Email", "Phone", "Company", "Agreed on"],
+    ...people.map(u => [u.name, u.email, u.phone, u.company, u.marketingOptInAt ? caymanStamp(u.marketingOptInAt)!.slice(0, 10) : null]),
+  ];
+  const csv = "\uFEFF" + rows.map(row => row.map(csvCell).join(",")).join("\r\n") + "\r\n";
+  c.header("Content-Type", "text/csv; charset=utf-8");
+  c.header("Content-Disposition", `attachment; filename="ccc-marketing-list-${caymanStamp(new Date())!.slice(0, 10)}.csv"`);
+  return c.body(csv);
 });
 
 async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { resetLink?: string; profileError?: string } = {}) {
@@ -806,6 +832,32 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { reset
                 </button>
               </div>
             </form>
+          </section>
+          <section class="card">
+            <h2>Email and marketing</h2>
+            <dl class="facts mt-3">
+              <dt>Email</dt>
+              <dd>{customer.emailVerifiedAt ? `Confirmed ${caymanDate(customer.emailVerifiedAt, false)}` : "Not confirmed yet, so they can't book"}</dd>
+              <dt>Offers and news</dt>
+              <dd>{customer.marketingOptIn ? `Agreed ${customer.marketingOptInAt ? caymanDate(customer.marketingOptInAt, false) : ""}` : "Not agreed"}</dd>
+            </dl>
+            <div class="actions-row mt-3">
+              {customer.emailVerifiedAt ? null : (
+                <form method="post" action={`/admin/customers/${customer.id}/confirm-email`} data-confirm={`Confirm ${customer.email} without the emailed link? Only do this if you've checked it's theirs.`}>
+                  <button class="button secondary small" type="submit">
+                    Mark email as confirmed
+                  </button>
+                </form>
+              )}
+              {customer.marketingOptIn ? (
+                <form method="post" action={`/admin/customers/${customer.id}/marketing-off`} data-confirm={`Stop marketing emails to ${customer.name}?`}>
+                  <button class="button secondary small" type="submit">
+                    Stop marketing emails
+                  </button>
+                </form>
+              ) : null}
+            </div>
+            <p class="hint">Only customers can agree to marketing, from sign-up or their account page. If one asks you to stop, use the button here.</p>
           </section>
           <section class="card">
             <h2>Password reset link</h2>
@@ -979,9 +1031,16 @@ admin.post("/customers/:id{[0-9]+}/:action", async c => {
       if (profile.email !== customer.email && (await prisma.user.findUnique({ where: { email: profile.email } }))) {
         return renderCustomer(c, customer, { profileError: "Another account already uses that email." });
       }
-      await prisma.user.update({ where: { id }, data: profile });
+      // A changed address has to be confirmed again, by the customer's link or the button on this page.
+      await prisma.user.update({ where: { id }, data: { ...profile, ...(profile.email !== customer.email ? { emailVerifiedAt: null } : {}) } });
       return back("profile-saved");
     }
+    case "confirm-email":
+      await prisma.user.update({ where: { id }, data: { emailVerifiedAt: customer.emailVerifiedAt ?? new Date() } });
+      return back("email-confirmed");
+    case "marketing-off":
+      await prisma.user.update({ where: { id }, data: marketingChange(customer.marketingOptIn, false) });
+      return back("marketing-off");
     case "role": {
       const role = body.role === "ADMIN" ? "ADMIN" : "CUSTOMER";
       if (role === "CUSTOMER") {
