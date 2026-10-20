@@ -102,9 +102,10 @@ app.route("/admin/catalog", adminCatalog);
 app.route("/admin/calendar", adminCalendar);
 app.route("/admin", admin);
 
-// The rentals page calls this on load. Signed-out visitors get a 401 and see
-// standard pricing; signed-in customers get their tier, which the cart uses to
-// apply their discount, plus their details to prefill the checkout.
+// The rentals page calls this on load. Signed-out visitors get a 401, see
+// standard pricing and are asked to log in before checkout; signed-in customers
+// get their tier, which the cart uses to apply their discount, plus their
+// details to prefill the checkout.
 app.get("/api/rewards", async c => {
   const user = await currentUser(c);
   if (!user) return c.json({ error: "Sign in to view rewards." }, 401);
@@ -128,14 +129,17 @@ const bookingsByIp = createLimiter(5, 15 * 60_000);
 app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json({ error: "Booking request is too large." }, 413) }), async c => {
   if (bookingsByIp(clientIp(c))) return c.json({ error: "Too many booking requests. Please try again later." }, 429);
 
+  // Booking needs an account, so Cayman Crane always knows who is asking. The
+  // page sends signed-out visitors to log in before checkout; this is the backstop.
+  const user = await currentUser(c);
+  if (!user) return c.json({ error: "Log in or create an account to book.", signIn: true }, 401);
+
   const input = parseBooking(await c.req.json().catch(() => null));
   if ("error" in input) return c.json(input, 400);
 
-  // Bookings made while logged in count toward rewards. The tier is recorded
-  // from the server's own numbers so Cayman Crane can check any discount shown.
-  const user = await currentUser(c);
-  const rewards = user ? await rewardsForUser(user.id) : null;
-  const discountPercent = rewards?.discountPercent ?? 0;
+  // The tier is recorded from the server's own numbers so Cayman Crane can check any discount shown.
+  const rewards = await rewardsForUser(user.id);
+  const discountPercent = rewards.discountPercent;
   // Lines are priced from the catalog here, not taken from the page, so the
   // stored estimate reflects the prices in effect when the booking was made.
   const { details, ...fields } = input;
@@ -143,8 +147,10 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
   const booking = await prisma.booking.create({
     data: {
       ...fields,
-      userId: user?.id,
-      rewardTier: rewards?.tier,
+      // The booking goes to the account's email, whatever the form says.
+      customerEmail: user.email,
+      userId: user.id,
+      rewardTier: rewards.tier,
       discountPercent,
       phone: details.phone,
       company: details.company,
@@ -157,6 +163,10 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
     },
   });
   const ref = bookingRef(booking.id);
+
+  // Accounts made before a phone number was required pick theirs up from checkout.
+  const missing = { ...(!user.phone && details.phone ? { phone: details.phone } : {}), ...(!user.company && details.company ? { company: details.company } : {}) };
+  if (Object.keys(missing).length) await prisma.user.update({ where: { id: user.id }, data: missing });
 
   // The page only shows "booking sent" on a 2xx. If Cayman Crane can't be
   // alerted, answer 503 so the customer is offered the prepared email instead.

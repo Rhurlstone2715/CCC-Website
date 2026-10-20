@@ -20,13 +20,15 @@ The rentals page is plain HTML, CSS and JavaScript in `public/`. A small Node se
 | `/admin/bookings/export.csv` | Bookings and payments as a spreadsheet |
 | `/catalog.js` | The current catalog, loaded by the rentals page before `app.js` |
 | `/uploads/:id` | Photos and PDFs uploaded in the catalog editor |
-| `POST /api/bookings` | Saves a booking request and emails it to Cayman Crane |
+| `POST /api/bookings` | Saves a booking request from a logged-in customer and emails it to Cayman Crane (401 when signed out) |
 | `GET /api/rewards` | The signed-in customer's tier and details (401 when signed out) |
 | `/healthz` | Health check used by Railway (also checks the database) |
 
 ## Accounts and rewards
 
-Customers sign up with an email and password. Passwords are hashed with scrypt, and sessions are stored in the `Session` table behind an HttpOnly cookie that lasts 30 days.
+Booking needs an account, so Cayman Crane always knows who is asking. Signed-out visitors can browse and fill a cart, but the cart's checkout button sends them to log in or sign up, then back to `/rentals?checkout=1`, which reopens checkout with the same cart (it's kept in the browser). The server refuses bookings without a session, and each booking uses the account's email rather than whatever the form says. Bookings made before this rule show as guest bookings in admin.
+
+Customers sign up with their name, email, phone number and a password (company is optional). Accounts made before phone numbers were required pick theirs up from their next checkout. Passwords are hashed with scrypt, and sessions are stored in the `Session` table behind an HttpOnly cookie that lasts 30 days.
 
 Customers earn one point for every CI$1 an admin marks as paid on a booking they made while logged in. Tiers match the rentals page: Silver at CI$5,000 (5% off), Gold at CI$15,000 (10%) and Platinum at CI$25,000 (15%). The discount applies to equipment in the cart, and the tier at booking time is saved on each booking so an admin can check it. Admins can also add rewards credit to a customer for spend made outside the site.
 

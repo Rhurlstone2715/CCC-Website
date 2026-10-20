@@ -164,7 +164,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
       assert.equal(page.headers.get("location"), "https://www.caymancrane.com/rentals?ref=ad");
       assert.equal((await app.request("/healthz", { headers: railway })).status, 200);
       const post = await app.request("/api/bookings", { method: "POST", headers: { ...railway, "content-type": "application/json" }, body: "{}" });
-      assert.equal(post.status, 400, "form posts are served, not redirected");
+      assert.equal(post.status, 401, "form posts are served, not redirected");
       const own = await app.request("/rentals", { headers: { "x-forwarded-host": "www.caymancrane.com" } });
       assert.equal(own.status, 200);
     } finally {
@@ -191,9 +191,9 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
 
   test("sign up rejects duplicates and short passwords", async () => {
     await signup("Kim@Example.com");
-    const dup = await req("/account/signup", { form: { name: "Kim", email: "kim@example.com", password: "longenough1" } });
+    const dup = await req("/account/signup", { form: { name: "Kim", email: "kim@example.com", phone: "345 555 0100", password: "longenough1" } });
     assert.equal(dup.status, 409);
-    const short = await req("/account/signup", { form: { name: "Lee", email: "lee@example.com", password: "short" } });
+    const short = await req("/account/signup", { form: { name: "Lee", email: "lee@example.com", phone: "345 555 0101", password: "short" } });
     assert.equal(short.status, 400);
   });
 
@@ -257,17 +257,40 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(res.headers.get("location"), "/account?next=%2Faccount%2Fprofile");
   });
 
-  test("bookings made while logged in are linked to the account", async () => {
+  test("booking needs an account, and uses the account's email", async () => {
+    const guest = await req("/api/bookings", { json: booking });
+    assert.equal(guest.status, 401);
+    assert.equal((await guest.json()).signIn, true);
+    assert.equal(await prisma.booking.count(), 0);
+
     const cookie = await signup();
-    const res = await req("/api/bookings", { json: booking, cookie });
+    const res = await req("/api/bookings", { json: { ...booking, customerEmail: "someone-else@example.com" }, cookie });
     // No Resend key in tests, so the alert can't send and the page falls back to email.
     assert.equal(res.status, 503);
     const saved = await prisma.booking.findFirstOrThrow();
-    assert.ok(saved.userId);
+    assert.equal(saved.userId, 1);
+    assert.equal(saved.customerEmail, "kim@example.com");
     assert.equal(saved.rewardTier, "Member");
-    const guest = await req("/api/bookings", { json: booking });
-    assert.equal(guest.status, 503);
-    assert.equal((await prisma.booking.findFirstOrThrow({ where: { id: 2 } })).userId, null);
+  });
+
+  test("sign up needs a phone number, and older accounts get theirs from checkout", async () => {
+    const noPhone = await req("/account/signup", { form: { name: "Lee Bodden", email: "lee@example.com", password: "longenough1" } });
+    assert.equal(noPhone.status, 400);
+    assert.match(await noPhone.text(), /Enter your phone number/);
+
+    await prisma.user.create({ data: { name: "Old Account", email: "old@example.com", passwordHash: await hashPassword("longenough1") } });
+    const login = await req("/account/login", { form: { email: "old@example.com", password: "longenough1" } });
+    await req("/api/bookings", { json: { ...booking, details: { phone: "345 555 0199", company: "Old Co", items: [] } }, cookie: sessionCookie(login) });
+    const user = await prisma.user.findUniqueOrThrow({ where: { email: "old@example.com" } });
+    assert.equal(user.phone, "345 555 0199");
+    assert.equal(user.company, "Old Co");
+  });
+
+  test("the login page explains why when sent from checkout", async () => {
+    const page = await (await req("/account?next=%2Frentals%3Fcheckout%3D1")).text();
+    assert.match(page, /Log in or create an account to send your booking request/);
+    assert.match(page, /name="next" value="\/rentals\?checkout=1"/);
+    assert.doesNotMatch(await (await req("/account")).text(), /send your booking request/);
   });
 
   test("customers can't reach admin pages", async () => {
@@ -338,7 +361,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   });
 
   test("invalid status changes are refused", async () => {
-    await req("/api/bookings", { json: booking });
+    await req("/api/bookings", { json: booking, cookie: await signup() });
     const admin = await makeAdmin();
     const res = await req("/admin/bookings/1/paid", { form: { amount: "100" }, cookie: admin });
     assert.equal(res.headers.get("location"), "/admin/bookings/1?notice=bad-transition");
@@ -370,7 +393,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
       return new Response("{}", { status: 200 });
     }) as typeof fetch;
 
-    const created = await req("/api/bookings", { json: booking });
+    const created = await req("/api/bookings", { json: booking, cookie: await signup() });
     assert.equal(created.status, 201);
     assert.equal(sent[0].to[0], "caymancrane@gmail.com");
 
@@ -460,12 +483,12 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   test("admin price changes reach the site and new bookings, not old ones", async () => {
     const admin = await makeAdmin();
     const items = [{ id: "rt40", term: "hourly", qty: 4 }];
-    await req("/api/bookings", { json: { ...booking, details: { items } } });
+    await req("/api/bookings", { json: { ...booking, details: { items } }, cookie: admin });
     const form = { name: "Terex RT40", spec: "40 ton", description: "Compact crane.", rate_hourly: "150", rate_daily: "1,215", sortOrder: "30", listed: "on" };
     const saved = await req("/admin/catalog/rt40", { form, cookie: admin });
     assert.equal(saved.headers.get("location"), "/admin/catalog/rt40?notice=saved");
     assert.match(await (await req("/catalog.js")).text(), /"id":"rt40"[^}]*"rates":\{"hourly":150,"daily":1215\}/);
-    await req("/api/bookings", { json: { ...booking, details: { items } } });
+    await req("/api/bookings", { json: { ...booking, details: { items } }, cookie: admin });
     const [first, second] = await prisma.booking.findMany({ orderBy: { id: "asc" } });
     assert.equal(first.estimateCents, 580_00);
     assert.equal(second.estimateCents, 600_00);
@@ -567,8 +590,8 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   test("calendar shows bookings on their dates and flags clashes", async () => {
     const admin = await makeAdmin();
     const crane = { items: [{ id: "rt890e", term: "daily", qty: 1 }] }; // one unit available
-    await req("/api/bookings", { json: { ...booking, details: { ...crane, startDate: "2030-05-15" } } });
-    await req("/api/bookings", { json: { ...booking, customerName: "Lee Bodden", details: { ...crane, startDate: "2030-05-14" } } });
+    await req("/api/bookings", { json: { ...booking, details: { ...crane, startDate: "2030-05-15" } }, cookie: admin });
+    await req("/api/bookings", { json: { ...booking, customerName: "Lee Bodden", details: { ...crane, startDate: "2030-05-14" } }, cookie: admin });
     let page = await (await req("/admin/calendar?month=2030-05", { cookie: admin })).text();
     assert.match(page, /May 2030/);
     assert.match(page, /00001/);

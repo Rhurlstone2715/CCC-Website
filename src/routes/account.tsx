@@ -97,9 +97,18 @@ const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupE
       <p class="eyebrow">Cayman Crane Rewards</p>
       <h1>Your account</h1>
       <p class="lede">
-        Log in to see your rewards tier and booking history. Your discount is applied to equipment at checkout automatically.
+        You need an account to book equipment. Once you're logged in you can see your rewards tier and booking history, and your discount is
+        applied to equipment at checkout automatically.
       </p>
     </div>
+    {next.startsWith("/rentals") ? (
+      <Notice tone="info">
+        Log in or create an account to send your booking request. Your cart is saved, and checkout opens again once you're in.{" "}
+        <a class="text-link" href="#signup-title">
+          New here? Create an account
+        </a>
+      </Notice>
+    ) : null}
     <div class="grid-2">
       <section class="card" aria-labelledby="login-title">
         <h2 id="login-title">Log in</h2>
@@ -126,7 +135,7 @@ const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupE
           <input type="hidden" name="next" value={next} />
           <Field label="Full name" name="name" value={signup?.name} required autocomplete="name" maxlength={120} />
           <Field label="Email" name="email" type="email" value={signup?.email} required autocomplete="email" maxlength={254} />
-          <Field label="Phone" name="phone" type="tel" value={signup?.phone} autocomplete="tel" maxlength={40} />
+          <Field label="Phone" name="phone" type="tel" value={signup?.phone} required autocomplete="tel" maxlength={40} />
           <Field label="Company" name="company" value={signup?.company} autocomplete="organization" maxlength={120} />
           <Field
             label="Password"
@@ -184,6 +193,7 @@ account.post("/signup", async c => {
 
   if (signupByIp(clientIp(c))) return fail("Too many new accounts from this connection. Try again later.", { name: text(body.name), email: text(body.email) }, 429);
   if ("error" in profile) return fail(profile.error, profile.values);
+  if (!profile.phone) return fail("Enter your phone number so we can reach you about bookings.", profile);
   const problem = passwordProblem(password);
   if (problem) return fail(problem, profile);
   if (await prisma.user.findUnique({ where: { email: profile.email } })) {

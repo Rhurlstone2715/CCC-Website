@@ -4,7 +4,7 @@ import { COMPANY_EMAIL } from "../email.js";
 import { Layout, PHONE_DISPLAY, PHONE_LINK } from "./layout.js";
 
 // Update this date whenever the notice changes.
-const LAST_UPDATED = "8 October 2026";
+const LAST_UPDATED = "20 October 2026";
 
 export const PrivacyPage: FC<{ user: SessionUser | null }> = ({ user }) => (
   <Layout title="Privacy notice" area="account" user={user}>
@@ -31,8 +31,8 @@ export const PrivacyPage: FC<{ user: SessionUser | null }> = ({ user }) => (
         <h2>What we collect</h2>
         <ul>
           <li>
-            <b>Account details.</b> If you create an account: your name, email address and password, and your phone number and company if you give
-            them. Passwords are stored only in a scrambled (hashed) form that can't be turned back into the password.
+            <b>Account details.</b> You need an account to book. We keep your name, email address, phone number and password, and your company
+            if you give it. Passwords are stored only in a scrambled (hashed) form that can't be turned back into the password.
           </li>
           <li>
             <b>Booking requests.</b> Your name, company, email, phone number, requested start date and time, job site area and address, job
