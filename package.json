@@ -12,9 +12,11 @@
     "build": "prisma generate && tsc",
     "start": "prisma migrate deploy && node dist/server.js",
     "typecheck": "tsc --noEmit",
+    "test:delivery": "node --test tests/delivery.test.mjs",
+    "test:vibrator": "node --test tests/vibrator.test.mjs",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "test": "tsc && node --env-file-if-exists=.env --test \"dist/**/*.test.js\""
+    "test": "tsc && node --env-file-if-exists=.env --test \"dist/**/*.test.js\" \"tests/*.test.mjs\""
   },
   "devDependencies": {
     "@types/node": "^24.19.1",

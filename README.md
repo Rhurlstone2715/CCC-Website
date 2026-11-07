@@ -51,6 +51,8 @@ Each item's page in the catalog editor also sets which add-ons appear in the "ad
 
 Some items only work together, like the concrete vibrator's motor, shaft and head. In the catalog editor a part gets a "set part" kind (Shaft, Head), and any item that offers set parts as add-ons is then rented as a set: adding it opens a picker that needs one of each kind, the parts follow the main item's term and quantity in the cart, and parts can't be booked on their own. The server checks the totals again on every booking.
 
+Concrete vibrators appear as one complete rental in the catalog, cart, checkout and readable booking request. Customers choose a 14 ft or 20 ft shaft and a 13/16 inch or 1 inch head. The displayed rental price includes all three components at their existing catalog rates; component records remain linked internally for pricing and inventory validation.
+
 Bookings send their cart lines along with the readable request. The server prices each line from the catalog at that moment and stores the result on the booking, so later price changes don't alter past bookings.
 
 ## Calendar and export
