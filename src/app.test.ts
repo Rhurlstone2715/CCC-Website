@@ -433,17 +433,21 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(deep.headers.get("location"), "/admin/catalog");
   });
 
-  test("admins can give and remove admin access", async () => {
+  test("customer promotion is hidden and refused, while admin removal remains available", async () => {
     const kim = await signup();
-    const admin = await makeAdmin(); // user 2
+    const admin = await makeAdmin();
+    const page = await (await req("/admin/customers/1", { cookie: admin })).text();
+    assert.doesNotMatch(page, /Give admin access|name="role" value="ADMIN"/);
     const made = await req("/admin/customers/1/role", { form: { role: "ADMIN" }, cookie: admin });
-    assert.equal(made.headers.get("location"), "/admin/customers/1?notice=made-admin");
-    assert.equal((await req("/admin/bookings", { cookie: kim })).status, 200);
+    assert.equal(made.status, 403);
+    assert.equal((await prisma.user.findUniqueOrThrow({ where: { id: 1 } })).role, "CUSTOMER");
+    assert.equal((await req("/admin/bookings", { cookie: kim })).headers.get("location"), "/account/profile?notice=not-admin");
     const self = await req("/admin/customers/2/role", { form: { role: "CUSTOMER" }, cookie: admin });
     assert.equal(self.headers.get("location"), "/admin/customers/2?notice=cant-change-self");
-    const removed = await req("/admin/customers/2/role", { form: { role: "CUSTOMER" }, cookie: kim });
-    assert.equal(removed.headers.get("location"), "/admin/customers/2?notice=removed-admin");
-    assert.equal((await req("/admin/bookings", { cookie: admin })).headers.get("location"), "/account/profile?notice=not-admin");
+    const other = await prisma.user.create({ data: { name: "Other Admin", email: "other-admin@example.com", role: "ADMIN", passwordHash: await hashPassword("adminpass123") } });
+    const removed = await req(`/admin/customers/${other.id}/role`, { form: { role: "CUSTOMER" }, cookie: admin });
+    assert.equal(removed.headers.get("location"), `/admin/customers/${other.id}?notice=removed-admin`);
+    assert.equal((await prisma.user.findUniqueOrThrow({ where: { id: other.id } })).role, "CUSTOMER");
   });
 
   test("approve, mark paid, and rewards follow", async () => {

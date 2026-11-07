@@ -39,7 +39,6 @@ const NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string
   "customer-deleted": { tone: "success", text: "Customer account deleted." },
   "cant-delete-self": { tone: "error", text: "You can't delete the account you're logged in with." },
   "last-admin": { tone: "error", text: "This is the only admin account, so it can't be deleted." },
-  "made-admin": { tone: "success", text: "Admin access given. They can now log in through the normal login and use the admin area." },
   "removed-admin": { tone: "success", text: "Admin access removed. Their customer account is unchanged." },
   "cant-change-self": { tone: "error", text: "You can't remove your own admin access." },
   "admin-needed": { tone: "error", text: "There has to be at least one admin, so this account keeps admin access." },
@@ -933,43 +932,24 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { reset
               <p class="muted">No bookings on this account yet.</p>
             )}
           </section>
-          <section class="card">
-            <h2>Admin access</h2>
-            {customer.role === "ADMIN" ? (
-              <>
-                <p class="muted">
-                  {customer.id === user.id
-                    ? "This is your account. You can't remove your own admin access."
-                    : `${customer.name} can use the admin area: bookings, customers, the calendar and the catalog.`}
-                </p>
-                {customer.id !== user.id ? (
-                  <form method="post" action={`/admin/customers/${customer.id}/role`} data-confirm={`Remove ${customer.name}'s admin access?`}>
-                    <input type="hidden" name="role" value="CUSTOMER" />
-                    <button class="button secondary small" type="submit">
-                      Remove admin access
-                    </button>
-                  </form>
-                ) : null}
-              </>
-            ) : (
-              <>
-                <p class="muted">
-                  Admins log in through the normal login and can see every booking and customer, and change prices. Only give access to Cayman Crane
-                  staff.
-                </p>
-                <form
-                  method="post"
-                  action={`/admin/customers/${customer.id}/role`}
-                  data-confirm={`Give ${customer.name} admin access? They'll see every booking and customer and can change prices.`}
-                >
-                  <input type="hidden" name="role" value="ADMIN" />
+          {customer.role === "ADMIN" ? (
+            <section class="card">
+              <h2>Admin access</h2>
+              <p class="muted">
+                {customer.id === user.id
+                  ? "This is your account. You can't remove your own admin access."
+                  : `${customer.name} can use the admin area: bookings, customers, the calendar and the catalog.`}
+              </p>
+              {customer.id !== user.id ? (
+                <form method="post" action={`/admin/customers/${customer.id}/role`} data-confirm={`Remove ${customer.name}'s admin access?`}>
+                  <input type="hidden" name="role" value="CUSTOMER" />
                   <button class="button secondary small" type="submit">
-                    Give admin access
+                    Remove admin access
                   </button>
                 </form>
-              </>
-            )}
-          </section>
+              ) : null}
+            </section>
+          ) : null}
           {customer.id !== user.id ? (
             <section class="card danger-zone">
               <h2>Delete account</h2>
@@ -1042,13 +1022,12 @@ admin.post("/customers/:id{[0-9]+}/:action", async c => {
       await prisma.user.update({ where: { id }, data: marketingChange(customer.marketingOptIn, false) });
       return back("marketing-off");
     case "role": {
-      const role = body.role === "ADMIN" ? "ADMIN" : "CUSTOMER";
-      if (role === "CUSTOMER") {
-        if (id === (await currentUser(c))!.id) return back("cant-change-self");
-        if (customer.role === "ADMIN" && (await prisma.user.count({ where: { role: "ADMIN" } })) <= 1) return back("admin-needed");
-      }
-      await prisma.user.update({ where: { id }, data: { role } });
-      return back(role === "ADMIN" ? "made-admin" : "removed-admin");
+      // Customer promotion is unavailable, including direct or stale form submissions.
+      if (body.role !== "CUSTOMER") return c.text("Granting admin access is disabled.", 403);
+      if (id === (await currentUser(c))!.id) return back("cant-change-self");
+      if (customer.role === "ADMIN" && (await prisma.user.count({ where: { role: "ADMIN" } })) <= 1) return back("admin-needed");
+      await prisma.user.update({ where: { id }, data: { role: "CUSTOMER" } });
+      return back("removed-admin");
     }
     case "reset-link":
       return renderCustomer(c, customer, { resetLink: await createResetLink(c, id, 72) });

@@ -39,7 +39,7 @@ Customers earn one point for every CI$1 an admin marks as paid on a booking they
 
 ## Admin area
 
-Admins log in through the normal login at `/account`, which takes them to the admin area. To add an admin, have them sign up as a customer, then open their page under Admin → Customers and choose "Give admin access". An admin can't remove their own access, and the last admin can't be removed.
+Admins log in through the normal login at `/account`, which takes them to the admin area. Customers cannot be granted admin access through the website. An admin can't remove their own access, and the last admin can't be removed.
 
 In the admin area, a booking can be approved (which emails the customer their contract), declined, cancelled, marked as paid with the amount, given a private note, or deleted. Customers can be searched, edited, given rewards credit, sent a one-time password reset link, or deleted. Deleting a customer keeps their bookings as guest bookings unless the admin ticks the box to delete those too.
 
