@@ -619,10 +619,10 @@
   },
   {
    "id": "plumwall",
-   "availableQuantity": 350,
+   "availableQuantity": 300,
    "name": "Plumwall All-In-One ICF Bracing",
    "category": "Construction Plant / Equipment",
-   "spec": "Strongback, platform and adjustable outriggers",
+   "spec": "10′ height • Strongback, platform and adjustable outriggers",
    "desc": "Fast, reusable all-in-one bracing system for ICF wall construction.",
    "image": "assets/catalog/plumwall-icf-bracing.gif",
    "rates": {
