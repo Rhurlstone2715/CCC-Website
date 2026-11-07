@@ -722,5 +722,5 @@ input,select,textarea{font-size:1rem}
 .set-missing{margin:0;font-size:.85rem;color:#6d6f74}
 .set-extras{margin:8px 0 6px;font-weight:800;font-size:.95rem}
 
-/* Keep the crane visible as the homepage photograph fills different screens. */
-.hero-bg{object-position:65% 65%}
+/* Keep the telehandler visible as the portrait fills different screens. */
+.hero-bg{object-position:50% 72%}
