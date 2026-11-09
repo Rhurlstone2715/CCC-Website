@@ -12,6 +12,7 @@ import { clientIp, createLimiter } from "./ratelimit.js";
 import { rewardsForUser } from "./rewards.js";
 import { account } from "./routes/account.js";
 import { admin } from "./routes/admin.js";
+import { googleCalendar } from "./routes/google-calendar.js";
 import { adminCalendar } from "./routes/admin-calendar.js";
 import { adminCatalog } from "./routes/admin-catalog.js";
 import { PrivacyPage } from "./views/privacy.js";
@@ -100,6 +101,7 @@ app.get("/uploads/:id{[a-z0-9]+}", async c => {
 app.route("/account", account);
 app.route("/admin/catalog", adminCatalog);
 app.route("/admin/calendar", adminCalendar);
+app.route("/admin/google-calendar", googleCalendar);
 app.route("/admin", admin);
 
 // The rentals page calls this on load. Signed-out visitors get a 401, see

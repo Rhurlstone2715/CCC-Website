@@ -99,3 +99,37 @@ Edit `prisma/schema.prisma`, then run `npx prisma migrate dev --name <change>` a
 | `EMAIL_FROM` | Sender on a domain verified in Resend. Turns on customer emails. |
 | `PUBLIC_URL` | The site's own address (https://www.caymancrane.com). Used for links in emails, and page visits to the Railway address are redirected there. |
 | `TEST_DATABASE_URL` | Local only. A separate database for `npm test`. |
+
+## Google Calendar booking sync
+
+Admin → Calendar → Connect Google Calendar manages automatic sync to the main
+`caymancrane@gmail.com` calendar. The website needs its own OAuth authorization;
+a Google Calendar connection in chat does not supply credentials to Railway.
+
+One-time setup:
+
+1. In Google Cloud, enable the Google Calendar API and configure the OAuth consent
+   screen with the website homepage and privacy URL. Create a **Web application**
+   OAuth client with redirect URI
+   `https://www.caymancrane.com/admin/google-calendar/callback`.
+2. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` as Railway service variables.
+   `PUBLIC_URL` must be `https://www.caymancrane.com`. Never commit these values.
+3. Publish the OAuth app for production use. In testing mode, add
+   `caymancrane@gmail.com` as a test user; Google expires testing authorizations
+   after seven days, so testing mode is unsuitable for unattended ongoing sync.
+4. Open `/admin/google-calendar`, connect, and authorize as `caymancrane@gmail.com`.
+
+The server polls bookings about once a minute and backfills existing dated
+bookings. Pending requests are tentative; approved and paid bookings are
+confirmed. Events cover the rental dates as all-day entries; requested times are
+included in their descriptions in Cayman time. Undated bookings wait until
+scheduled. Rescheduling and detail changes update the same event; cancellations,
+declines and deletion remove only events tracked by this integration. Other
+calendar events and attendees are untouched. The connection page shows sync
+errors and supports retry and disconnect. Disconnect stops future syncing and
+leaves existing Google events in place.
+
+Refresh tokens are encrypted in the database using AES-256-GCM with a key derived
+from `GOOGLE_CLIENT_SECRET`. Changing that secret requires reconnecting Google.
+Keep one active web replica; the worker prevents overlapping runs within that
+process and uses deterministic event IDs to avoid duplicates on retries.

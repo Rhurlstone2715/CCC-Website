@@ -135,6 +135,7 @@ adminCalendar.get("/", async c => {
 
   return c.html(
     <AdminPage title="Calendar" user={user} pending={pending} active="calendar">
+      <p><a class="text-link" href="/admin/google-calendar">Connect Google Calendar</a></p>
       <div class="page-head">
         <p class="eyebrow">Admin</p>
         <h1>Calendar</h1>

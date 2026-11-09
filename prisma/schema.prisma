@@ -191,3 +191,13 @@ model Upload {
   data        Bytes
   createdAt   DateTime @default(now())
 }
+
+// The website's Google authorization is separate from a chat connector.
+model GoogleCalendarLink {
+  id             Int      @id @default(1)
+  email          String
+  encryptedToken String
+  events         Json     @default("{}")
+  lastSyncedAt   DateTime?
+  lastError      String?
+}
