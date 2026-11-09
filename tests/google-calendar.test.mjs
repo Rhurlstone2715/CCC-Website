@@ -66,3 +66,10 @@ test('connecting a different Google account is refused without saving credential
  const response=await app.request(`/admin/google-calendar/callback?code=test&state=${state}`,{headers:{cookie}});
  assert.equal(response.headers.get('location'),'/admin/google-calendar?notice=failed');assert.equal(saved,false);
 });
+test('Google API errors identify disabled APIs and missing permissions without exposing response data',async()=>{
+ const {calendarApiError}=await import('../dist/google-calendar.js');
+ const disabled=await calendarApiError(Response.json({error:{errors:[{reason:'accessNotConfigured'}],details:[{reason:'SERVICE_DISABLED',metadata:{consumer:'projects/281511181344'}}]}},{status:403}));
+ assert.match(disabled.message,/Enable Google Calendar API/);assert.match(disabled.message,/281511181344/);
+ const permission=await calendarApiError(Response.json({error:{errors:[{reason:'insufficientPermissions'}],message:'private-response-data'}},{status:403}));
+ assert.match(permission.message,/Reconnect Google/);assert.doesNotMatch(permission.message,/private-response-data/);
+});

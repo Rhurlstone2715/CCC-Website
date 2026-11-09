@@ -26,6 +26,22 @@ export async function googleToken(params: Record<string, string>): Promise<{ acc
   if (!data.access_token) throw new Error("Google did not return an access token.");
   return data;
 }
+// Surface Google's error code without logging response bodies, tokens or customer data.
+export async function calendarApiError(response: Response): Promise<Error> {
+  const body = await response.json().catch(() => ({})) as { error?: { status?: string; errors?: { reason?: string }[]; details?: { reason?: string; metadata?: { consumer?: string } }[] } };
+  const reasons = [...(body.error?.errors ?? []).map(e => e.reason), ...(body.error?.details ?? []).map(e => e.reason)].filter((v): v is string => Boolean(v && /^[A-Za-z][A-Za-z0-9_]{0,60}$/.test(v)));
+  const code = reasons.join(", ") || (response.status === 403 ? "access-denied" : "request-failed");
+  let help = "";
+  if (reasons.some(r => ["accessNotConfigured", "SERVICE_DISABLED"].includes(r))) {
+    const consumer = body.error?.details?.map(d => d.metadata?.consumer).find(v => v && /^projects\/\d+$/.test(v));
+    help = ` Enable Google Calendar API in the Google Cloud project used by this OAuth client${consumer ? ` (${consumer})` : ""}.`;
+  } else if (reasons.some(r => ["insufficientPermissions", "ACCESS_TOKEN_SCOPE_INSUFFICIENT"].includes(r))) {
+    help = " Reconnect Google and approve permission to manage calendar events.";
+  } else if (reasons.some(r => ["rateLimitExceeded", "userRateLimitExceeded", "quotaExceeded", "RATE_LIMIT_EXCEEDED"].includes(r))) {
+    help = " Google has limited requests; automatic sync will retry.";
+  }
+  return new Error(`Google Calendar sync failed (HTTP ${response.status}; ${code}).${help}`);
+}
 const date = (d: Date) => d.toISOString().slice(0, 10);
 export function bookingGoogleEvent(b: Booking, baseUrl: string) {
   if (["CANCELLED", "DECLINED"].includes(b.status)) return null;
@@ -73,12 +89,13 @@ export async function syncGoogleCalendar(): Promise<void> {
       const hash = createHash("sha256").update(JSON.stringify(event)).digest("hex");
       if (previous[key]?.hash === hash) continue;
       const id = googleBookingEventId(b.id, base);
-      let r = await request(`${endpoint}/${id}`, "PUT", event);
-      if ([404, 410].includes(r.status)) {
-        r = await request(endpoint, "POST", { id, ...event });
-        if (r.status === 409) r = await request(`${endpoint}/${id}`, "PUT", event);
-      }
-      if (!r.ok) throw new Error(`Google Calendar sync failed (HTTP ${r.status}).`);
+      // New events must be inserted; update only events already tracked by the site.
+      let r = previous[key]
+        ? await request(`${endpoint}/${id}`, "PUT", event)
+        : await request(endpoint, "POST", { id, ...event });
+      if (previous[key] && [404, 410].includes(r.status)) r = await request(endpoint, "POST", { id, ...event });
+      if (r.status === 409) r = await request(`${endpoint}/${id}`, "PUT", event);
+      if (!r.ok) throw await calendarApiError(r);
       next[key] = { id, hash };
       // Persist progress so retries do not recreate events after partial failures.
       await prisma.googleCalendarLink.update({ where: { id: 1 }, data: { events: next } });
@@ -86,7 +103,7 @@ export async function syncGoogleCalendar(): Promise<void> {
     for (const [key, old] of Object.entries(previous)) {
       if (active.has(key)) continue;
       const r = await request(`${endpoint}/${old.id}`, "DELETE");
-      if (!r.ok && ![404, 410].includes(r.status)) throw new Error(`Google Calendar removal failed (HTTP ${r.status}).`);
+      if (!r.ok && ![404, 410].includes(r.status)) throw await calendarApiError(r);
       delete next[key];
       await prisma.googleCalendarLink.update({ where: { id: 1 }, data: { events: next } });
     }
