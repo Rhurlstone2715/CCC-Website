@@ -13,7 +13,7 @@ function config(t){for(const [key,value]of Object.entries({GOOGLE_CLIENT_ID:'tes
 test('booking events use requested dates, tentative status and Cayman start-time details',()=>{
  const event=bookingGoogleEvent(booking,base);
  assert.equal(event.status,'tentative');assert.deepEqual(event.start,{date:'2026-11-09'});assert.deepEqual(event.end,{date:'2026-11-10'});
- assert.match(event.description,/08:00 \(Cayman\)/);assert.match(event.summary,/CCC-00012/);
+ assert.match(event.description,/8:00 AM \(Cayman time; requested start\)/);assert.match(event.summary,/CCC-00012/);
 });
 test('confirmed dates override requested dates and inclusive last day becomes exclusive Google end',()=>{
  const event=bookingGoogleEvent({...booking,status:'APPROVED',scheduleStart:new Date('2026-11-12'),scheduleEnd:new Date('2026-11-14')},base);
@@ -72,4 +72,12 @@ test('Google API errors identify disabled APIs and missing permissions without e
  assert.match(disabled.message,/Enable Google Calendar API/);assert.match(disabled.message,/281511181344/);
  const permission=await calendarApiError(Response.json({error:{errors:[{reason:'insufficientPermissions'}],message:'private-response-data'}},{status:403}));
  assert.match(permission.message,/Reconnect Google/);assert.doesNotMatch(permission.message,/private-response-data/);
+});
+test('calendar details have readable client, location, time, job description and equipment sections',()=>{
+ const event=bookingGoogleEvent({...booking,requestText:'Customer: Test Customer\n\nJob details: Lift AC units onto the roof.\nUse rear access.\n\nBOOKING ITEMS:\n• Crane — Daily at CI$100\n\nPriced equipment estimate: CI$100'},base);
+ assert.equal(event.summary,'CCC-00012 | Test Customer | Pending');
+ for(const text of ['Booking number: CCC-00012','Client: Test Customer','Location: Site, George Town','Time: 8:00 AM','Description: Lift AC units onto the roof.\nUse rear access.','EQUIPMENT REQUESTED\n• Crane — Daily × 1'])assert.ok(event.description.includes(text),text);
+ assert.doesNotMatch(event.description,/Priced equipment estimate/);
+ const missing=bookingGoogleEvent({...booking,requestText:'No details',startTime:null,siteAddress:null,area:null,items:null},base);
+ assert.match(missing.description,/Time: To be confirmed/);assert.match(missing.description,/Location: To be confirmed/);assert.match(missing.description,/Description: Not provided/);
 });

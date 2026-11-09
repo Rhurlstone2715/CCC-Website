@@ -2,7 +2,7 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:
 import { prisma } from "./db.js";
 import { bookingRef } from "./bookings.js";
 import type { Booking } from "./generated/prisma/client.js";
-import type { PricedLine } from "./catalog.js";
+import { TERM_LABELS, type PricedLine } from "./catalog.js";
 
 export const GOOGLE_CALENDAR_EMAIL = "caymancrane@gmail.com";
 export const googleConfigured = () => Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.PUBLIC_URL);
@@ -43,6 +43,16 @@ export async function calendarApiError(response: Response): Promise<Error> {
   return new Error(`Google Calendar sync failed (HTTP ${response.status}; ${code}).${help}`);
 }
 const date = (d: Date) => d.toISOString().slice(0, 10);
+function serviceDescription(requestText: string): string {
+  const match = requestText?.match(/(?:^|\n)Job details:[ \t]*([\s\S]*?)(?=\r?\n(?:BOOKING ITEMS:|Priced equipment estimate:)|$)/);
+  return match?.[1].trim() || "Not provided — see booking for details.";
+}
+function serviceTime(value: string | null): string {
+  if (!value || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value)) return "To be confirmed";
+  const [hour, minute] = value.split(":").map(Number);
+  return `${new Date(Date.UTC(2000, 0, 1, hour, minute)).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" })} (Cayman time; requested start)`;
+}
+const readableDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 export function bookingGoogleEvent(b: Booking, baseUrl: string) {
   if (["CANCELLED", "DECLINED"].includes(b.status)) return null;
   const start = b.scheduleStart ?? b.startDate;
@@ -51,13 +61,19 @@ export function bookingGoogleEvent(b: Booking, baseUrl: string) {
   const end = new Date(Math.max(start.getTime(), last.getTime()) + 86400000);
   const items = Array.isArray(b.items) ? b.items as unknown as PricedLine[] : [];
   return {
-    summary: `${bookingRef(b.id)} · ${b.customerName} · ${b.status === "PENDING" ? "Pending" : "Confirmed"}`,
+    summary: `${bookingRef(b.id)} | ${b.customerName}${b.status === "PENDING" ? " | Pending" : ""}`,
     description: [
-      b.scheduleStart ? "Confirmed rental dates." : "Requested date — rental dates not confirmed.",
-      `Status: ${b.status}`, `Customer: ${b.customerName}`, `Email: ${b.customerEmail}`,
-      ...(b.phone ? [`Phone: ${b.phone}`] : []), ...(b.startTime ? [`Requested start time: ${b.startTime} (Cayman)`] : []),
-      ...items.map(i => `${i.name} · ${i.term} × ${i.qty}`),
-      `Booking details: ${baseUrl.replace(/\/$/, "")}/admin/bookings/${b.id}`,
+      "BOOKING", `Booking number: ${bookingRef(b.id)}`, `Client: ${b.customerName}`,
+      `Status: ${b.status === "PENDING" ? "Pending approval" : b.status === "PAID" ? "Paid" : "Approved"}`,
+      "", "RENTAL / SERVICE",
+      `Location: ${[b.siteAddress, b.area].filter(Boolean).join(", ") || "To be confirmed"}`,
+      `Date: ${readableDate(start)}${last > start ? ` – ${readableDate(last)}` : ""}${b.scheduleStart ? " (confirmed)" : " (requested; dates not confirmed)"}`,
+      `Time: ${serviceTime(b.startTime)}`,
+      `Description: ${serviceDescription(b.requestText)}`,
+      "", "EQUIPMENT REQUESTED",
+      ...(items.length ? items.map(i => `• ${i.name}${i.operator ? " (operator service)" : ""} — ${TERM_LABELS[i.term] || i.term} × ${i.qty}`) : ["See booking for equipment details."]),
+      "", "CLIENT CONTACT", `Email: ${b.customerEmail}`, ...(b.phone ? [`Phone: ${b.phone}`] : []),
+      "", "VIEW BOOKING", `${baseUrl.replace(/\/$/, "")}/admin/bookings/${b.id}`,
     ].join("\n"),
     location: [b.siteAddress, b.area].filter(Boolean).join(", "),
     start: { date: date(start) }, end: { date: date(end) },
