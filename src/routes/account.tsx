@@ -152,23 +152,23 @@ async function sendConfirmEmail(c: Context, user: { id: number; email: string; n
 const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupError }) => (
   <Layout title="Log in or create an account" area="account">
     <div class="page-head">
-      <p class="eyebrow">Cayman Crane Rewards</p>
-      <h1>Your account</h1>
+      <p class="eyebrow">Your next rental starts here</p>
+      <h1>Welcome to Cayman Crane.</h1>
       <p class="lede">
-        You need an account to book equipment. Once you're logged in you can see your rewards tier and booking history, and your discount is
-        applied to equipment at checkout automatically.
+        Book equipment, track your requests and earn rental rewards. Your account discount is applied automatically.
       </p>
     </div>
     {next.startsWith("/rentals") ? (
       <Notice tone="info">
         Log in or create an account to send your booking request. Your cart is saved, and checkout opens again once you're in.{" "}
-        <a class="text-link" href="#signup-title">
+        <a class="text-link" href="#signup" data-auth-link="signup">
           New here? Create an account
         </a>
       </Notice>
     ) : null}
-    <div class="grid-2">
-      <section class="card" aria-labelledby="login-title">
+    <div class="auth-tabs" role="tablist" aria-label="Account access"><button id="login-tab" type="button" role="tab" aria-selected="true" aria-controls="login-panel" data-auth-tab="login">Log in</button><button id="signup-tab" type="button" role="tab" aria-selected="false" aria-controls="signup-panel" data-auth-tab="signup">Create account</button></div>
+    <div class="grid-2 auth-panels" data-auth-initial={signupError ? "signup" : "login"}>
+      <section class="card" id="login-panel" role="tabpanel" aria-labelledby="login-tab">
         <h2 id="login-title">Log in</h2>
         <form class="form" method="post" action="/account/login">
           {loginError ? <Notice tone="error">{loginError}</Notice> : null}
@@ -185,7 +185,7 @@ const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupE
           </div>
         </form>
       </section>
-      <section class="card" aria-labelledby="signup-title">
+      <section class="card" id="signup-panel" role="tabpanel" aria-labelledby="signup-tab">
         <h2 id="signup-title">Create an account</h2>
         <p class="muted">Earn one point for every CI$1 of paid rentals. Silver unlocks 5% off at CI$5,000.</p>
         <form class="form" method="post" action="/account/signup">
@@ -194,7 +194,7 @@ const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupE
           <Field label="Full name" name="name" value={signup?.name} required autocomplete="name" maxlength={120} />
           <Field label="Email" name="email" type="email" value={signup?.email} required autocomplete="email" maxlength={254} />
           <Field label="Phone" name="phone" type="tel" value={signup?.phone} required autocomplete="tel" maxlength={40} />
-          <Field label="Company" name="company" value={signup?.company} autocomplete="organization" maxlength={120} hint="Use a matching work email for shared company rewards, or register a new company with this email as its only login. Email verification is required." />
+          <Field label="Company" name="company" value={signup?.company} autocomplete="organization" maxlength={120} hint="Use your work email for shared company rewards. With a personal email, a new company is limited to your login. Verify your email to activate your account." />
           <script src="/company-signup.js" defer></script>
           <Field
             label="Password"
