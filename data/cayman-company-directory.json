@@ -1,0 +1,626 @@
+{
+  "researchedOn": "2026-11-11",
+  "scope": "Publicly listed Cayman Islands companies with published company-specific email domains. Not an exhaustive business register. No customer accounts or emails created.",
+  "companies": [
+    {
+      "name": "5 Star Building & Construction",
+      "domain": "5star.ky",
+      "categories": [
+        "handyman",
+        "construction",
+        "roofing"
+      ],
+      "source": "https://5star.ky/contact-us/",
+      "publishedEmail": "team@5star.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Alpha Construction & Development",
+      "domain": "alpha.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.alpha.ky/contact",
+      "publishedEmail": "info@alpha.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "AMB Construction Ltd.",
+      "domain": "ambltd.org",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://caymanresident.com/housing/building-a-home/building-professionals/general-contractors",
+      "publishedEmail": "info@ambltd.org",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Androgroup Ltd.",
+      "domain": "andro.ky",
+      "categories": [
+        "plumbing",
+        "electrical",
+        "air conditioning"
+      ],
+      "source": "https://andro.ky/contact",
+      "publishedEmail": "service@andro.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Arch and Godfrey (Cayman) Ltd.",
+      "domain": "arch-godfrey.com",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://arch-godfrey.com/contact/",
+      "publishedEmail": "info@arch-godfrey.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "BDCL Architects",
+      "domain": "bdcl.ky",
+      "categories": [
+        "interior design"
+      ],
+      "source": "https://caymanresident.com/housing/home-improvements/interior-designers",
+      "publishedEmail": "dmcgrath@bdcl.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "BrittHay Electric Ltd.",
+      "domain": "britthay.com",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.cca.ky/members-directory/regular-members",
+      "publishedEmail": "mariok@britthay.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Build (Cayman) Ltd.",
+      "domain": "buildcayman.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://caymanresident.com/housing/building-a-home/building-professionals/general-contractors",
+      "publishedEmail": "info@buildcayman.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Cayman Climate Controls",
+      "domain": "ccc.ky",
+      "categories": [
+        "air conditioning"
+      ],
+      "source": "https://www.caymanclimatecontrols.com/contact-us",
+      "publishedEmail": "service@ccc.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Cayman Islands Sheet Metal Ltd.",
+      "domain": "cisheetmetal.com",
+      "categories": [
+        "air conditioning"
+      ],
+      "source": "https://www.cisheetmetal.com/contact-us",
+      "publishedEmail": "info@cisheetmetal.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Cayman Mechanical Company Ltd.",
+      "domain": "caymanmechanical.com",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.cca.ky/members-directory/regular-members",
+      "publishedEmail": "barry.culbert@caymanmechanical.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Caytech Air Conditioning",
+      "domain": "caytechac.com",
+      "categories": [
+        "air conditioning"
+      ],
+      "source": "https://caytechac.com/contact-us/",
+      "publishedEmail": "service@caytechac.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Chalmers Gibbs Architects",
+      "domain": "chalmersgibbs.ky",
+      "categories": [
+        "interior design"
+      ],
+      "source": "https://caymanresident.com/housing/home-improvements/interior-designers",
+      "publishedEmail": "info@chalmersgibbs.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Clan Construction Ltd.",
+      "domain": "clan.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://caymanresident.com/profile/clan-construction-ltd",
+      "publishedEmail": "neila@clan.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "CMEC Ltd.",
+      "domain": "cmec.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.cca.ky/members-directory/regular-members",
+      "publishedEmail": "info@cmec.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Cooling Pros",
+      "domain": "coolingpros.ky",
+      "categories": [
+        "air conditioning"
+      ],
+      "source": "https://caymanresident.com/housing/running-your-home/air-conditioning",
+      "publishedEmail": "info@coolingpros.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Corporate Electric Ltd.",
+      "domain": "corporate-electric.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.cca.ky/members-directory/regular-members",
+      "publishedEmail": "dave.johnston@corporate-electric.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Cynthia Tranel Studio",
+      "domain": "cynthiatranel.com",
+      "categories": [
+        "interior design"
+      ],
+      "source": "https://www.cynthiatranel.com/contact-us",
+      "publishedEmail": "hello@cynthiatranel.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Davenport Development Ltd.",
+      "domain": "davenport.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.cca.ky/members-directory/regular-members",
+      "publishedEmail": "paul@davenport.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "DBM Construction Ltd.",
+      "domain": "dbmconstruction.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.dbmconstruction.ky/contact-us",
+      "publishedEmail": "info@dbmconstruction.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "DDL Studio Ltd.",
+      "domain": "ddlstudio.com",
+      "categories": [
+        "interior design"
+      ],
+      "source": "https://caymanresident.com/housing/home-improvements/interior-designers",
+      "publishedEmail": "info@ddlstudio.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Design Cayman",
+      "domain": "design-cayman.ky",
+      "categories": [
+        "interior design"
+      ],
+      "source": "https://www.design-cayman.ky/contact/",
+      "publishedEmail": "info@design-cayman.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Design Studio",
+      "domain": "designstudio.ky",
+      "categories": [
+        "interior design"
+      ],
+      "source": "https://caymanresident.com/housing/home-improvements/interior-designers",
+      "publishedEmail": "info@designstudio.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "EcoSmart Cooling Ltd.",
+      "domain": "ecosmart.ky",
+      "categories": [
+        "air conditioning"
+      ],
+      "source": "https://caymanresident.com/housing/running-your-home/air-conditioning",
+      "publishedEmail": "info@ecosmart.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Edgewater Development Ltd.",
+      "domain": "edgewater.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.cca.ky/members-directory/regular-members",
+      "publishedEmail": "dbergstrom@edgewater.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "EFCON Construction",
+      "domain": "efcon.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.cca.ky/members-directory/regular-members",
+      "publishedEmail": "edwin@efcon.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Electra-Tech Services Ltd.",
+      "domain": "electratech.ky",
+      "categories": [
+        "electrical"
+      ],
+      "source": "https://alarm.ky/contact/",
+      "publishedEmail": "mail@electratech.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Encompass Ltd.",
+      "domain": "encompasscayman.com",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://caymanresident.com/housing/building-a-home/building-professionals/general-contractors",
+      "publishedEmail": "tkline@encompasscayman.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "FEDA Maintenance Services",
+      "domain": "fedaservices.com",
+      "categories": [
+        "handyman",
+        "air conditioning",
+        "electrical",
+        "plumbing"
+      ],
+      "source": "https://caymanresident.com/housing/home-improvements/general-maintenance-repairs",
+      "publishedEmail": "info@fedaservices.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Flowers Block (Flowers Group)",
+      "domain": "flowersgroup.com",
+      "categories": [
+        "concrete"
+      ],
+      "source": "https://caymanresident.com/profile/flowers-block",
+      "publishedEmail": "customerservice@flowersgroup.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Forged Construction",
+      "domain": "forged-construction.com",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.forged-construction.com/contact/",
+      "publishedEmail": "mike@forged-construction.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "GMC General Contractors Ltd.",
+      "domain": "gmcgeneralcontractors.com",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.cca.ky/members-directory/regular-members",
+      "publishedEmail": "chris.faram@gmcgeneralcontractors.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "GPE Services",
+      "domain": "gpepro.com",
+      "categories": [
+        "construction",
+        "electrical",
+        "plumbing"
+      ],
+      "source": "https://caymanresident.com/housing/building-a-home/building-professionals/general-contractors",
+      "publishedEmail": "info@gpepro.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "HandyHome",
+      "domain": "handyhome.ky",
+      "categories": [
+        "handyman"
+      ],
+      "source": "https://handyhome.ky/about-us/",
+      "publishedEmail": "info@handyhome.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Handymen Can",
+      "domain": "handymencan.com",
+      "categories": [
+        "handyman"
+      ],
+      "source": "https://handymencan.com/contact-us/",
+      "publishedEmail": "info@handymencan.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "iDesign Interior Design",
+      "domain": "idesignltd.com",
+      "categories": [
+        "interior design"
+      ],
+      "source": "https://idesignltd.com/",
+      "publishedEmail": "giselle@idesignltd.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Interior Design Group (IDG)",
+      "domain": "idgcayman.com",
+      "categories": [
+        "interior design"
+      ],
+      "source": "https://caymanresident.com/housing/home-improvements/interior-designers",
+      "publishedEmail": "design@idgcayman.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Ironshore Contracting",
+      "domain": "ironshore.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://caymanresident.com/housing/building-a-home/building-professionals/general-contractors",
+      "publishedEmail": "dale@ironshore.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Island Air Conditioning and Mechanical Ltd.",
+      "domain": "islandac.ky",
+      "categories": [
+        "air conditioning"
+      ],
+      "source": "https://islandac.ky/",
+      "publishedEmail": "info@islandac.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "John Doak Architecture",
+      "domain": "johndoak.com",
+      "categories": [
+        "interior design"
+      ],
+      "source": "https://caymanresident.com/housing/home-improvements/interior-designers",
+      "publishedEmail": "doak@johndoak.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Kirk Concrete",
+      "domain": "kirkconcrete.ky",
+      "categories": [
+        "concrete"
+      ],
+      "source": "https://www.kirkconcrete.ky/contact",
+      "publishedEmail": "concretesales@kirkconcrete.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "KWWOODWORK LTD.",
+      "domain": "kwwoodwork.com",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.cca.ky/members-directory/regular-members",
+      "publishedEmail": "kenny@kwwoodwork.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Le Habitat Ltd.",
+      "domain": "lehabitat.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.cca.ky/members-directory/regular-members",
+      "publishedEmail": "admin@lehabitat.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "LIVING.KY",
+      "domain": "living.ky",
+      "categories": [
+        "interior design"
+      ],
+      "source": "https://caymanresident.com/housing/home-improvements/interior-designers",
+      "publishedEmail": "info@living.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "MAC Plumbing and Maintenance Services Ltd.",
+      "domain": "macplumbing.ky",
+      "categories": [
+        "handyman",
+        "plumbing"
+      ],
+      "source": "https://caymanresident.com/housing/home-improvements/general-maintenance-repairs",
+      "publishedEmail": "mac@macplumbing.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "McAlpine Ltd.",
+      "domain": "mcalpineky.com",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.cca.ky/members-directory/regular-members",
+      "publishedEmail": "russell.day@mcalpineky.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Mr. Power Guy",
+      "domain": "mrpowerguy.com",
+      "categories": [
+        "electrical"
+      ],
+      "source": "https://caymanresident.com/housing/running-your-home/electricians",
+      "publishedEmail": "office@mrpowerguy.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "National Concrete",
+      "domain": "nationalconcrete.ky",
+      "categories": [
+        "concrete"
+      ],
+      "source": "https://nationalconcrete.framer.website/",
+      "publishedEmail": "info@nationalconcrete.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "NCB Group",
+      "domain": "ncbgroup.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://ncbgroup.ky/contact-us/",
+      "publishedEmail": "info@ncbgroup.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "NU Energy Ltd.",
+      "domain": "nuenergy.ky",
+      "categories": [
+        "electrical"
+      ],
+      "source": "https://nuenergy.ky/",
+      "publishedEmail": "service@nuenergy.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Parsons Air Conditioning",
+      "domain": "parsonsac.com",
+      "categories": [
+        "air conditioning"
+      ],
+      "source": "https://caymanresident.com/housing/running-your-home/air-conditioning",
+      "publishedEmail": "info@parsonsac.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Phoenix Construction",
+      "domain": "phoenix.com.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.cca.ky/members-directory/regular-members",
+      "publishedEmail": "showe@phoenix.com.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "ProStars Construction Ltd.",
+      "domain": "prostarsconstruction.com",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://prostarsconstruction.com/contact-us/",
+      "publishedEmail": "info@prostarsconstruction.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Rainbow Development Ltd.",
+      "domain": "rainbow.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.cca.ky/members-directory/regular-members",
+      "publishedEmail": "stephen@rainbow.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Robson Construction Ltd.",
+      "domain": "robson.construction",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://caymanresident.com/housing/building-a-home/building-professionals/general-contractors",
+      "publishedEmail": "robson@robson.construction",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Supermix",
+      "domain": "supermix.ky",
+      "categories": [
+        "concrete"
+      ],
+      "source": "https://www.supermix.ky/contact-us",
+      "publishedEmail": "info@supermix.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Trio Architecture",
+      "domain": "trioarchitects.com",
+      "categories": [
+        "interior design"
+      ],
+      "source": "https://caymanresident.com/housing/home-improvements/interior-designers",
+      "publishedEmail": "info@trioarchitects.com",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Tropical Architectural & Development Group (TAG Ltd.)",
+      "domain": "tag.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://caymanresident.com/housing/building-a-home/building-professionals/general-contractors",
+      "publishedEmail": "info@tag.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "United Contracting",
+      "domain": "ucltd.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.cca.ky/members-directory/regular-members",
+      "publishedEmail": "trevor.boutilier@ucltd.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "UNITS Ltd",
+      "domain": "units.ky",
+      "categories": [
+        "construction"
+      ],
+      "source": "https://www.cca.ky/members-directory/regular-members",
+      "publishedEmail": "adrienne.politowicz@units.ky",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Watler's Metal Products",
+      "domain": "watlersmetalproducts.ky",
+      "categories": [
+        "roofing"
+      ],
+      "source": "https://www.watlersmetalproducts.com/contact",
+      "publishedEmail": "info@watlersmetalproducts.ky",
+      "location": "Cayman Islands"
+    }
+  ]
+}

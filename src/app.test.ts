@@ -990,6 +990,25 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const duplicate = await req(`/admin/companies/${company.id}/update`, { cookie: adminCookie, form: { name: "Renamed Business", address: "bad email" } });assert.equal(duplicate.headers.get("location"), "/admin/companies?error=invalid");
   });
 
+  test("researched Cayman directory imports idempotently and preserves existing companies", async () => {
+    const existing = await prisma.company.create({ data: { name: "Existing Climate Account", nameKey: "existingclimateaccount", domain: "ccc.ky", rewardCreditCents: 12345 } });
+    const directory = JSON.parse(readFileSync("data/cayman-company-directory.json", "utf8"));
+    const sql = readFileSync("prisma/migrations/20261111133000_cayman_company_directory/migration.sql", "utf8");
+    await prisma.$executeRawUnsafe(sql);
+    const count = await prisma.company.count();
+    await prisma.$executeRawUnsafe(sql);
+    assert.equal(await prisma.company.count(), count);
+    assert.equal(count, directory.companies.length);
+    const preserved = await prisma.company.findUniqueOrThrow({ where: { id: existing.id } });
+    assert.equal(preserved.name, "Existing Climate Account");assert.equal(preserved.rewardCreditCents,12345);
+    for (const entry of directory.companies) {
+      const suggestion = await (await req(`/account/company-suggestion?email=staff%40${entry.domain}`)).json();
+      assert.equal(suggestion.company, entry.domain === "ccc.ky" ? existing.name : entry.name);
+    }
+    const unrelated = await (await req("/account/company-suggestion?email=staff%40gmail.com")).json();
+    assert.equal(unrelated.company, null);
+  });
+
   test("company A removal preserves history and releases its domain", async () => {
     const company = await prisma.company.create({ data: { name: "A", nameKey: "a", domain: "a.ky", rewardCreditCents: 25000 } });
     const user = await prisma.user.create({ data: { name: "Account Owner", email: "owner@a.ky", company: "A", companyAccountId: company.id, emailVerifiedAt: new Date(), passwordHash: await hashPassword("longenough1") } });
