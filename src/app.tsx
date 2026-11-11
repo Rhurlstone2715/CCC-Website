@@ -6,11 +6,13 @@ import { fileURLToPath } from "node:url";
 import { type AppEnv, currentUser, mustConfirmEmail, sameOriginWrites } from "./auth.js";
 import { bookingRef, parseBooking, sendBookingAlert } from "./bookings.js";
 import { catalogScript, checkSets, priceItems } from "./catalog.js";
+import { verifiedCompanyId } from "./companies.js";
 import { prisma } from "./db.js";
 import type { Prisma } from "./generated/prisma/client.js";
 import { clientIp, createLimiter } from "./ratelimit.js";
 import { rewardsForUser } from "./rewards.js";
 import { account } from "./routes/account.js";
+import { adminCompanies } from "./routes/admin-companies.js";
 import { admin } from "./routes/admin.js";
 import { googleCalendar } from "./routes/google-calendar.js";
 import { adminCalendar } from "./routes/admin-calendar.js";
@@ -102,6 +104,7 @@ app.route("/account", account);
 app.route("/admin/catalog", adminCatalog);
 app.route("/admin/calendar", adminCalendar);
 app.route("/admin/google-calendar", googleCalendar);
+app.route("/admin/companies", adminCompanies);
 app.route("/admin", admin);
 
 // The rentals page calls this on load. Signed-out visitors get a 401, see
@@ -154,6 +157,7 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
       ...fields,
       // The booking goes to the account's email, whatever the form says.
       customerEmail: user.email,
+      companyAccountId: await verifiedCompanyId(user.id),
       userId: user.id,
       rewardTier: rewards.tier,
       discountPercent,
@@ -170,7 +174,7 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
   const ref = bookingRef(booking.id);
 
   // Accounts made before a phone number was required pick theirs up from checkout.
-  const missing = { ...(!user.phone && details.phone ? { phone: details.phone } : {}), ...(!user.company && details.company ? { company: details.company } : {}) };
+  const missing = !user.phone && details.phone ? { phone: details.phone } : {};
   if (Object.keys(missing).length) await prisma.user.update({ where: { id: user.id }, data: missing });
 
   // The page only shows "booking sent" on a 2xx. If Cayman Crane can't be

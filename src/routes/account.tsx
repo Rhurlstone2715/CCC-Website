@@ -27,6 +27,7 @@ import { bookingRef } from "../bookings.js";
 import { prisma } from "../db.js";
 import { customerEmailsEnabled, sendEmail } from "../email.js";
 import { clientIp, createLimiter } from "../ratelimit.js";
+import { companyEmailDomain, validateCompany, syncCompanyMembership, verifiedCompanyId } from "../companies.js";
 import { TIERS, rewardsForUser, type Rewards } from "../rewards.js";
 import { Field, Layout, Notice, PHONE_DISPLAY, PHONE_LINK, StatusBadge, WHATSAPP_LINK, caymanDate, money } from "../views/layout.js";
 
@@ -171,7 +172,8 @@ const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupE
           <Field label="Full name" name="name" value={signup?.name} required autocomplete="name" maxlength={120} />
           <Field label="Email" name="email" type="email" value={signup?.email} required autocomplete="email" maxlength={254} />
           <Field label="Phone" name="phone" type="tel" value={signup?.phone} required autocomplete="tel" maxlength={40} />
-          <Field label="Company" name="company" value={signup?.company} autocomplete="organization" maxlength={120} />
+          <Field label="Company (optional)" name="company" value={signup?.company} autocomplete="organization" maxlength={120} hint="Company rewards require a matching work-email domain and email verification. Leave blank for a personal account." />
+          <script src="/company-signup.js" defer></script>
           <Field
             label="Password"
             name="password"
@@ -219,6 +221,14 @@ account.post("/login", async c => {
   return c.redirect(next || homeFor(result.user));
 });
 
+account.get("/company-suggestion", async c => {
+  const domain = companyEmailDomain(c.req.query("email") || "");
+  c.header("Cache-Control", "private, no-store");
+  if (!domain) return c.json({ eligible: false });
+  const company = await prisma.company.findUnique({ where: { domain }, select: { name: true } });
+  return c.json({ eligible: true, domain, company: company?.name ?? null, suggestion: domain.split('.')[0].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) });
+});
+
 account.post("/signup", async c => {
   const body = await c.req.parseBody();
   const next = safeNext(body.next, "");
@@ -237,6 +247,8 @@ account.post("/signup", async c => {
     return fail("There's already an account with that email. Log in, or reset your password if you've forgotten it.", profile, 409);
   }
 
+  const companyIssue = await validateCompany(profile.email, profile.company);
+  if (companyIssue) return fail(companyIssue, profile);
   const user = await prisma.user.create({ data: { ...profile, ...marketingChange(false, marketing), passwordHash: await hashPassword(password) } });
   await startSession(c, user.id);
   if (mustConfirmEmail(user)) {
@@ -311,6 +323,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
   ]);
   const notice = state.notice ? NOTICES[state.notice] : undefined;
   const details = state.detailsValues ?? user;
+  const companyId = await verifiedCompanyId(user.id);
   const firstName = user.name.split(/\s+/)[0];
 
   return c.html(
@@ -324,7 +337,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
       </div>
       <div class="grid-2">
         <div class="stack">
-          <RewardsCard rewards={rewards} />
+          <>{companyId ? <p class="hint">Company loyalty: {user.company}. Verified staff share the company’s paid-booking points and tier; logins and booking histories remain separate.</p> : null}<RewardsCard rewards={rewards} /></>
           <a class="button primary" href="/rentals#catalog">
             Browse equipment
           </a>
@@ -377,7 +390,8 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
             <Field label="Full name" name="name" value={details.name} required autocomplete="name" maxlength={120} />
             <Field label="Email" name="email" type="email" value={details.email} required autocomplete="email" maxlength={254} />
             <Field label="Phone" name="phone" type="tel" value={details.phone} autocomplete="tel" maxlength={40} />
-            <Field label="Company" name="company" value={details.company} autocomplete="organization" maxlength={120} />
+            <Field label="Company (optional)" name="company" value={details.company} autocomplete="organization" maxlength={120} hint="Select the company linked to your work-email domain. Shared points activate after email verification." />
+            <script src="/company-signup.js" defer></script>
             <MarketingChoice checked={user.marketingOptIn} />
             <div class="form-actions">
               <button class="button secondary" type="submit">
@@ -422,6 +436,8 @@ account.post("/profile", requireCustomer, async c => {
   const body = await c.req.parseBody();
   const profile = parseProfile(body);
   if ("error" in profile) return renderProfile(c, user, { detailsError: profile.error, detailsValues: profile.values }, 400);
+  const companyIssue = await validateCompany(profile.email, profile.company);
+  if (companyIssue) return renderProfile(c, user, { detailsError: companyIssue, detailsValues: profile }, 400);
   const emailChanged = profile.email !== user.email;
   if (emailChanged && (await prisma.user.findUnique({ where: { email: profile.email } }))) {
     return renderProfile(c, user, { detailsError: "Another account already uses that email.", detailsValues: profile }, 409);
@@ -429,8 +445,9 @@ account.post("/profile", requireCustomer, async c => {
   // A new address has to be confirmed again before the next booking.
   const updated = await prisma.user.update({
     where: { id: user.id },
-    data: { ...profile, ...marketingChange(user.marketingOptIn, body.marketing === "on"), ...(emailChanged ? { emailVerifiedAt: null } : {}) },
+    data: { ...profile, companyAccountId: null, ...marketingChange(user.marketingOptIn, body.marketing === "on"), ...(emailChanged ? { emailVerifiedAt: null } : {}) },
   });
+  await syncCompanyMembership(updated.id);
   if (emailChanged && mustConfirmEmail(updated)) {
     await sendConfirmEmail(c, updated, "");
     return c.redirect("/account/profile?notice=email-changed");

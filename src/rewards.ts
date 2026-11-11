@@ -1,3 +1,4 @@
+import { companyEmailDomain, companyNameKey } from "./companies.js";
 import { prisma } from "./db.js";
 
 // Matches the tiers advertised in the rewards section of public/rentals.html.
@@ -39,11 +40,11 @@ export function rewardsForSpend(spendCents: number): Rewards {
 
 // Spend counts paid bookings plus any credit an admin has added.
 export async function spendForUser(userId: number): Promise<number> {
-  const [paid, user] = await Promise.all([
-    prisma.booking.aggregate({ where: { userId, status: "PAID" }, _sum: { amountPaidCents: true } }),
-    prisma.user.findUnique({ where: { id: userId }, select: { rewardCreditCents: true } }),
-  ]);
-  return (paid._sum.amountPaidCents ?? 0) + (user?.rewardCreditCents ?? 0);
+  const user = await prisma.user.findUnique({ where: { id: userId }, include: { companyAccount: true } });
+  if (!user) return 0;
+  const companyId = user.emailVerifiedAt && user.companyAccount && companyEmailDomain(user.email) === user.companyAccount.domain && companyNameKey(user.company || "") === user.companyAccount.nameKey ? user.companyAccount.id : null;
+  const paid = await prisma.booking.aggregate({ where: { ...(companyId ? { companyAccountId: companyId } : { userId, companyAccountId: null }), status: "PAID" }, _sum: { amountPaidCents: true } });
+  return (paid._sum.amountPaidCents ?? 0) + (companyId ? (user.companyAccount?.rewardCreditCents ?? 0) : user.rewardCreditCents);
 }
 
 export async function rewardsForUser(userId: number): Promise<Rewards> {

@@ -26,7 +26,9 @@
     "@hono/node-server": "^2.1.4",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
+    "free-email-domains": "^1.16.0",
     "hono": "^4.13.13",
-    "prisma": "^7.10.0"
+    "prisma": "^7.10.0",
+    "tldts": "^7.4.21"
   }
 }

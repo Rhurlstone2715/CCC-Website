@@ -3,10 +3,11 @@ import type { FC } from "hono/jsx";
 import { type AppEnv, createResetLink, currentUser, marketingChange, requireAdmin, safeNext } from "../auth.js";
 import { bookingRef, contractSubject, contractText, parseDate, sendContract } from "../bookings.js";
 import { TERM_LABELS, type PricedLine } from "../catalog.js";
+import { verifiedCompanyId, syncCompanyMembership } from "../companies.js";
 import { prisma } from "../db.js";
 import { customerEmailsEnabled } from "../email.js";
 import type { Booking, BookingStatus, User } from "../generated/prisma/client.js";
-import { rewardsForSpend, rewardsForUser } from "../rewards.js";
+import { rewardsForUser } from "../rewards.js";
 import { AdminPage, centsToInput, parseAmount, pendingCount } from "../views/admin-page.js";
 import { Field, Notice, STATUS_LABELS, StatusBadge, caymanDate, money } from "../views/layout.js";
 import { parseProfile, text } from "./account.js";
@@ -684,11 +685,6 @@ admin.post("/bookings/:id{[0-9]+}/:action", async c => {
 
 // ---------- Customers ----------
 
-async function paidByUser(userIds: number[]): Promise<Map<number, number>> {
-  if (!userIds.length) return new Map();
-  const sums = await prisma.booking.groupBy({ by: ["userId"], where: { status: "PAID", userId: { in: userIds } }, _sum: { amountPaidCents: true } });
-  return new Map(sums.map(s => [s.userId!, s._sum.amountPaidCents ?? 0]));
-}
 
 admin.get("/customers", async c => {
   const user = (await currentUser(c))!;
@@ -708,11 +704,12 @@ admin.get("/customers", async c => {
     prisma.user.findMany({ where, orderBy: { createdAt: "desc" }, take: 200, include: { _count: { select: { bookings: true } } } }),
     prisma.user.count({ where: { marketingOptIn: true } }),
   ]);
-  const paid = await paidByUser(customers.map(u => u.id));
   const notice = noticeFrom(c);
 
+  const customerRewards = new Map(await Promise.all(customers.map(async u => [u.id, await rewardsForUser(u.id)] as const)));
   return c.html(
     <AdminPage title="Customers" user={user} pending={pending} active="customers">
+      <p><a href="/admin/companies">Manage company loyalty accounts</a></p>
       {notice ? <Notice tone={notice.tone}>{notice.text}</Notice> : null}
       <div class="page-head">
         <p class="eyebrow">Admin</p>
@@ -745,7 +742,7 @@ admin.get("/customers", async c => {
             </thead>
             <tbody>
               {customers.map(u => {
-                const rewards = rewardsForSpend((paid.get(u.id) ?? 0) + u.rewardCreditCents);
+                const rewards = customerRewards.get(u.id)!;
                 return (
                   <tr>
                     <td data-label="Customer">
@@ -800,6 +797,8 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { reset
     rewardsForUser(customer.id),
     prisma.booking.findMany({ where: { userId: customer.id }, orderBy: { createdAt: "desc" }, take: 100 }),
   ]);
+  const companyId = await verifiedCompanyId(customer.id);
+  const loyaltyCompany = companyId ? await prisma.company.findUnique({ where: { id: companyId } }) : null;
   const notice = noticeFrom(c);
 
   return c.html(
@@ -879,7 +878,7 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { reset
         </div>
         <div class="stack">
           <section class="card">
-            <h2>Rewards</h2>
+            <h2>{loyaltyCompany ? `${loyaltyCompany.name} — shared company rewards` : "Rewards"}</h2>
             <dl class="facts mt-3">
               <dt>Tier</dt>
               <dd>{rewards.discountPercent ? `${rewards.tier}, ${rewards.discountPercent}% off equipment` : rewards.tier}</dd>
@@ -892,10 +891,10 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { reset
             </dl>
             <form class="amount-form mt-4" method="post" action={`/admin/customers/${customer.id}/credit`}>
               <Field
-                label="Rewards credit (CI$)"
+                label={loyaltyCompany ? "Shared company rewards credit (CI$)" : "Rewards credit (CI$)"}
                 name="credit"
                 inputmode="decimal"
-                value={centsToInput(customer.rewardCreditCents) || "0"}
+                value={centsToInput(loyaltyCompany?.rewardCreditCents ?? customer.rewardCreditCents) || "0"}
                 required
                 hint="Spend from before their account existed, or a correction. Counts toward their tier."
               />
@@ -1002,7 +1001,9 @@ admin.post("/customers/:id{[0-9]+}/:action", async c => {
     case "credit": {
       const cents = parseAmount(body.credit);
       if (cents === null) return back("bad-credit");
-      await prisma.user.update({ where: { id }, data: { rewardCreditCents: cents } });
+      const companyId = await verifiedCompanyId(id);
+      if (companyId) await prisma.company.update({ where: { id: companyId }, data: { rewardCreditCents: cents } });
+      else await prisma.user.update({ where: { id }, data: { rewardCreditCents: cents } });
       return back("credit-saved");
     }
     case "profile": {
@@ -1012,11 +1013,13 @@ admin.post("/customers/:id{[0-9]+}/:action", async c => {
         return renderCustomer(c, customer, { profileError: "Another account already uses that email." });
       }
       // A changed address has to be confirmed again, by the customer's link or the button on this page.
-      await prisma.user.update({ where: { id }, data: { ...profile, ...(profile.email !== customer.email ? { emailVerifiedAt: null } : {}) } });
+      await prisma.user.update({ where: { id }, data: { ...profile, companyAccountId: null, ...(profile.email !== customer.email ? { emailVerifiedAt: null } : {}) } });
+      await syncCompanyMembership(id);
       return back("profile-saved");
     }
     case "confirm-email":
       await prisma.user.update({ where: { id }, data: { emailVerifiedAt: customer.emailVerifiedAt ?? new Date() } });
+      await syncCompanyMembership(id);
       return back("email-confirmed");
     case "marketing-off":
       await prisma.user.update({ where: { id }, data: marketingChange(customer.marketingOptIn, false) });

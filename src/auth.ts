@@ -1,6 +1,7 @@
 import { createHash, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import type { Context, MiddlewareHandler } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
+import { companyEmailDomain, syncCompanyMembership } from "./companies.js";
 import { prisma } from "./db.js";
 import { customerEmailsEnabled } from "./email.js";
 import type { Role } from "./generated/prisma/client.js";
@@ -189,9 +190,9 @@ export async function findValidReset(token: string) {
 // ---- Email confirmation ----
 
 // Customers confirm their email before they can book. Admins are exempt, and so
-// is everyone while customer emails are switched off, since no link could reach them.
-export function mustConfirmEmail(user: Pick<SessionUser, "emailVerifiedAt" | "role">): boolean {
-  return customerEmailsEnabled() && !user.emailVerifiedAt && user.role !== "ADMIN";
+// are personal accounts while email is off. Company membership always requires verification.
+export function mustConfirmEmail(user: Pick<SessionUser, "emailVerifiedAt" | "role"> & { company?: string | null; email?: string }): boolean {
+  return !user.emailVerifiedAt && user.role !== "ADMIN" && (customerEmailsEnabled() || Boolean(user.company && user.email && companyEmailDomain(user.email)));
 }
 
 const CONFIRM_HOURS = 48;
@@ -210,6 +211,7 @@ export async function useConfirmLink(token: string): Promise<number | null> {
     prisma.user.update({ where: { id: record.userId }, data: { emailVerifiedAt: new Date() } }),
     prisma.emailVerification.deleteMany({ where: { userId: record.userId } }),
   ]);
+  await syncCompanyMembership(record.userId);
   return record.userId;
 }
 

@@ -11,6 +11,7 @@ import { hashPassword, safeNext, verifyPassword } from "./auth.js";
 import { parseDetails } from "./bookings.js";
 import { buildCatalog, ensureCatalogSeeded, setProblem } from "./catalog.js";
 import { prisma } from "./db.js";
+import { syncCompanyMembership } from "./companies.js";
 import { rewardsForSpend } from "./rewards.js";
 import { csvCell } from "./routes/admin.js";
 import { parseAmount } from "./views/admin-page.js";
@@ -116,7 +117,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   });
 
   beforeEach(async () => {
-    await prisma.$executeRawUnsafe('TRUNCATE "Booking", "Session", "PasswordReset", "EmailVerification", "User", "Product", "RiggingOption", "Upload" RESTART IDENTITY CASCADE');
+    await prisma.$executeRawUnsafe('TRUNCATE "Booking", "Session", "PasswordReset", "EmailVerification", "User", "Company", "Product", "RiggingOption", "Upload" RESTART IDENTITY CASCADE');
     await ensureCatalogSeeded();
     globalThis.fetch = realFetch;
     delete process.env.RESEND_API_KEY;
@@ -151,7 +152,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   }
 
   async function signup(email = "kim@example.com", password = "longenough1") {
-    const res = await req("/account/signup", { form: { name: "Kim Ebanks", email, phone: "345 555 0100", company: "Ebanks Build", password } });
+    const res = await req("/account/signup", { form: { name: "Kim Ebanks", email, phone: "345 555 0100", company: "", password } });
     assert.equal(res.status, 302);
     return sessionCookie(res);
   }
@@ -205,7 +206,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(data.rewards.tier, "Member");
     assert.equal(data.rewards.nextTier, "Silver");
     assert.equal(data.profile.email, "kim@example.com");
-    assert.equal(data.profile.company, "Ebanks Build");
+    assert.equal(data.profile.company, null);
     assert.equal(res.headers.get("cache-control"), "private, no-store");
   });
 
@@ -303,7 +304,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     await req("/api/bookings", { json: { ...booking, details: { phone: "345 555 0199", company: "Old Co", items: [] } }, cookie: sessionCookie(login) });
     const user = await prisma.user.findUniqueOrThrow({ where: { email: "old@example.com" } });
     assert.equal(user.phone, "345 555 0199");
-    assert.equal(user.company, "Old Co");
+    assert.equal(user.company, null, "checkout company text must not establish company membership");
   });
 
   // Turns customer emails on and records what would have been sent.
@@ -623,7 +624,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const cookie = await signup();
     const motorOnly = await req("/api/bookings", { json: { ...booking, details: { items: [{ id: "wyco-995", term: "daily", qty: 1 }] } }, cookie });
     assert.equal(motorOnly.status, 400);
-    assert.match((await motorOnly.json()).error, /Wyco 995 Electric Vibrator Motor has to be rented as a set, with one shaft and one head/);
+    assert.match((await motorOnly.json()).error, /Wyco Concrete Vibrator — Complete Rental has to be rented as a set, with one shaft and one head/);
     assert.equal(await prisma.booking.count(), 0);
     const set = [
       { id: "wyco-995", term: "daily", qty: 1 },
@@ -812,4 +813,68 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
       assert.equal((await req(path, { cookie: admin })).status, 200, path);
     }
   });
+  test("company staff are suggested only their matching verified work domain and pool loyalty", async () => {
+    const sent = captureEmails();
+    const first = await req("/account/signup", { form: { name: "First Staff", email: "first@acme.ky", phone: "345 555 0100", company: "Acme Ltd", password: "longenough1" } });
+    assert.equal(first.status, 302);
+    let firstUser = await prisma.user.findUniqueOrThrow({ where: { email: "first@acme.ky" } });
+    assert.equal(firstUser.companyAccountId, null);
+    assert.equal(await prisma.company.count(), 0);
+    await req(confirmPath(sent.find(m => m.to.includes("first@acme.ky"))!.text));
+    firstUser = await prisma.user.findUniqueOrThrow({ where: { id: firstUser.id } });
+    assert.ok(firstUser.companyAccountId);
+    const suggestion = await (await req("/account/company-suggestion?email=second%40acme.ky")).json();
+    assert.equal(suggestion.company, "Acme Ltd");
+    const other = await (await req("/account/company-suggestion?email=intruder%40other.ky")).json();
+    assert.equal(other.company, null);
+    const second = await req("/account/signup", { form: { name: "Second Staff", email: "second@acme.ky", phone: "345 555 0101", company: "Acme Ltd", password: "longenough1" } });
+    await req(confirmPath(sent.find(m => m.to.includes("second@acme.ky"))!.text));
+    const secondUser = await prisma.user.findUniqueOrThrow({ where: { email: "second@acme.ky" } });
+    assert.equal(secondUser.companyAccountId, firstUser.companyAccountId);
+    const booked = await req("/api/bookings", { json: { ...booking, details: { items: [{ id: "rt40", term: "daily", qty: 1 }] } }, cookie: sessionCookie(first) });
+    assert.equal(booked.status, 201);
+    const saved = await prisma.booking.findFirstOrThrow();
+    assert.equal(saved.companyAccountId, firstUser.companyAccountId);
+    await prisma.booking.update({ where: { id: saved.id }, data: { status: "PAID", amountPaidCents: 600000 } });
+    for (const cookie of [sessionCookie(first), sessionCookie(second)]) {
+      const data = await (await req("/api/rewards", { cookie })).json();
+      assert.equal(data.rewards.tier, "Silver");assert.equal(data.rewards.points, 6000);
+    }
+    const secondPage = await (await req("/account/profile", { cookie: sessionCookie(second) })).text();
+    assert.doesNotMatch(secondPage, new RegExp("CCC-" + String(saved.id).padStart(5, "0")), "staff do not gain access to each other's bookings");
+    const changed = await req("/account/profile", { cookie: sessionCookie(first), form: { name: "First Staff", email: "first@other.ky", company: "Other", phone: "345 555 0100" } });
+    assert.equal(changed.status, 302);
+    const moved = await prisma.user.findUniqueOrThrow({ where: { id: firstUser.id } });
+    assert.equal(moved.companyAccountId, null);assert.equal(moved.emailVerifiedAt, null);
+    assert.equal((await req("/api/bookings", { cookie: sessionCookie(first), json: booking })).status, 403, "changed work email must be verified before booking");
+    const remaining = await (await req("/api/rewards", { cookie: sessionCookie(second) })).json();
+    assert.equal(remaining.rewards.points, 6000, "company spend remains with the original company when staff leave");
+  });
+
+  test("company registration rejects personal emails, mismatched domains and checkout/profile bypasses", async () => {
+    for (const email of ["fake@gmail.com", "fake@yahoo.com", "fake@other.ky", "fake@acme.ky.attacker.com"]) {
+      const response = await req("/account/signup", { form: { name: "Intruder", email, phone: "345 555 0100", company: "Acme Ltd", password: "longenough1" } });
+      assert.equal(response.status, 400, email);
+    }
+    const cookie = await signup();
+    const profile = await req("/account/profile", { cookie, form: { name: "Kim Ebanks", email: "kim@example.com", company: "Acme Ltd", phone: "345 555 0100" } });
+    assert.equal(profile.status, 400);
+    await req("/api/bookings", { cookie, json: { ...booking, details: { company: "Acme Ltd", items: [] } } });
+    const user = await prisma.user.findUniqueOrThrow({ where: { email: "kim@example.com" } });
+    assert.equal(user.companyAccountId, null);
+    assert.equal((await prisma.booking.findFirstOrThrow()).companyAccountId, null);
+  });
+
+  test("admin company-domain mappings support trading names and company credits", async () => {
+    const adminCookie = await makeAdmin();
+    assert.equal((await req("/admin/companies", { cookie: adminCookie, form: { name: "Island Construction", domain: "ic.ky" } })).status, 302);
+    const company = await prisma.company.findUniqueOrThrow({ where: { domain: "ic.ky" } });
+    const user = await prisma.user.create({ data: { email: "staff@ic.ky", name: "Staff", company: "Island Construction", emailVerifiedAt: new Date(), passwordHash: await hashPassword("longenough1") } });
+    await syncCompanyMembership(user.id);
+    await req(`/admin/customers/${user.id}/credit`, { cookie: adminCookie, form: { credit: "6000" } });
+    assert.equal((await prisma.company.findUniqueOrThrow({ where: { id: company.id } })).rewardCreditCents, 600000);
+    assert.equal((await req("/admin/companies", { cookie: adminCookie })).status, 200);
+    assert.equal((await req("/admin/companies", { form: { name: "Bad", domain: "gmail.com" }, cookie: adminCookie })).headers.get("location"), "/admin/companies?error=invalid");
+  });
+
 });

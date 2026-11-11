@@ -31,6 +31,8 @@ model User {
   name               String
   phone              String?
   company            String?
+  companyAccountId   Int?
+  companyAccount     Company? @relation(fields: [companyAccountId], references: [id], onDelete: SetNull)
   role               Role                @default(CUSTOMER)
   rewardCreditCents  Int                 @default(0)
   // Set when the customer clicks the link in their confirmation email (or an admin confirms it).
@@ -44,6 +46,8 @@ model User {
   passwordResets     PasswordReset[]
   emailVerifications EmailVerification[]
   bookings           Booking[]
+
+  @@index([companyAccountId])
 }
 
 // Session and reset ids are SHA-256 hashes of the token given to the browser,
@@ -110,6 +114,8 @@ model Booking {
   // Structured copy of the checkout, sent alongside requestText.
   phone           String?
   company         String?
+  companyAccountId Int?
+  companyAccount Company? @relation(fields: [companyAccountId], references: [id], onDelete: SetNull)
   startDate       DateTime?     @db.Date
   startTime       String?
   area            String?
@@ -130,6 +136,7 @@ model Booking {
   @@index([userId])
   @@index([startDate])
   @@index([scheduleStart])
+  @@index([companyAccountId])
 }
 
 // Equipment on the rentals page, served to it as /catalog.js. Rates are CI$
@@ -200,4 +207,15 @@ model GoogleCalendarLink {
   events         Json     @default("{}")
   lastSyncedAt   DateTime?
   lastError      String?
+}
+
+model Company {
+  id Int @id @default(autoincrement())
+  name String
+  rewardCreditCents Int @default(0)
+  nameKey String @unique
+  domain String @unique
+  createdAt DateTime @default(now())
+  users User[]
+  bookings Booking[]
 }

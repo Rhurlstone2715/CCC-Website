@@ -133,3 +133,25 @@ Refresh tokens are encrypted in the database using AES-256-GCM with a key derive
 from `GOOGLE_CLIENT_SECRET`. Changing that secret requires reconnecting Google.
 Keep one active web replica; the worker prevents overlapping runs within that
 process and uses deterministic event IDs to avoid duplicates on retries.
+
+## Company loyalty accounts
+
+Customers can use personal accounts without a company. Shared company rewards
+require a verified work email on the registered company domain. Signup/profile
+recommend the matching company; they do not offer a directory of unrelated
+companies. Free/disposable mailbox providers are rejected for company membership.
+Domain matching uses the Public Suffix List, including private suffixes, to prevent
+lookalike-subdomain matches.
+
+After email verification, a matching company name/domain is saved and becomes
+available to other staff. For trading names or abbreviations that do not match
+the domain, admins can pre-register the mapping at `/admin/companies` (linked
+from Customers). Staff retain individual passwords, contact details and booking
+histories; verified members share company-paid booking points, tier discounts and
+company rewards credit. Admin credit changes on a linked staff account apply to
+the shared company balance.
+
+Bookings store the company ID at creation. Leaving a company or changing email
+does not move its historical spend to another company. Existing company-name
+text is not automatically trusted or merged; existing personal bookings and
+credit remain personal. Checkout company text cannot create company membership.
