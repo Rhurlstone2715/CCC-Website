@@ -158,7 +158,7 @@ const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupE
         Book equipment, track your requests and earn rental rewards. Your account discount is applied automatically.
       </p>
     </div>
-    {next.startsWith("/rentals") ? (
+    {(next.startsWith("/rentals") || next.startsWith("/equipment")) ? (
       <Notice tone="info">
         Log in or create an account to send your booking request. Your cart is saved, and checkout opens again once you're in.{" "}
         <a class="text-link" href="#signup" data-auth-link="signup">

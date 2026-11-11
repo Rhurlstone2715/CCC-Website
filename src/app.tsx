@@ -5,7 +5,7 @@ import { secureHeaders } from "hono/secure-headers";
 import { fileURLToPath } from "node:url";
 import { type AppEnv, currentUser, mustConfirmEmail, sameOriginWrites } from "./auth.js";
 import { bookingRef, parseBooking, sendBookingAlert } from "./bookings.js";
-import { catalogScript, checkSets, priceItems } from "./catalog.js";
+import { buildCatalog, catalogScript, checkSets, priceItems } from "./catalog.js";
 import { verifiedCompanyId } from "./companies.js";
 import { prisma } from "./db.js";
 import type { Prisma } from "./generated/prisma/client.js";
@@ -18,6 +18,7 @@ import { googleCalendar } from "./routes/google-calendar.js";
 import { adminCalendar } from "./routes/admin-calendar.js";
 import { adminCatalog } from "./routes/admin-catalog.js";
 import { PrivacyPage } from "./views/privacy.js";
+import { renderEquipmentPage } from "./equipment-pages.js";
 
 const publicDir = fileURLToPath(new URL("../public", import.meta.url));
 export const app = new Hono<AppEnv>();
@@ -81,7 +82,13 @@ app.get("/healthz", async c => {
 app.get("/", c => c.redirect(`/rentals${new URL(c.req.url).search}`));
 app.get("/index.html", c => c.redirect("/", 301));
 app.get("/rentals.html", c => c.redirect("/rentals", 301));
-app.get("/rentals", serveStatic({ root: publicDir, path: "rentals.html" }));
+app.get("/rentals", async c => c.html((await renderEquipmentPage("/rentals"))!));
+app.get("/equipment", async c => c.html((await renderEquipmentPage("/equipment"))!));
+app.get("/equipment/*", async c => {
+  const products = c.req.path.startsWith("/equipment/item/") ? (await buildCatalog()).products : [];
+  const html = await renderEquipmentPage(c.req.path, products as { id: string; name: string; category: string; hidden?: boolean; setPart?: string; desc?: string }[]);
+  return html ? c.html(html) : c.notFound();
+});
 
 app.get("/privacy", async c => c.html(<PrivacyPage user={await currentUser(c)} />));
 

@@ -9,6 +9,7 @@
  };
  document.addEventListener('submit',e=>{
   const form=e.target;
+  if(form.method.toUpperCase()==='GET')return;
   if(form.id==='checkoutForm'){
    const review=form.querySelector('[data-checkout-step="2"]');
    if(review.hidden)return;

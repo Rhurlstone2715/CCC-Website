@@ -8,6 +8,9 @@ import { serveStatic } from '@hono/node-server/serve-static';
 process.env.DATABASE_URL='postgresql://preview:preview@127.0.0.1:1/preview_disabled';
 delete process.env.RESEND_API_KEY;delete process.env.GOOGLE_CLIENT_SECRET;delete process.env.PUBLIC_URL;
 const {account}=await import('../dist/routes/account.js');
+const {renderEquipmentPage}=await import('../dist/equipment-pages.js');
+const snapshotText=await readFile(new URL('../data/preview-catalog.js',import.meta.url),'utf8');
+const snapshot=JSON.parse(snapshotText.slice(snapshotText.indexOf('=')+1).replace(/;\s*$/,''));
 const app=new Hono();
 const banner='<div class="preview-banner"><b>DESIGN PREVIEW</b><span>Bookings and account changes are disabled.</span><a href="/rentals?demo=1&amp;checkout=1">Try booking flow →</a></div>';
 function decorate(html){return html.replace('<head>','<head><meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="/preview-ui.css"><script src="/preview-ui.js"></script>').replace(/<body([^>]*)>/,'<body$1>'+banner)}
@@ -20,7 +23,7 @@ app.get('/account/company-suggestion',c=>{const domain=(c.req.query('email')||''
 app.get('/account/profile',c=>c.redirect('/account'));
 for(const path of ['/account','/account/forgot'])app.get(path,async c=>{const url=new URL(c.req.url);const route=path==='/account'?'/':'/forgot';const response=await account.request('http://preview'+route+url.search);return c.html(decorate(await response.text()))});
 app.get('/privacy',c=>c.html(decorate('<!doctype html><html><head><title>Preview privacy notice</title></head><body><main style="max-width:700px;margin:80px auto;font:18px/1.7 system-ui;padding:20px"><h1>Design preview</h1><p>This preview does not create accounts, process bookings or send messages. Please use sample details only.</p><a href="/rentals">Back to equipment</a></main></body></html>')));
-for(const path of ['/','/rentals'])app.get(path,async c=>c.html(decorate(await readFile(new URL('../public/rentals.html',import.meta.url),'utf8'))));
+for(const path of ['/','/rentals','/equipment','/equipment/*'])app.get(path,async c=>{const html=await renderEquipmentPage(c.req.path,snapshot.products);return html?c.html(decorate(html)):c.notFound()});
 // Serve public assets only; never expose repository files or environment variables.
 app.use('*',serveStatic({root:'./public'}));
 serve({fetch:app.fetch,port:Number(process.env.PORT||8080),hostname:'0.0.0.0'});
