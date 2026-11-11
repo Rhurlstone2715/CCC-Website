@@ -1,6 +1,6 @@
 import { Hono, type Context } from "hono";
 import type { FC } from "hono/jsx";
-import { type AppEnv, currentUser, marketingChange, requireAdmin, safeNext } from "../auth.js";
+import { type AppEnv, currentUser, marketingChange, newToken, publicUrl, requireAdmin, safeNext } from "../auth.js";
 import { bookingRef, contractSubject, contractText, parseDate, sendContract } from "../bookings.js";
 import { TERM_LABELS, type PricedLine } from "../catalog.js";
 import { verifiedCompanyId, syncCompanyMembership } from "../companies.js";
@@ -728,6 +728,7 @@ admin.get("/customers", async c => {
           </a>
         ) : null}
       </p>
+      <p class="hint">For marketing campaigns, use a fresh export and include each recipient’s Unsubscribe URL as an unsubscribe link in every marketing email.</p>
       <section class="card table-card">
         {customers.length ? (
           <table class="data-table">
@@ -779,9 +780,13 @@ admin.get("/customers", async c => {
 // Only customers who ticked "offers and news" are listed, with the date they agreed.
 admin.get("/customers/marketing.csv", async c => {
   const people = await prisma.user.findMany({ where: { marketingOptIn: true }, orderBy: { marketingOptInAt: "asc" } });
+  const links = await Promise.all(people.map(async u => {
+    const saved = u.marketingUnsubscribeToken ? u : await prisma.user.update({ where: { id: u.id }, data: { marketingUnsubscribeToken: newToken().token } });
+    return `${publicUrl(c)}/account/unsubscribe?token=${saved.marketingUnsubscribeToken}`;
+  }));
   const rows = [
-    ["Name", "Email", "Phone", "Company", "Agreed on"],
-    ...people.map(u => [u.name, u.email, u.phone, u.company, u.marketingOptInAt ? caymanStamp(u.marketingOptInAt)!.slice(0, 10) : null]),
+    ["Name", "Email", "Phone", "Company", "Agreed on", "Unsubscribe URL"],
+    ...people.map((u, i) => [u.name, u.email, u.phone, u.company, u.marketingOptInAt ? caymanStamp(u.marketingOptInAt)!.slice(0, 10) : null, links[i]]),
   ];
   const csv = "\uFEFF" + rows.map(row => row.map(csvCell).join(",")).join("\r\n") + "\r\n";
   c.header("Content-Type", "text/csv; charset=utf-8");

@@ -35,6 +35,26 @@ import { Field, Layout, Notice, PHONE_DISPLAY, PHONE_LINK, StatusBadge, WHATSAPP
 
 export const account = new Hono<AppEnv>();
 
+// GET only shows confirmation, so email link scanners do not change preferences.
+account.get("/unsubscribe", async c => {
+  c.header("Cache-Control", "no-store");
+  c.header("Referrer-Policy", "no-referrer");
+  const token = c.req.query("token") || "";
+  const user = /^[A-Za-z0-9_-]{43}$/.test(token) ? await prisma.user.findUnique({ where: { marketingUnsubscribeToken: token } }) : null;
+  if (!user) return c.html(<Layout title="Unsubscribe" area="account"><h1>Link unavailable</h1><p>You can change your marketing preference from your account.</p></Layout>, 400);
+  return c.html(<Layout title="Unsubscribe" area="account"><h1>Unsubscribe from marketing emails</h1><p>Stop offers and news from Cayman Crane. You will still receive account and booking emails.</p><form method="post" action="/account/unsubscribe"><input type="hidden" name="token" value={token} /><button class="button primary" type="submit">Unsubscribe</button></form></Layout>);
+});
+account.post("/unsubscribe", async c => {
+  c.header("Cache-Control", "no-store");
+  c.header("Referrer-Policy", "no-referrer");
+  const body = await c.req.parseBody();
+  const token = typeof body.token === "string" ? body.token : "";
+  if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return c.text("Invalid unsubscribe link.", 400);
+  const result = await prisma.user.updateMany({ where: { marketingUnsubscribeToken: token }, data: { marketingOptIn: false, marketingOptInAt: null } });
+  if (!result.count) return c.text("Invalid unsubscribe link.", 400);
+  return c.html(<Layout title="Unsubscribed" area="account"><h1>You’re unsubscribed</h1><p>Offers and news have been switched off. You will still receive account and booking emails.</p></Layout>);
+});
+
 const loginByIp = createLimiter(20, 15 * 60_000);
 const loginByEmail = createLimiter(10, 15 * 60_000);
 const signupByIp = createLimiter(10, 60 * 60_000);
@@ -105,7 +125,7 @@ type AuthState = {
 const MarketingChoice: FC<{ checked?: boolean }> = ({ checked }) => (
   <label class="check">
     <input type="checkbox" name="marketing" checked={Boolean(checked)} />
-    <span>Email me offers and news from Cayman Crane. You can stop them at any time from your account.</span>
+    <span>Marketing emails (optional): email me offers and news from Cayman Crane. Unsubscribe at any time using the link in a marketing email or from your account.</span>
   </label>
 );
 

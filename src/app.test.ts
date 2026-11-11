@@ -384,6 +384,19 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const csv = await (await req("/admin/customers/marketing.csv", { cookie: admin })).text();
     assert.match(csv, /"Lee Bodden","lee@example.com","'?345 555 0101"/);
     assert.doesNotMatch(csv, /kim@example.com/);
+    const exported = await prisma.user.findUniqueOrThrow({ where: { id: leeUser.id } });
+    assert.ok(exported.marketingUnsubscribeToken);
+    const unsubscribeUrl = `/account/unsubscribe?token=${exported.marketingUnsubscribeToken}`;
+    assert.match(csv, /Unsubscribe URL/);
+    assert.ok(csv.includes(unsubscribeUrl));
+    assert.equal((await req(unsubscribeUrl)).status, 200);
+    assert.equal((await prisma.user.findUniqueOrThrow({ where: { id: leeUser.id } })).marketingOptIn, true, "link scanners cannot opt out");
+    assert.equal((await req("/account/unsubscribe", { form: { token: "invalid" } })).status, 400);
+    const unsubscribe = await req("/account/unsubscribe", { form: { token: exported.marketingUnsubscribeToken } });
+    assert.equal(unsubscribe.status, 200);
+    assert.equal((await prisma.user.findUniqueOrThrow({ where: { id: leeUser.id } })).marketingOptIn, false);
+    assert.doesNotMatch(await (await req("/admin/customers/marketing.csv", { cookie: admin })).text(), /lee@example.com/);
+
 
     // Unticking on the profile opts out.
     await req("/account/profile", { form: { name: "Lee Bodden", email: "lee@example.com", phone: "345 555 0101" }, cookie: leeCookie });
