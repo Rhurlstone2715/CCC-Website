@@ -877,4 +877,17 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal((await req("/admin/companies", { form: { name: "Bad", domain: "gmail.com" }, cookie: adminCookie })).headers.get("location"), "/admin/companies?error=invalid");
   });
 
+  test("company registration accepts @domain and displays a saved company with its email domain", async () => {
+    const adminCookie = await makeAdmin();
+    const response = await req("/admin/companies", { cookie: adminCookie, form: { name: "Paragon Builders", domain: "@paragon.ky" } });
+    assert.equal(response.headers.get("location"), "/admin/companies?saved=1");
+    assert.equal((await prisma.company.findUniqueOrThrow({ where: { domain: "paragon.ky" } })).name, "Paragon Builders");
+    const page = await (await req("/admin/companies?saved=1", { cookie: adminCookie })).text();
+    assert.match(page, /Company registered successfully/);assert.match(page, /Paragon Builders/);assert.match(page, /@paragon.ky/);
+    const suggestion = await (await req("/account/company-suggestion?email=staff%40paragon.ky")).json();assert.equal(suggestion.company, "Paragon Builders");
+    const duplicate = await req("/admin/companies", { cookie: adminCookie, form: { name: "Paragon Builders", domain: "paragon.ky" } });
+    assert.equal(duplicate.headers.get("location"), "/admin/companies?error=duplicate");
+    const email = await req("/admin/companies", { cookie: adminCookie, form: { name: "Other Builders", domain: "staff@otherbuilders.ky" } });assert.equal(email.headers.get("location"), "/admin/companies?saved=1");
+  });
+
 });
