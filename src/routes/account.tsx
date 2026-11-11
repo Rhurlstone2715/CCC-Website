@@ -172,7 +172,7 @@ const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupE
           <Field label="Full name" name="name" value={signup?.name} required autocomplete="name" maxlength={120} />
           <Field label="Email" name="email" type="email" value={signup?.email} required autocomplete="email" maxlength={254} />
           <Field label="Phone" name="phone" type="tel" value={signup?.phone} required autocomplete="tel" maxlength={40} />
-          <Field label="Company (optional)" name="company" value={signup?.company} autocomplete="organization" maxlength={120} hint="Company rewards require a matching work-email domain and email verification. Leave blank for a personal account." />
+          <Field label="Company" name="company" value={signup?.company} autocomplete="organization" maxlength={120} hint="Company rewards require a matching work-email domain and email verification. Leave blank for a personal account." />
           <script src="/company-signup.js" defer></script>
           <Field
             label="Password"
@@ -389,7 +389,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
             <Field label="Full name" name="name" value={details.name} required autocomplete="name" maxlength={120} />
             <Field label="Email" name="email" type="email" value={details.email} required autocomplete="email" maxlength={254} />
             <Field label="Phone" name="phone" type="tel" value={details.phone} autocomplete="tel" maxlength={40} />
-            <Field label="Company (optional)" name="company" value={details.company} autocomplete="organization" maxlength={120} hint="Select the company linked to your work-email domain. Shared points activate after email verification." />
+            <Field label="Company" name="company" value={details.company} autocomplete="organization" maxlength={120} hint="Select the company linked to your work-email domain. Shared points activate after email verification." />
             <script src="/company-signup.js" defer></script>
             <MarketingChoice checked={user.marketingOptIn} />
             <div class="form-actions">
