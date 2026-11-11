@@ -17,7 +17,8 @@ export function companyEmailDomain(email: string): string | null {
 export function companyNameKey(name: string): string {
   return name.toLowerCase().replace(/\b(company|co|limited|ltd|incorporated|inc|llc|corp|corporation)\b/g, '').replace(/[^a-z0-9]/g, '');
 }
-export function companyAllowsEmail(company: { domain: string | null; ownerEmail: string | null }, email: string): boolean {
+export function companyAllowsEmail(company: { domain: string | null; ownerEmail: string | null; archivedAt?: Date | null }, email: string): boolean {
+  if (company.archivedAt) return false;
   return company.ownerEmail ? company.ownerEmail === email.trim().toLowerCase() : Boolean(company.domain && companyEmailDomain(email) === company.domain);
 }
 export async function validateCompany(email: string, name: string | null): Promise<string | null> {
@@ -25,6 +26,7 @@ export async function validateCompany(email: string, name: string | null): Promi
   const key = companyNameKey(name);
   if (!key) return "Enter a valid company name.";
   const named = await prisma.company.findUnique({ where: { nameKey: key } });
+  if (named?.archivedAt) return "That company is no longer active. Contact Cayman Crane or use a different company.";
   if (named) return companyAllowsEmail(named, email) ? null : named.ownerEmail
     ? "That company is limited to its registered email login. Use that email address or choose a different company."
     : "That company requires its matching work-email domain. Use a company work email.";

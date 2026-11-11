@@ -965,4 +965,41 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     await deliverAccountEmails();assert.equal(delivered.length,1);
   });
 
+  test("admins edit company names/domains and preserve history while rechecking linked accounts", async () => {
+    const adminCookie = await makeAdmin();
+    const company = await prisma.company.create({ data: { name: "Old Builders", nameKey: "oldbuilders", domain: "oldbuilders.ky" } });
+    const staff = await prisma.user.create({ data: { name: "Employee", email: "staff@oldbuilders.ky", company: company.name, companyAccountId: company.id, emailVerifiedAt: new Date(), passwordHash: await hashPassword("longenough1") } });
+    const rename = await req(`/admin/companies/${company.id}/update`, { cookie: adminCookie, form: { name: "New Builders", address: "@oldbuilders.ky" } });
+    assert.equal(rename.headers.get("location"), "/admin/companies?updated=1&detached=0");
+    assert.equal((await prisma.user.findUniqueOrThrow({ where: { id: staff.id } })).company, "New Builders");
+    const change = await req(`/admin/companies/${company.id}/update`, { cookie: adminCookie, form: { name: "New Builders", address: "@newbuilders.ky" } });
+    assert.equal(change.headers.get("location"), "/admin/companies?updated=1&detached=1");
+    const updated = await prisma.user.findUniqueOrThrow({ where: { id: staff.id } });assert.equal(updated.companyAccountId,null);assert.equal(updated.company,null);
+    const suggestion = await (await req("/account/company-suggestion?email=newstaff%40newbuilders.ky")).json();assert.equal(suggestion.company,"New Builders");
+    const invalid = await req(`/admin/companies/${company.id}/update`, { cookie: adminCookie, form: { name: "New Builders", address: "@gmail.com" } });assert.equal(invalid.headers.get("location"), "/admin/companies?error=invalid");
+    assert.equal((await req(`/admin/companies/${company.id}/update`, { cookie: await signup(), form: { name: "Hijack", address: "@evil.ky" } })).headers.get("location"), "/account/profile?notice=not-admin");
+  });
+
+  test("single-email company edits retain one-email restriction and archived companies stay hidden", async () => {
+    const adminCookie = await makeAdmin();
+    const company = await prisma.company.create({ data: { name: "Small Business", nameKey: "smallbusiness", ownerEmail: "owner@gmail.com" } });
+    const update = await req(`/admin/companies/${company.id}/update`, { cookie: adminCookie, form: { name: "Renamed Business", address: "newowner@gmail.com" } });assert.equal(update.status,302);
+    const saved = await prisma.company.findUniqueOrThrow({ where: { id: company.id } });assert.equal(saved.ownerEmail,"newowner@gmail.com");assert.equal(saved.domain,null);
+    await prisma.company.create({ data: { name: "A", nameKey: "archived-a", ownerEmail: "archived@invalid.invalid", archivedAt: new Date() } });
+    const page = await (await req("/admin/companies", { cookie: adminCookie })).text();assert.doesNotMatch(page, /<h3>A<\/h3>/);assert.match(page,/Save company changes/);
+    const duplicate = await req(`/admin/companies/${company.id}/update`, { cookie: adminCookie, form: { name: "Renamed Business", address: "bad email" } });assert.equal(duplicate.headers.get("location"), "/admin/companies?error=invalid");
+  });
+
+  test("company A removal preserves history and releases its domain", async () => {
+    const company = await prisma.company.create({ data: { name: "A", nameKey: "a", domain: "a.ky", rewardCreditCents: 25000 } });
+    const user = await prisma.user.create({ data: { name: "Account Owner", email: "owner@a.ky", company: "A", companyAccountId: company.id, emailVerifiedAt: new Date(), passwordHash: await hashPassword("longenough1") } });
+    const historic = await prisma.booking.create({ data: { customerName: user.name, customerEmail: user.email, requestText: "Old booking", termsText: "Terms", signature: user.name, initials: "AO", agreedToTerms: true, paymentAck: true, userId: user.id, companyAccountId: company.id } });
+    const sql = readFileSync("prisma/migrations/20261111103000_company_edit_and_remove_a/migration.sql", "utf8");
+    for (const statement of sql.slice(sql.indexOf('UPDATE "User"')).split(';').map(s => s.trim()).filter(Boolean)) await prisma.$executeRawUnsafe(statement);
+    const archived = await prisma.company.findUniqueOrThrow({ where: { id: company.id } });assert.ok(archived.archivedAt);assert.equal(archived.rewardCreditCents,25000);
+    assert.equal((archived.archivedDetails as { domain: string }).domain,"a.ky");assert.equal(await prisma.company.findUnique({ where: { domain:"a.ky" } }),null);
+    assert.equal((await prisma.booking.findUniqueOrThrow({ where: { id: historic.id } })).companyAccountId,company.id);
+    assert.equal((await prisma.user.findUniqueOrThrow({ where: { id: user.id } })).companyAccountId,null);
+  });
+
 });

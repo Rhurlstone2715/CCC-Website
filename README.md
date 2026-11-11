@@ -179,3 +179,11 @@ Both notifications use a persistent AccountEmail queue with retry backoff and
 Resend idempotency keys. The server retries pending emails every 30 seconds.
 The example at `/welcome-email-preview.html` uses the real template with sample
 customer details. Customer welcome delivery requires EMAIL_FROM and RESEND_API_KEY.
+
+Admins can edit each active company at `/admin/companies`. Changing a name updates
+linked staff profiles; changing a domain or single-login email unlinks members
+whose verified email no longer matches. Booking company IDs and historical spend
+remain attached to the original company. Inactive companies are hidden from
+registration recommendations and cannot grant shared rewards. The one-time
+removal of company A retains its history in an archived record and releases its
+old registration identifiers.

@@ -217,6 +217,8 @@ model Company {
   nameKey String @unique
   domain String? @unique
   ownerEmail String? @unique
+  archivedAt DateTime?
+  archivedDetails Json?
   createdAt DateTime @default(now())
   users User[]
   bookings Booking[]

@@ -227,7 +227,7 @@ account.get("/company-suggestion", async c => {
   const domain = companyEmailDomain(c.req.query("email") || "");
   c.header("Cache-Control", "private, no-store");
   if (!domain) return c.json({ eligible: true, mode: "single-email", company: null });
-  const company = await prisma.company.findUnique({ where: { domain }, select: { name: true } });
+  const company = await prisma.company.findFirst({ where: { domain, archivedAt: null }, select: { name: true } });
   return c.json({ eligible: true, domain, company: company?.name ?? null, suggestion: domain.split('.')[0].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) });
 });
 
