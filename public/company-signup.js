@@ -23,7 +23,7 @@
       if(!response.ok)return;
       const data=await response.json();if(current!==sequence)return;
       list.replaceChildren();
-      if(!data.eligible){showTextInput();company.value='';company.disabled=true;note.textContent='Use a company work email to join shared company rewards, or continue with a personal account.';return;}
+      if(data.mode==='single-email'){showTextInput();note.textContent='You can register a new company using this email as its only login. Other email addresses cannot join it. Verify your email to activate company rewards.';return;}
       if(data.company){
         const saved=company.value;choice.replaceChildren();
         choice.add(new Option('Select your company (optional)',''));

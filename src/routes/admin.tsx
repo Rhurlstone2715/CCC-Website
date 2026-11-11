@@ -858,7 +858,7 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { profi
         </div>
         <div class="stack">
           <section class="card">
-            <h2>{loyaltyCompany ? `${loyaltyCompany.name} — shared company rewards` : "Rewards"}</h2>
+            <h2>{loyaltyCompany ? `${loyaltyCompany.name} — ${loyaltyCompany.domain ? "shared company rewards" : "single-email company rewards"}` : "Rewards"}</h2>
             <dl class="facts mt-3">
               <dt>Tier</dt>
               <dd>{rewards.discountPercent ? `${rewards.tier}, ${rewards.discountPercent}% off equipment` : rewards.tier}</dd>
@@ -871,7 +871,7 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { profi
             </dl>
             <form class="amount-form mt-4" method="post" action={`/admin/customers/${customer.id}/credit`}>
               <Field
-                label={loyaltyCompany ? "Shared company rewards credit (CI$)" : "Rewards credit (CI$)"}
+                label={loyaltyCompany ? "Company rewards credit (CI$)" : "Rewards credit (CI$)"}
                 name="credit"
                 inputmode="decimal"
                 value={centsToInput(loyaltyCompany?.rewardCreditCents ?? customer.rewardCreditCents) || "0"}

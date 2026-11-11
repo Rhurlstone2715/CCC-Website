@@ -1,4 +1,4 @@
-import { companyEmailDomain, companyNameKey } from "./companies.js";
+import { companyAllowsEmail, companyNameKey } from "./companies.js";
 import { prisma } from "./db.js";
 
 // Matches the tiers advertised in the rewards section of public/rentals.html.
@@ -42,7 +42,7 @@ export function rewardsForSpend(spendCents: number): Rewards {
 export async function spendForUser(userId: number): Promise<number> {
   const user = await prisma.user.findUnique({ where: { id: userId }, include: { companyAccount: true } });
   if (!user) return 0;
-  const companyId = user.emailVerifiedAt && user.companyAccount && companyEmailDomain(user.email) === user.companyAccount.domain && companyNameKey(user.company || "") === user.companyAccount.nameKey ? user.companyAccount.id : null;
+  const companyId = user.emailVerifiedAt && user.companyAccount && companyAllowsEmail(user.companyAccount, user.email) && companyNameKey(user.company || "") === user.companyAccount.nameKey ? user.companyAccount.id : null;
   const paid = await prisma.booking.aggregate({ where: { ...(companyId ? { companyAccountId: companyId } : { userId, companyAccountId: null }), status: "PAID" }, _sum: { amountPaidCents: true } });
   return (paid._sum.amountPaidCents ?? 0) + (companyId ? (user.companyAccount?.rewardCreditCents ?? 0) : user.rewardCreditCents);
 }

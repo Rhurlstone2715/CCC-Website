@@ -857,7 +857,8 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(remaining.rewards.points, 6000, "company spend remains with the original company when staff leave");
   });
 
-  test("company registration rejects personal emails, mismatched domains and checkout/profile bypasses", async () => {
+  test("existing shared companies reject unrelated emails and checkout/profile bypasses", async () => {
+    await prisma.company.create({ data: { name: "Acme Ltd", nameKey: "acme", domain: "acme.ky" } });
     for (const email of ["fake@gmail.com", "fake@yahoo.com", "fake@other.ky", "fake@acme.ky.attacker.com"]) {
       const response = await req("/account/signup", { form: { name: "Intruder", email, phone: "345 555 0100", company: "Acme Ltd", password: "longenough1" } });
       assert.equal(response.status, 400, email);
@@ -913,6 +914,25 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const token = sent.at(-1)!.text.match(/\/account\/reset\?token=([\w-]+)/)![1];
     const responses = await Promise.all(["first-new-pass", "second-new-pass"].map(password => req("/account/reset", { form: { token, password } })));
     assert.deepEqual(responses.map(r => r.status).sort(), [302, 400]);
+  });
+
+  test("a company without a work domain is restricted to one verified email login", async () => {
+    const sent = captureEmails();
+    const response = await req("/account/signup", { form: { name: "Company Owner", email: "owner@gmail.com", phone: "345 555 0100", company: "Island Repairs", password: "longenough1" } });
+    assert.equal(response.status, 302);
+    assert.equal(await prisma.company.count(), 0, "unverified emails cannot reserve companies");
+    await req(confirmPath(sent.find(m => m.to.includes("owner@gmail.com"))!.text));
+    const company = await prisma.company.findUniqueOrThrow({ where: { nameKey: "islandrepairs" } });
+    assert.equal(company.domain, null);assert.equal(company.ownerEmail, "owner@gmail.com");
+    const owner = await prisma.user.findUniqueOrThrow({ where: { email: "owner@gmail.com" } });assert.equal(owner.companyAccountId, company.id);
+    const joined = await req("/account/signup", { form: { name: "Other Staff", email: "other@gmail.com", phone: "345 555 0101", company: "Island Repairs", password: "longenough1" } });
+    assert.equal(joined.status, 400);assert.match(await joined.text(), /limited to its registered email login/);
+    const recommendation = await (await req("/account/company-suggestion?email=new%40gmail.com")).json();assert.equal(recommendation.mode, "single-email");assert.equal(recommendation.company, null);
+    const booked = await req("/api/bookings", { json: booking, cookie: sessionCookie(response) });assert.equal(booked.status, 201);
+    const saved = await prisma.booking.findFirstOrThrow();assert.equal(saved.companyAccountId, company.id);
+    await prisma.booking.update({ where: { id: saved.id }, data: { status: "PAID", amountPaidCents: 600000 } });
+    const rewards = await (await req("/api/rewards", { cookie: sessionCookie(response) })).json();assert.equal(rewards.rewards.points, 6000);
+    const adminCookie = await makeAdmin();const page = await (await req("/admin/companies", { cookie: adminCookie })).text();assert.match(page,/owner@gmail.com/);assert.match(page,/one email login only/);
   });
 
 });

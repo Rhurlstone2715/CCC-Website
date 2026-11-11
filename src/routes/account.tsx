@@ -172,7 +172,7 @@ const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupE
           <Field label="Full name" name="name" value={signup?.name} required autocomplete="name" maxlength={120} />
           <Field label="Email" name="email" type="email" value={signup?.email} required autocomplete="email" maxlength={254} />
           <Field label="Phone" name="phone" type="tel" value={signup?.phone} required autocomplete="tel" maxlength={40} />
-          <Field label="Company" name="company" value={signup?.company} autocomplete="organization" maxlength={120} hint="Company rewards require a matching work-email domain and email verification. Leave blank for a personal account." />
+          <Field label="Company" name="company" value={signup?.company} autocomplete="organization" maxlength={120} hint="Use a matching work email for shared company rewards, or register a new company with this email as its only login. Email verification is required." />
           <script src="/company-signup.js" defer></script>
           <Field
             label="Password"
@@ -224,7 +224,7 @@ account.post("/login", async c => {
 account.get("/company-suggestion", async c => {
   const domain = companyEmailDomain(c.req.query("email") || "");
   c.header("Cache-Control", "private, no-store");
-  if (!domain) return c.json({ eligible: false });
+  if (!domain) return c.json({ eligible: true, mode: "single-email", company: null });
   const company = await prisma.company.findUnique({ where: { domain }, select: { name: true } });
   return c.json({ eligible: true, domain, company: company?.name ?? null, suggestion: domain.split('.')[0].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) });
 });
@@ -336,7 +336,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
       </div>
       <div class="grid-2">
         <div class="stack">
-          <>{companyId ? <p class="hint">Company loyalty: {user.company}. Verified staff share the company’s paid-booking points and tier; logins and booking histories remain separate.</p> : null}<RewardsCard rewards={rewards} /></>
+          <>{companyId ? <p class="hint">Company loyalty: {user.company}. Company rewards are linked to your verified login. Registered work-domain companies can share points across staff.</p> : null}<RewardsCard rewards={rewards} /></>
           <a class="button primary" href="/rentals#catalog">
             Browse equipment
           </a>
@@ -389,7 +389,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
             <Field label="Full name" name="name" value={details.name} required autocomplete="name" maxlength={120} />
             <Field label="Email" name="email" type="email" value={details.email} required autocomplete="email" maxlength={254} />
             <Field label="Phone" name="phone" type="tel" value={details.phone} autocomplete="tel" maxlength={40} />
-            <Field label="Company" name="company" value={details.company} autocomplete="organization" maxlength={120} hint="Select the company linked to your work-email domain. Shared points activate after email verification." />
+            <Field label="Company" name="company" value={details.company} autocomplete="organization" maxlength={120} hint="Select a matching work-domain company, or register a new company limited to this email login. Verify your email to activate rewards." />
             <script src="/company-signup.js" defer></script>
             <MarketingChoice checked={user.marketingOptIn} />
             <div class="form-actions">

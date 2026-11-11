@@ -136,10 +136,12 @@ process and uses deterministic event IDs to avoid duplicates on retries.
 
 ## Company loyalty accounts
 
-Customers can use personal accounts without a company. Shared company rewards
-require a verified work email on the registered company domain. Signup/profile
+Customers can use personal accounts, register a company limited to one verified
+email login, or join shared company rewards using a verified matching work domain. Signup/profile
 recommend the matching company; they do not offer a directory of unrelated
-companies. Free/disposable mailbox providers are rejected for company membership.
+companies. Free/disposable mailbox providers cannot establish a shared work domain, but can
+register an email-only company. Its exact verified owner email is the only allowed
+login; existing companies cannot be claimed by unrelated email addresses.
 Domain matching uses the Public Suffix List, including private suffixes, to prevent
 lookalike-subdomain matches.
 
@@ -155,3 +157,8 @@ Bookings store the company ID at creation. Leaving a company or changing email
 does not move its historical spend to another company. Existing company-name
 text is not automatically trusted or merged; existing personal bookings and
 credit remain personal. Checkout company text cannot create company membership.
+
+Email-only companies have a unique registered owner email and cannot accept staff
+with other email addresses. They are labeled with that email in Admin → Companies.
+Changing the registered email requires assistance rather than silently adding
+another login.

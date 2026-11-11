@@ -214,7 +214,8 @@ model Company {
   name String
   rewardCreditCents Int @default(0)
   nameKey String @unique
-  domain String @unique
+  domain String? @unique
+  ownerEmail String? @unique
   createdAt DateTime @default(now())
   users User[]
   bookings Booking[]
