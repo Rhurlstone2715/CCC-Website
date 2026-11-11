@@ -1,6 +1,6 @@
 import { Hono, type Context } from "hono";
 import type { FC } from "hono/jsx";
-import { type AppEnv, createResetLink, currentUser, marketingChange, requireAdmin, safeNext } from "../auth.js";
+import { type AppEnv, currentUser, marketingChange, requireAdmin, safeNext } from "../auth.js";
 import { bookingRef, contractSubject, contractText, parseDate, sendContract } from "../bookings.js";
 import { TERM_LABELS, type PricedLine } from "../catalog.js";
 import { verifiedCompanyId, syncCompanyMembership } from "../companies.js";
@@ -43,7 +43,6 @@ const NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string
   "removed-admin": { tone: "success", text: "Admin access removed. Their customer account is unchanged." },
   "cant-change-self": { tone: "error", text: "You can't remove your own admin access." },
   "admin-needed": { tone: "error", text: "There has to be at least one admin, so this account keeps admin access." },
-  "email-confirmed": { tone: "success", text: "Email marked as confirmed. They can book now." },
   "marketing-off": { tone: "success", text: "Marketing emails stopped. Leave them off the next marketing list you download." },
 };
 
@@ -790,7 +789,7 @@ admin.get("/customers/marketing.csv", async c => {
   return c.body(csv);
 });
 
-async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { resetLink?: string; profileError?: string } = {}) {
+async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { profileError?: string } = {}) {
   const user = (await currentUser(c))!;
   const [pending, rewards, bookings] = await Promise.all([
     pendingCount(),
@@ -840,13 +839,7 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { reset
               <dd>{customer.marketingOptIn ? `Agreed ${customer.marketingOptInAt ? caymanDate(customer.marketingOptInAt, false) : ""}` : "Not agreed"}</dd>
             </dl>
             <div class="actions-row mt-3">
-              {customer.emailVerifiedAt ? null : (
-                <form method="post" action={`/admin/customers/${customer.id}/confirm-email`} data-confirm={`Confirm ${customer.email} without the emailed link? Only do this if you've checked it's theirs.`}>
-                  <button class="button secondary small" type="submit">
-                    Mark email as confirmed
-                  </button>
-                </form>
-              )}
+              {customer.emailVerifiedAt ? null : <p class="muted">The customer must confirm their own email using the verification link. They can resend it from their account.</p>}
               {customer.marketingOptIn ? (
                 <form method="post" action={`/admin/customers/${customer.id}/marketing-off`} data-confirm={`Stop marketing emails to ${customer.name}?`}>
                   <button class="button secondary small" type="submit">
@@ -858,22 +851,9 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { reset
             <p class="hint">Only customers can agree to marketing, from sign-up or their account page. If one asks you to stop, use the button here.</p>
           </section>
           <section class="card">
-            <h2>Password reset link</h2>
-            <p class="muted">Create a link and send it to the customer by WhatsApp or email. It works once, for 72 hours.</p>
-            {extra.resetLink ? (
-              <div class="copy-box">
-                <input id="reset-link" type="text" readonly value={extra.resetLink} aria-label="Password reset link" />
-                <button class="button secondary small" type="button" data-copy="reset-link">
-                  Copy link
-                </button>
-              </div>
-            ) : (
-              <form class="mt-3" method="post" action={`/admin/customers/${customer.id}/reset-link`}>
-                <button class="button secondary small" type="submit">
-                  Create reset link
-                </button>
-              </form>
-            )}
+            <h2>Customer account recovery</h2>
+            <p>Customers confirm their own email and choose their own passwords. Their email address is their username.</p>
+            <a class="text-link" href="/account/forgot">Customer username / password recovery</a>
           </section>
         </div>
         <div class="stack">
@@ -1018,9 +998,7 @@ admin.post("/customers/:id{[0-9]+}/:action", async c => {
       return back("profile-saved");
     }
     case "confirm-email":
-      await prisma.user.update({ where: { id }, data: { emailVerifiedAt: customer.emailVerifiedAt ?? new Date() } });
-      await syncCompanyMembership(id);
-      return back("email-confirmed");
+      return c.text("Customers must confirm their own email using the emailed verification link.", 403);
     case "marketing-off":
       await prisma.user.update({ where: { id }, data: marketingChange(customer.marketingOptIn, false) });
       return back("marketing-off");
@@ -1033,7 +1011,7 @@ admin.post("/customers/:id{[0-9]+}/:action", async c => {
       return back("removed-admin");
     }
     case "reset-link":
-      return renderCustomer(c, customer, { resetLink: await createResetLink(c, id, 72) });
+      return c.text("Customers must request their own password reset through account recovery.", 403);
     case "delete": {
       if (id === (await currentUser(c))!.id) return back("cant-delete-self");
       if (customer.role === "ADMIN" && (await prisma.user.count({ where: { role: "ADMIN" } })) <= 1) return back("last-admin");

@@ -1,7 +1,7 @@
 import { createHash, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import type { Context, MiddlewareHandler } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
-import { companyEmailDomain, syncCompanyMembership } from "./companies.js";
+import { syncCompanyMembership } from "./companies.js";
 import { prisma } from "./db.js";
 import { customerEmailsEnabled } from "./email.js";
 import type { Role } from "./generated/prisma/client.js";
@@ -189,10 +189,9 @@ export async function findValidReset(token: string) {
 
 // ---- Email confirmation ----
 
-// Customers confirm their email before they can book. Admins are exempt, and so
-// are personal accounts while email is off. Company membership always requires verification.
-export function mustConfirmEmail(user: Pick<SessionUser, "emailVerifiedAt" | "role"> & { company?: string | null; email?: string }): boolean {
-  return !user.emailVerifiedAt && user.role !== "ADMIN" && (customerEmailsEnabled() || Boolean(user.company && user.email && companyEmailDomain(user.email)));
+// Customers prove mailbox ownership themselves before booking; admins retain access.
+export function mustConfirmEmail(user: Pick<SessionUser, "emailVerifiedAt" | "role">): boolean {
+  return !user.emailVerifiedAt && user.role !== "ADMIN";
 }
 
 const CONFIRM_HOURS = 48;
@@ -207,10 +206,15 @@ export async function createConfirmLink(c: Context, user: { id: number; email: s
 export async function useConfirmLink(token: string): Promise<number | null> {
   const record = await prisma.emailVerification.findUnique({ where: { id: hashToken(token) }, include: { user: { select: { email: true } } } });
   if (!record || record.expiresAt.getTime() <= Date.now() || record.user.email !== record.email) return null;
-  await prisma.$transaction([
-    prisma.user.update({ where: { id: record.userId }, data: { emailVerifiedAt: new Date() } }),
-    prisma.emailVerification.deleteMany({ where: { userId: record.userId } }),
-  ]);
+  const confirmed = await prisma.$transaction(async tx => {
+    const claimed = await tx.emailVerification.deleteMany({ where: { id: record.id, expiresAt: { gt: new Date() } } });
+    if (claimed.count !== 1) return false;
+    const updated = await tx.user.updateMany({ where: { id: record.userId, email: record.email }, data: { emailVerifiedAt: new Date() } });
+    if (updated.count !== 1) return false;
+    await tx.emailVerification.deleteMany({ where: { userId: record.userId } });
+    return true;
+  });
+  if (!confirmed) return null;
   await syncCompanyMembership(record.userId);
   return record.userId;
 }

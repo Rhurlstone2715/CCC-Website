@@ -154,6 +154,8 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   async function signup(email = "kim@example.com", password = "longenough1") {
     const res = await req("/account/signup", { form: { name: "Kim Ebanks", email, phone: "345 555 0100", company: "", password } });
     assert.equal(res.status, 302);
+    // Most tests use an already-verified fixture; verification flows test raw signup directly.
+    await prisma.user.update({ where: { email: email.trim().toLowerCase() }, data: { emailVerifiedAt: new Date() } });
     return sessionCookie(res);
   }
 
@@ -299,7 +301,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(noPhone.status, 400);
     assert.match(await noPhone.text(), /Enter your phone number/);
 
-    await prisma.user.create({ data: { name: "Old Account", email: "old@example.com", passwordHash: await hashPassword("longenough1") } });
+    await prisma.user.create({ data: { name: "Old Account", email: "old@example.com", emailVerifiedAt: new Date(), passwordHash: await hashPassword("longenough1") } });
     const login = await req("/account/login", { form: { email: "old@example.com", password: "longenough1" } });
     await req("/api/bookings", { json: { ...booking, details: { phone: "345 555 0199", company: "Old Co", items: [] } }, cookie: sessionCookie(login) });
     const user = await prisma.user.findUniqueOrThrow({ where: { email: "old@example.com" } });
@@ -341,7 +343,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const blocked = await req("/api/bookings", { json: booking, cookie });
     assert.equal(blocked.status, 403);
     assert.equal((await blocked.json()).confirmEmail, true);
-    assert.match(await (await req("/account/verify?next=%2Frentals%3Fcheckout%3D1", { cookie })).text(), /sent a link to <b>kim@example.com<\/b>/);
+    assert.match(await (await req("/account/verify?next=%2Frentals%3Fcheckout%3D1", { cookie })).text(), /Check the inbox for <b>kim@example.com<\/b>/);
 
     const confirmed = await req(link, { cookie });
     assert.equal(confirmed.headers.get("location"), "/rentals?checkout=1");
@@ -353,7 +355,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   test("a new email address has to be confirmed again", async () => {
     const sent = captureEmails();
     const signupRes = await req("/account/signup", { form: { name: "Kim Ebanks", email: "kim@example.com", phone: "345 555 0100", password: "longenough1" } });
-    assert.equal(signupRes.headers.get("location"), "/account/profile?notice=welcome");
+    assert.equal(signupRes.headers.get("location"), "/account/verify");
     const cookie = sessionCookie(signupRes);
     const oldLink = confirmPath(sent[0].text);
     const changed = await req("/account/profile", { form: { name: "Kim Ebanks", email: "kim.new@example.com", phone: "345 555 0100" }, cookie });
@@ -393,17 +395,16 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(after.marketingOptInAt, null);
   });
 
-  test("admins can confirm an email by hand", async () => {
+  test("customers must confirm their own email and admins cannot bypass it", async () => {
     captureEmails();
     const res = await req("/account/signup", { form: { name: "Kim Ebanks", email: "kim@example.com", phone: "345 555 0100", password: "longenough1" } });
     const cookie = sessionCookie(res);
     assert.equal((await req("/api/bookings", { json: booking, cookie })).status, 403);
     const admin = await makeAdmin();
     const page = await (await req("/admin/customers/1", { cookie: admin })).text();
-    assert.match(page, /Not confirmed yet/);
-    const done = await req("/admin/customers/1/confirm-email", { form: {}, cookie: admin });
-    assert.equal(done.headers.get("location"), "/admin/customers/1?notice=email-confirmed");
-    assert.equal((await req("/api/bookings", { json: booking, cookie })).status, 201);
+    assert.doesNotMatch(page, /action="[^"]*confirm-email/);
+    assert.equal((await req("/admin/customers/1/confirm-email", { form: {}, cookie: admin })).status, 403);
+    assert.equal((await prisma.user.findUniqueOrThrow({ where: { id: 1 } })).emailVerifiedAt, null);
   });
 
   test("the login page explains why when sent from checkout", async () => {
@@ -492,20 +493,25 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal((await prisma.booking.findUniqueOrThrow({ where: { id: 1 } })).status, "PENDING");
   });
 
-  test("admin reset link works once and logs out other sessions", async () => {
+  test("customer recovery emails their username and one-use reset link, revokes sessions and blocks admin links", async () => {
     const oldCookie = await signup();
+    const sent = captureEmails();
     const admin = await makeAdmin();
-    const page = await (await req("/admin/customers/1/reset-link", { form: {}, cookie: admin })).text();
-    const token = page.match(/\/account\/reset\?token=([\w-]+)/)?.[1];
-    assert.ok(token);
+    assert.equal((await req("/admin/customers/1/reset-link", { form: {}, cookie: admin })).status, 403);
+    const forgot = await req("/account/forgot", { form: { email: "kim@example.com" } });
+    assert.equal(forgot.status, 200);
+    const message = sent.find(m => m.to.includes("kim@example.com"))!;
+    assert.match(message.text, /Your username \(login email\): kim@example.com/);
+    const token = message.text.match(/\/account\/reset\?token=([\w-]+)/)?.[1];assert.ok(token);
     assert.equal((await req(`/account/reset?token=${token}`)).status, 200);
     const reset = await req("/account/reset", { form: { token: token!, password: "brand-new-pass" } });
     assert.equal(reset.status, 302);
     assert.equal((await req("/api/rewards", { cookie: oldCookie })).status, 401);
-    assert.equal((await req("/api/rewards", { cookie: sessionCookie(reset) })).status, 200);
-    assert.equal((await req("/account/reset", { form: { token: token!, password: "another-pass" } })).status, 400);
+    assert.equal((await req("/account/reset", { form: { token: token!, password: "another-new-pass" } })).status, 400);
     const login = await req("/account/login", { form: { email: "kim@example.com", password: "brand-new-pass" } });
     assert.equal(login.status, 302);
+    const unknown = await req("/account/forgot", { form: { email: "nobody@example.com" } });
+    assert.equal(await unknown.text(), await forgot.text(), "recovery must not disclose registered accounts");
   });
 
   test("with email set up, approval emails the contract and bookings alert the company", async () => {
@@ -783,7 +789,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
 
   test("forgot password without customer email shows how to get help", async () => {
     const page = await (await req("/account/forgot")).text();
-    assert.match(page, /We&#39;ll reset it for you|We'll reset it for you/);
+    assert.match(page, /Account recovery email is temporarily unavailable/);
   });
 
   test("pages render", async () => {
@@ -888,6 +894,25 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const duplicate = await req("/admin/companies", { cookie: adminCookie, form: { name: "Paragon Builders", domain: "paragon.ky" } });
     assert.equal(duplicate.headers.get("location"), "/admin/companies?error=duplicate");
     const email = await req("/admin/companies", { cookie: adminCookie, form: { name: "Other Builders", domain: "staff@otherbuilders.ky" } });assert.equal(email.headers.get("location"), "/admin/companies?saved=1");
+  });
+
+  test("unverified personal accounts cannot bypass confirmation when email delivery is unavailable", async () => {
+    const response = await req("/account/signup", { form: { name: "New Customer", email: "new@gmail.com", phone: "345 555 0100", password: "longenough1" } });
+    assert.equal(response.headers.get("location"), "/account/verify?notice=send-failed");
+    assert.equal((await req("/api/bookings", { json: booking, cookie: sessionCookie(response) })).status, 403);
+    const page = await (await req("/account")).text();assert.match(page, /Forgot username or password/);assert.match(page, /email address is your username/);
+  });
+
+  test("expired recovery links fail and concurrent reset requests cannot reuse the same token", async () => {
+    await signup();const sent = captureEmails();
+    await req("/account/forgot", { form: { email: "kim@example.com" } });
+    const oldToken = sent.at(-1)!.text.match(/\/account\/reset\?token=([\w-]+)/)![1];
+    await prisma.passwordReset.updateMany({ data: { expiresAt: new Date(Date.now() - 1000) } });
+    assert.equal((await req(`/account/reset?token=${oldToken}`)).status, 400);
+    await req("/account/forgot", { form: { email: "kim@example.com" } });
+    const token = sent.at(-1)!.text.match(/\/account\/reset\?token=([\w-]+)/)![1];
+    const responses = await Promise.all(["first-new-pass", "second-new-pass"].map(password => req("/account/reset", { form: { token, password } })));
+    assert.deepEqual(responses.map(r => r.status).sort(), [302, 400]);
   });
 
 });

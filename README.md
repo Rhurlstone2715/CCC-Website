@@ -31,7 +31,7 @@ Booking needs an account, so Cayman Crane always knows who is asking. Signed-out
 
 Customers sign up with their name, email, phone number and a password (company is optional). Accounts made before phone numbers were required pick theirs up from their next checkout.
 
-New customers also confirm their email before they can book: sign-up emails a link (valid 48 hours) to `/account/verify`, and until it's clicked the cart sends them to a "check your email" page with a button for a new link. Changing the email on an account means confirming the new one. Admins are exempt, accounts that existed before this count as confirmed, and an admin can confirm an email by hand from the customer's page. The check is skipped while customer emails are off, since no link could be sent.
+New customers also confirm their email before they can book: sign-up emails a link (valid 48 hours) to `/account/verify`, and until it's clicked the cart sends them to a "check your email" page with a button for a new link. Changing the email on an account means confirming the new one. Admins are exempt and previously verified accounts remain verified. Customers must confirm their own email; admins cannot bypass it. If delivery is unavailable, signup shows a resend option and bookings remain blocked until verification succeeds.
 
 Sign-up and the account page have an unticked "offers and news" box. The customer's choice and the date they agreed are stored on their account. Admin → Customers shows who agreed and offers the opted-in customers as a CSV (`/admin/customers/marketing.csv`) for a mailing tool; an admin can stop marketing for a customer who asks, but only the customer can opt in. Passwords are hashed with scrypt, and sessions are stored in the `Session` table behind an HttpOnly cookie that lasts 30 days.
 
@@ -41,7 +41,7 @@ Customers earn one point for every CI$1 an admin marks as paid on a booking they
 
 Admins log in through the normal login at `/account`, which takes them to the admin area. Customers cannot be granted admin access through the website. An admin can't remove their own access, and the last admin can't be removed.
 
-In the admin area, a booking can be approved (which emails the customer their contract), declined, cancelled, marked as paid with the amount, given a private note, or deleted. Customers can be searched, edited, given rewards credit, sent a one-time password reset link, or deleted. Deleting a customer keeps their bookings as guest bookings unless the admin ticks the box to delete those too.
+In the admin area, a booking can be approved (which emails the customer their contract), declined, cancelled, marked as paid with the amount, given a private note, or deleted. Customers can be searched, edited, given rewards credit, or deleted. Email confirmation and password recovery are customer self-service; admins cannot generate reset links or confirm customers by hand. Deleting a customer keeps their bookings as guest bookings unless the admin ticks the box to delete those too.
 
 ## Catalog
 
@@ -67,7 +67,7 @@ Every booking is saved to the `Booking` table. If `RESEND_API_KEY` is set, the s
 
 If the alert email can't be sent (no key set, or Resend is down), the booking is still saved, and the page asks the customer to send the prepared email to caymancrane@gmail.com instead. No booking is lost either way.
 
-Emails to customers (contracts on approval, password resets) need `EMAIL_FROM` on a domain verified in Resend. Until then, the admin booking page offers the contract to copy or send from your own inbox, and customers who forget their password are asked to contact Cayman Crane, who can create a reset link from the customer's admin page.
+Emails to customers (contracts on approval, password resets) need `EMAIL_FROM` on a domain verified in Resend. Until configured, account recovery shows that email delivery is unavailable. Customers use Forgot username or password on the login page: their email is their username, and the recovery email includes a single-use reset link valid for one hour. Resetting invalidates existing sessions and other outstanding reset links.
 
 ## Running locally
 

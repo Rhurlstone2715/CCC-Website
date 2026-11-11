@@ -151,14 +151,14 @@ const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupE
         <form class="form" method="post" action="/account/login">
           {loginError ? <Notice tone="error">{loginError}</Notice> : null}
           <input type="hidden" name="next" value={next} />
-          <Field label="Email" name="email" type="email" value={loginEmail} required autocomplete="email" />
+          <Field label="Email / username" name="email" type="email" value={loginEmail} required autocomplete="username" hint="Your email address is your username." />
           <Field label="Password" name="password" type="password" required autocomplete="current-password" />
           <div class="form-actions">
             <button class="button primary" type="submit">
               Log in
             </button>
             <a class="text-link" href="/account/forgot">
-              Forgot your password?
+              Forgot username or password?
             </a>
           </div>
         </form>
@@ -252,9 +252,8 @@ account.post("/signup", async c => {
   const user = await prisma.user.create({ data: { ...profile, ...marketingChange(false, marketing), passwordHash: await hashPassword(password) } });
   await startSession(c, user.id);
   if (mustConfirmEmail(user)) {
-    await sendConfirmEmail(c, user, next);
-    // Signing up on the way to checkout: show where to look before going back to book.
-    if (next) return c.redirect(`/account/verify?next=${encodeURIComponent(next)}`);
+    const sent = await sendConfirmEmail(c, user, next);
+    return c.redirect(`/account/verify?${next ? `next=${encodeURIComponent(next)}&` : ""}${sent ? "" : "notice=send-failed"}`.replace(/[?&]$/, ""));
   }
   return c.redirect(next || "/account/profile?notice=welcome");
 });
@@ -508,7 +507,7 @@ const CheckEmailPage: FC<{ user: SessionUser; next: string; notice?: string }> =
         <section class="card stack">
           {shown ? <Notice tone={shown.tone}>{shown.text}</Notice> : null}
           <p>
-            We've sent a link to <b>{user.email}</b>. Open it to confirm your email address, then you can book.
+            Check the inbox for <b>{user.email}</b>. Open the confirmation link to activate your account and book.
             {next.startsWith("/rentals") ? " Your cart is saved, and checkout opens again when you click the link on this device." : null}
           </p>
           <p class="muted">The link works for 48 hours. Can't find it? Check your spam or junk folder.</p>
@@ -584,44 +583,29 @@ account.post("/verify/resend", requireCustomer, async c => {
 
 // ---------- Password reset ----------
 
-const ContactForReset: FC = () => (
-  <p>
-    Call <a href={PHONE_LINK}>{PHONE_DISPLAY}</a> or{" "}
-    <a href={WHATSAPP_LINK} target="_blank" rel="noopener">
-      message us on WhatsApp
-    </a>{" "}
-    and we'll send you a link to reset your password.
-  </p>
-);
-
 const ForgotPage: FC<{ sent?: boolean; error?: string }> = ({ sent, error }) => (
-  <Layout title="Reset your password" area="account">
+  <Layout title="Recover your account" area="account">
     <div class="narrow">
       <div class="page-head">
         <p class="eyebrow">Your account</p>
-        <h1>Reset your password</h1>
+        <h1>Forgot username or password?</h1>
       </div>
       <section class="card">
         {!customerEmailsEnabled() ? (
-          <>
-            <h2>We'll reset it for you</h2>
-            <div class="muted">
-              <ContactForReset />
-            </div>
-          </>
+          <Notice tone="error">Account recovery email is temporarily unavailable. Please try again later. Passwords can only be reset using the private link sent to your account email.</Notice>
         ) : sent ? (
           <Notice tone="success">
-            <p>If there's an account for that email, we've sent it a reset link. The link works for one hour.</p>
+            <p>If there’s an account for that email, a recovery email will be sent with your username and a password-reset link. The link works for one hour.</p>
             <p>Nothing arrived? Check your spam folder, or call {PHONE_DISPLAY}.</p>
           </Notice>
         ) : (
           <form class="form flush" method="post" action="/account/forgot">
             {error ? <Notice tone="error">{error}</Notice> : null}
-            <p class="muted flush">Enter the email on your account and we'll send you a link to choose a new password.</p>
+            <p class="muted flush">Your email address is your username. Enter it below to receive a username reminder and a link to choose a new password. If you have forgotten which email you used, check your previous Cayman Crane booking emails.</p>
             <Field label="Email" name="email" type="email" required autocomplete="email" />
             <div class="form-actions">
               <button class="button primary" type="submit">
-                Send reset link
+                Email account recovery link
               </button>
               <a class="text-link" href="/account">
                 Back to log in
@@ -645,11 +629,12 @@ account.post("/forgot", async c => {
     const link = await createResetLink(c, user.id, 1);
     await sendEmail({
       to: user.email,
-      subject: "Reset your Cayman Crane password",
+      subject: "Your Cayman Crane username and password recovery",
       text: [
         `Hi ${user.name.split(/\s+/)[0]},`,
         "",
-        "Use this link to choose a new password for your Cayman Crane account. It works for one hour.",
+        `Your username (login email): ${user.email}`,
+        "Use this private link to choose a new password for your Cayman Crane account. It works for one hour and can only be used once.",
         "",
         link,
         "",
@@ -718,11 +703,16 @@ account.post("/reset", async c => {
   const problem = passwordProblem(password);
   if (problem) return c.html(<ResetPage token={token} error={problem} />, 400);
 
-  await prisma.$transaction([
-    prisma.user.update({ where: { id: reset.userId }, data: { passwordHash: await hashPassword(password) } }),
-    prisma.passwordReset.updateMany({ where: { userId: reset.userId, usedAt: null }, data: { usedAt: new Date() } }),
-    prisma.session.deleteMany({ where: { userId: reset.userId } }),
-  ]);
+  const passwordHash = await hashPassword(password);
+  const changed = await prisma.$transaction(async tx => {
+    const claimed = await tx.passwordReset.updateMany({ where: { id: reset.id, usedAt: null, expiresAt: { gt: new Date() } }, data: { usedAt: new Date() } });
+    if (claimed.count !== 1) return false;
+    await tx.user.update({ where: { id: reset.userId }, data: { passwordHash } });
+    await tx.passwordReset.updateMany({ where: { userId: reset.userId, usedAt: null }, data: { usedAt: new Date() } });
+    await tx.session.deleteMany({ where: { userId: reset.userId } });
+    return true;
+  });
+  if (!changed) return c.html(<ResetPage invalid />, 400);
   await startSession(c, reset.userId);
   return c.redirect("/account/profile?notice=password-reset");
 });
