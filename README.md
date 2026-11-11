@@ -162,3 +162,20 @@ Email-only companies have a unique registered owner email and cannot accept staf
 with other email addresses. They are labeled with that email in Admin → Companies.
 Changing the registered email requires assistance rather than silently adding
 another login.
+
+## Signup and welcome notifications
+
+Each new customer signup queues an admin email to BOOKING_ALERT_TO (default:
+`caymancrane@gmail.com`) titled “New customer signup — [Name]”. It includes
+contact details, the requested company, signup time in Cayman time, verification
+status and an admin account link. Passwords and verification tokens are excluded.
+
+After the customer verifies their email, a branded HTML/plain-text welcome email
+explains the loyalty program, company membership where applicable, payment rules
+and tier discounts. It is sent once per account, separately from marketing
+opt-ins. Existing verified accounts are not sent bulk welcome emails.
+
+Both notifications use a persistent AccountEmail queue with retry backoff and
+Resend idempotency keys. The server retries pending emails every 30 seconds.
+The example at `/welcome-email-preview.html` uses the real template with sample
+customer details. Customer welcome delivery requires EMAIL_FROM and RESEND_API_KEY.

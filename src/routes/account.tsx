@@ -14,6 +14,7 @@ import {
   hashPassword,
   marketingChange,
   mustConfirmEmail,
+  publicUrl,
   normalizeEmail,
   passwordProblem,
   requireCustomer,
@@ -27,6 +28,7 @@ import { bookingRef } from "../bookings.js";
 import { prisma } from "../db.js";
 import { customerEmailsEnabled, sendEmail } from "../email.js";
 import { clientIp, createLimiter } from "../ratelimit.js";
+import { queueSignupAlert, deliverAccountEmails } from "../account-emails.js";
 import { companyEmailDomain, validateCompany, syncCompanyMembership, verifiedCompanyId } from "../companies.js";
 import { TIERS, rewardsForUser, type Rewards } from "../rewards.js";
 import { Field, Layout, Notice, PHONE_DISPLAY, PHONE_LINK, StatusBadge, WHATSAPP_LINK, caymanDate, money } from "../views/layout.js";
@@ -249,10 +251,16 @@ account.post("/signup", async c => {
 
   const companyIssue = await validateCompany(profile.email, profile.company);
   if (companyIssue) return fail(companyIssue, profile);
-  const user = await prisma.user.create({ data: { ...profile, ...marketingChange(false, marketing), passwordHash: await hashPassword(password) } });
+  const passwordHash = await hashPassword(password);
+  const user = await prisma.$transaction(async tx => {
+    const created = await tx.user.create({ data: { ...profile, ...marketingChange(false, marketing), passwordHash } });
+    await queueSignupAlert(created, publicUrl(c), tx);
+    return created;
+  });
   await startSession(c, user.id);
   if (mustConfirmEmail(user)) {
     const sent = await sendConfirmEmail(c, user, next);
+    await deliverAccountEmails();
     return c.redirect(`/account/verify?${next ? `next=${encodeURIComponent(next)}&` : ""}${sent ? "" : "notice=send-failed"}`.replace(/[?&]$/, ""));
   }
   return c.redirect(next || "/account/profile?notice=welcome");

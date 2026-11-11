@@ -11,6 +11,7 @@ import { hashPassword, safeNext, verifyPassword } from "./auth.js";
 import { parseDetails } from "./bookings.js";
 import { buildCatalog, ensureCatalogSeeded, setProblem } from "./catalog.js";
 import { prisma } from "./db.js";
+import { deliverAccountEmails } from "./account-emails.js";
 import { syncCompanyMembership } from "./companies.js";
 import { rewardsForSpend } from "./rewards.js";
 import { csvCell } from "./routes/admin.js";
@@ -117,7 +118,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   });
 
   beforeEach(async () => {
-    await prisma.$executeRawUnsafe('TRUNCATE "Booking", "Session", "PasswordReset", "EmailVerification", "User", "Company", "Product", "RiggingOption", "Upload" RESTART IDENTITY CASCADE');
+    await prisma.$executeRawUnsafe('TRUNCATE "AccountEmail", "Booking", "Session", "PasswordReset", "EmailVerification", "User", "Company", "Product", "RiggingOption", "Upload" RESTART IDENTITY CASCADE');
     await ensureCatalogSeeded();
     globalThis.fetch = realFetch;
     delete process.env.RESEND_API_KEY;
@@ -313,7 +314,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   function captureEmails() {
     process.env.RESEND_API_KEY = "re_test";
     process.env.EMAIL_FROM = "Cayman Crane <bookings@example.com>";
-    const sent: { to: string[]; subject: string; text: string }[] = [];
+    const sent: { to: string[]; subject: string; text: string; html?: string }[] = [];
     globalThis.fetch = (async (_url: string, init: RequestInit) => {
       sent.push(JSON.parse(String(init.body)));
       return new Response("{}", { status: 200 });
@@ -519,7 +520,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     await prisma.user.update({ where: { id: 1 }, data: { emailVerifiedAt: new Date() } });
     process.env.RESEND_API_KEY = "re_test";
     process.env.EMAIL_FROM = "Cayman Crane <bookings@example.com>";
-    const sent: { to: string[]; subject: string; text: string }[] = [];
+    const sent: { to: string[]; subject: string; text: string; html?: string }[] = [];
     globalThis.fetch = (async (_url: string, init: RequestInit) => {
       sent.push(JSON.parse(String(init.body)));
       return new Response("{}", { status: 200 });
@@ -933,6 +934,35 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     await prisma.booking.update({ where: { id: saved.id }, data: { status: "PAID", amountPaidCents: 600000 } });
     const rewards = await (await req("/api/rewards", { cookie: sessionCookie(response) })).json();assert.equal(rewards.rewards.points, 6000);
     const adminCookie = await makeAdmin();const page = await (await req("/admin/companies", { cookie: adminCookie })).text();assert.match(page,/owner@gmail.com/);assert.match(page,/one email login only/);
+  });
+
+  test("signup alerts the admin and verification sends one loyalty welcome email", async () => {
+    const sent = captureEmails();
+    const signup = await req("/account/signup", { form: { name: "Alex Customer", email: "alex@gmail.com", phone: "345 555 0100", company: "Alex Repairs", password: "secret-pass123" } });
+    assert.equal(signup.status, 302);
+    const admin = sent.find(m => m.subject.startsWith("New customer signup"))!;assert.ok(admin);assert.equal(admin.to[0],"caymancrane@gmail.com");
+    for (const detail of ["Alex Customer", "alex@gmail.com", "345 555 0100", "Alex Repairs", "pending"]) assert.ok(admin.text.includes(detail));
+    assert.doesNotMatch(admin.text,/secret-pass123|token=/);
+    assert.equal(sent.filter(m => m.subject.startsWith("Welcome")).length, 0);
+    const verify = confirmPath(sent.find(m => m.to.includes("alex@gmail.com"))!.text);
+    await req(verify);
+    const welcome = sent.filter(m => m.subject.startsWith("Welcome"));assert.equal(welcome.length,1);
+    assert.equal(welcome[0].to[0],"alex@gmail.com");assert.match(welcome[0].text,/1 loyalty point/);
+    for (const tier of ["Silver", "Gold", "Platinum", "CI$5,000", "CI$15,000", "CI$25,000"]) assert.ok(welcome[0].html!.includes(tier));
+    assert.match(welcome[0].text,/limited to your verified email login/);
+    assert.equal((await req(verify)).status,400);await deliverAccountEmails();assert.equal(sent.filter(m => m.subject.startsWith("Welcome")).length,1);
+  });
+
+  test("failed welcome delivery remains queued and retries without duplicate successful sends", async () => {
+    const sent = captureEmails();
+    await req("/account/signup", { form: { name: "Retry Customer", email: "retry@example.com", phone: "345 555 0100", password: "longenough1" } });
+    const verify = confirmPath(sent.find(m => m.to.includes("retry@example.com"))!.text);
+    globalThis.fetch = (async()=>new Response("unavailable",{status:503})) as typeof fetch;
+    await req(verify);
+    const job = await prisma.accountEmail.findFirstOrThrow({ where: { kind: "WELCOME" } });assert.equal(job.sentAt,null);assert.equal(job.attempts,1);
+    const delivered = captureEmails();await prisma.accountEmail.update({ where: { id: job.id }, data: { nextAttemptAt: new Date(0) } });
+    await deliverAccountEmails();assert.equal(delivered.length,1);assert.ok((await prisma.accountEmail.findUniqueOrThrow({ where:{id:job.id} })).sentAt);
+    await deliverAccountEmails();assert.equal(delivered.length,1);
   });
 
 });

@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "node --env-file-if-exists=.env dist/server.js",
-    "build": "prisma generate && tsc",
+    "build": "prisma generate && tsc && node scripts/render-welcome-preview.mjs",
     "start": "prisma migrate deploy && node dist/server.js",
     "typecheck": "tsc --noEmit",
     "test:delivery": "node --test tests/delivery.test.mjs",

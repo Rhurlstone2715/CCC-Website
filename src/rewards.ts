@@ -3,12 +3,8 @@ import { prisma } from "./db.js";
 
 // Matches the tiers advertised in the rewards section of public/rentals.html.
 // One point per approved CI$1, so points are simply whole dollars spent.
-export const TIERS = [
-  { name: "Member", minCents: 0, discountPercent: 0 },
-  { name: "Silver", minCents: 5_000_00, discountPercent: 5 },
-  { name: "Gold", minCents: 15_000_00, discountPercent: 10 },
-  { name: "Platinum", minCents: 25_000_00, discountPercent: 15 },
-] as const;
+import { TIERS } from "./loyalty-tiers.js";
+export { TIERS } from "./loyalty-tiers.js";
 
 export type Rewards = {
   tier: string;

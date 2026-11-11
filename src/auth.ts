@@ -1,6 +1,7 @@
 import { createHash, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import type { Context, MiddlewareHandler } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
+import { queueWelcomeEmail, deliverAccountEmails } from "./account-emails.js";
 import { syncCompanyMembership } from "./companies.js";
 import { prisma } from "./db.js";
 import { customerEmailsEnabled } from "./email.js";
@@ -216,8 +217,12 @@ export async function useConfirmLink(token: string): Promise<number | null> {
   });
   if (!confirmed) return null;
   await syncCompanyMembership(record.userId);
+  await queueWelcomeEmail(record.userId, publicUrlForEmail());
+  await deliverAccountEmails();
   return record.userId;
 }
+
+function publicUrlForEmail() { return (process.env.PUBLIC_URL || (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "https://www.caymancrane.com")).replace(/\/$/, ""); }
 
 // Fields to save when the marketing choice changes; the date records when they agreed.
 export function marketingChange(was: boolean, now: boolean) {

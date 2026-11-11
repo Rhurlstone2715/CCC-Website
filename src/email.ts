@@ -13,22 +13,23 @@ export function customerEmailsEnabled(): boolean {
   return Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
 }
 
-type Email = { to: string; subject: string; text: string; replyTo?: string };
+type Email = { to: string; subject: string; text: string; html?: string; idempotencyKey?: string; replyTo?: string };
 
-export async function sendEmail({ to, subject, text, replyTo }: Email): Promise<boolean> {
+export async function sendEmail({ to, subject, text, html, idempotencyKey, replyTo }: Email): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return false;
 
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}) },
       body: JSON.stringify({
         from: process.env.EMAIL_FROM || TEST_SENDER,
         to: [to],
         reply_to: replyTo,
         subject: subject.replace(/[\r\n]+/g, " "),
         text,
+        ...(html ? { html } : {}),
       }),
       signal: AbortSignal.timeout(10_000),
     });

@@ -45,6 +45,7 @@ model User {
   sessions           Session[]
   passwordResets     PasswordReset[]
   emailVerifications EmailVerification[]
+  accountEmails AccountEmail[]
   bookings           Booking[]
 
   @@index([companyAccountId])
@@ -219,4 +220,19 @@ model Company {
   createdAt DateTime @default(now())
   users User[]
   bookings Booking[]
+}
+
+model AccountEmail {
+  id Int @id @default(autoincrement())
+  key String @unique
+  kind String
+  userId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipient String
+  payload Json
+  attempts Int @default(0)
+  nextAttemptAt DateTime @default(now())
+  sentAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([sentAt, nextAttemptAt])
 }
