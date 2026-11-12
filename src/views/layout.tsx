@@ -97,7 +97,10 @@ export const Layout: FC<LayoutProps> = ({ title, area, user, pendingCount, activ
         <meta name="theme-color" content="#a3070b" />
         <meta name="robots" content="noindex" />
         <title>{`${title} | Cayman Crane Company`}</title>
-        <link rel="icon" href="/assets/cayman-crane-logo.png" />
+        <link rel="icon" href="/favicon.ico?v=ccc-hook-2" sizes="any" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/assets/ccc-icon-32.png?v=hook-2" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/assets/ccc-icon-192.png?v=hook-2" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/assets/ccc-icon-180.png?v=hook-2" />
         <link rel="stylesheet" href="/portal.css" />
         <script src="/portal.js" defer></script>
       </head>
