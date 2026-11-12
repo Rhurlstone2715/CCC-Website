@@ -652,12 +652,13 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
 
   test("fuel-return conditions come from catalog engines and remain in the signed booking", async () => {
     const cookie=await signup();
-    await req("/api/bookings",{cookie,json:{...booking,details:{rentalCollection:"pickup",items:[{id:"compressor",term:"daily",qty:1,fuelType:"diesel"},{id:"diesel-mixer-9-cu-ft",term:"daily",qty:2},{id:"g25",term:"weekly",qty:1},{id:"palletjacks",term:"daily",qty:1}]}}});
+    await req("/api/bookings",{cookie,json:{...booking,details:{rentalCollection:"pickup",items:[{id:"compressor",term:"daily",qty:1,fuelType:"diesel"},{id:"diesel-mixer-9-cu-ft",term:"daily",qty:2},{id:"g25",term:"weekly",qty:1},{id:"palletjacks",term:"daily",qty:1},{id:"rt40",term:"daily",qty:1},{id:"national1400",term:"daily",qty:1}]}}});
     const saved=await prisma.booking.findFirstOrThrow();assert.equal(saved.rentalCollection,"pickup");
     assert.match(saved.termsText,/40 Gal Gas Air Compressor: Return with a full tank of gasoline/);
     assert.match(saved.termsText,/9 cu ft Towable Cement Mixer.*Return with a full tank of diesel fuel/);
     assert.match(saved.termsText,/Wacker Neuson G25: Return with a full tank of diesel fuel/);
-    assert.doesNotMatch(saved.termsText.split("FUEL RETURN REQUIREMENTS")[1],/Pallet Jacks/);
+    assert.doesNotMatch(saved.termsText.split("FUEL RETURN REQUIREMENTS")[1],/Pallet Jacks|Terex|National/);
+    for(const id of ["rt40","national1400"]) assert.equal((saved.items as {id:string;fuelType?:string}[]).find(i=>i.id===id)?.fuelType,undefined);
     const lines=saved.items as {id:string;fuelType?:string}[];assert.equal(lines.find(i=>i.id==="compressor")?.fuelType,"gasoline");assert.equal(lines.find(i=>i.id==="diesel-mixer-9-cu-ft")?.fuelType,"diesel");
     await req("/api/bookings",{cookie,json:{...booking,details:{items:[{id:"mini-welder",term:"daily",qty:1},{id:"cord100",term:"daily",qty:1}]}}});
     const electric=await prisma.booking.findFirstOrThrow({orderBy:{id:"desc"}});assert.equal(electric.termsText,booking.termsText);assert.equal(electric.rentalCollection,null);

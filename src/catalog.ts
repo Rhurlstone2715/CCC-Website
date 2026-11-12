@@ -186,7 +186,7 @@ export async function priceItems(items: CartItem[], discountPercent: number): Pr
       if (operator) operatorCents += toCents(amount);
       else equipmentCents += toCents(amount);
     }
-    return { id: item.id, name, term: item.term, qty: item.qty, rate, amount, operator, ...(product?.fuelType ? { fuelType: product.fuelType } : {}) };
+    return { id: item.id, name, term: item.term, qty: item.qty, rate, amount, operator, ...(product?.fuelType && !/crane|boom.?truck/i.test(product.category) ? { fuelType: product.fuelType } : {}) };
   });
 
   const estimateCents = anyPriced ? Math.round((equipmentCents * (100 - discountPercent)) / 100) + operatorCents : null;

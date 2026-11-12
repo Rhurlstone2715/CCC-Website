@@ -58,3 +58,12 @@ test('changing quantity or removing equipment recalculates delivery', () => {
  test('complete vibrator parts do not attract separate delivery fees', () => {
   assert.equal(checkout([line('wyco-995'),{...line('wyco-8914'),inSet:true},{...line('wyco-750d'),inSet:true}]).total,150);
  });
+
+test('cranes and boom trucks are exempt from full-tank returns while other engines retain them', () => {
+  const fn = source.split('\n').find(line => line.startsWith('function fuelReturnText('));
+  for (const product of catalog.filter(p => p.fuelType)) {
+    const result = runInNewContext(`${fn}\nfuelReturnText(product)`, {product});
+    if (/crane|boom.?truck/i.test(product.category)) assert.equal(result, '');
+    else assert.match(result, /Return with a full tank/);
+  }
+});
