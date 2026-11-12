@@ -318,6 +318,20 @@
    "needsPower": true
   },
   {
+   "id": "diesel-mixer-9-cu-ft",
+   "availableQuantity": 2,
+   "name": "9 cu ft Towable Cement Mixer (Diesel Powered)",
+   "category": "Tools",
+   "spec": "9 cu ft drum • Diesel powered • Pintle hitch",
+   "desc": "Towable, diesel-powered cement mixer with a 9 cu ft drum and pintle hitch.",
+   "image": "assets/catalog/diesel-towable-cement-mixer-9-cu-ft.webp",
+   "rates": {
+    "daily": 40,
+    "weekly": 175,
+    "monthly": 600
+   }
+  },
+  {
    "id": "wyco-8914",
    "availableQuantity": 2,
    "name": "Wyco CK-8914 Pencil Head Shaft",

@@ -594,6 +594,30 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(await prisma.product.count(), seed.products.length);
   });
 
+  test("mixer migration leaves an empty database ready for the complete catalog seed", async () => {
+    await prisma.$executeRawUnsafe('TRUNCATE "Product" CASCADE');
+    const sql=readFileSync("prisma/migrations/20261112140000_diesel_towable_cement_mixer/migration.sql","utf8");
+    await prisma.$executeRawUnsafe(sql);assert.equal(await prisma.product.count(),0);
+    await ensureCatalogSeeded();
+    const seed=JSON.parse(readFileSync("prisma/catalog-seed.json","utf8"));assert.equal(await prisma.product.count(),seed.products.length);
+    assert.ok(await prisma.product.findUnique({where:{id:"rt40"}}));
+    assert.equal((await prisma.product.findUniqueOrThrow({where:{id:"diesel-mixer-9-cu-ft"}})).availableQuantity,2);
+  });
+  test("diesel mixer reaches existing catalogs and server bookings use all three approved rates", async () => {
+    const id="diesel-mixer-9-cu-ft",sql=readFileSync("prisma/migrations/20261112140000_diesel_towable_cement_mixer/migration.sql","utf8");
+    await prisma.product.delete({where:{id}});const before=await prisma.product.count();
+    await prisma.$executeRawUnsafe(sql);await prisma.$executeRawUnsafe(sql);assert.equal(await prisma.product.count(),before+1);
+    const product=await prisma.product.findUniqueOrThrow({where:{id}});assert.equal(product.category,"Tools");assert.equal(product.availableQuantity,2);assert.equal(product.needsPower,false);assert.match(product.spec,/Pintle hitch/);
+    assert.deepEqual(product.rates,{daily:40,weekly:175,monthly:600});
+    const cookie=await signup();
+    for(const[term,rate]of Object.entries({daily:40,weekly:175,monthly:600})){
+      await req("/api/bookings",{cookie,json:{...booking,details:{items:[{id,term,qty:1,price:0}]}}});
+      const saved=await prisma.booking.findFirstOrThrow({orderBy:{id:"desc"}});assert.equal(saved.estimateCents,rate*100,term);
+    }
+    await prisma.product.update({where:{id},data:{availableQuantity:1,rates:{daily:41,weekly:175,monthly:600}}});
+    await prisma.$executeRawUnsafe(sql);const edited=await prisma.product.findUniqueOrThrow({where:{id}});assert.equal(edited.availableQuantity,1);assert.equal((edited.rates as {daily:number}).daily,41);
+  });
+
   test("catalog.js is served for the rentals page", async () => {
     const res = await req("/catalog.js");
     assert.equal(res.status, 200);
