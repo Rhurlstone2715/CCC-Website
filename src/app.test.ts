@@ -12,7 +12,7 @@ import { parseDetails } from "./bookings.js";
 import { buildCatalog, ensureCatalogSeeded, setProblem } from "./catalog.js";
 import { prisma } from "./db.js";
 import { deliverAccountEmails, queueWelcomeEmail } from "./account-emails.js";
-import { syncCompanyMembership } from "./companies.js";
+import { companyEmailDomain, syncCompanyMembership } from "./companies.js";
 import { rewardsForSpend } from "./rewards.js";
 import { csvCell } from "./routes/admin.js";
 import { parseAmount } from "./views/admin-page.js";
@@ -1023,16 +1023,20 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   });
 
 
+  const governmentDirectory = JSON.parse(readFileSync("data/government-companies.json", "utf8")) as { subCompanies: { name: string; domain: string | null; group: string }[] };
+  const governmentCount = governmentDirectory.subCompanies.length;
+  const expansionSQL = readFileSync("prisma/migrations/20261112100000_verified_company_directory_expansion/migration.sql", "utf8");
   async function seedGovernment() {
     const sql=readFileSync("prisma/migrations/20261112040000_government_subcompanies/migration.sql","utf8");
     await prisma.$executeRawUnsafe(sql.match(/INSERT INTO "Company"[^;]+;/)![0]);
     for(const statement of sql.matchAll(/INSERT INTO "SubCompany"[^;]+;/g))await prisma.$executeRawUnsafe(statement[0]);
+    for (const statement of expansionSQL.matchAll(/(?:INSERT INTO "SubCompany"|UPDATE "SubCompany")[^;]+;/g)) await prisma.$executeRawUnsafe(statement[0]);
     return prisma.company.findUniqueOrThrow({where:{domain:"gov.ky"},include:{subCompanies:true}});
   }
-  test("government directory includes all 67 grouped sub-companies and suggests only matching email domains", async () => {
-    const root=await seedGovernment();await seedGovernment();assert.equal(root.subCompanies.length,67);assert.equal(await prisma.subCompany.count(),67);assert.equal(root.poolSubcompanyRewards,false);
+  test("government directory includes all researched grouped sub-companies and suggests only matching email domains", async () => {
+    const root=await seedGovernment();await seedGovernment();assert.equal(root.subCompanies.length,governmentCount);assert.equal(await prisma.subCompany.count(),governmentCount);assert.equal(root.poolSubcompanyRewards,false);
     const groups=new Set(root.subCompanies.map(s=>s.group));assert.equal(groups.size,3);
-    const gov=await(await req("/account/company-suggestion?email=staff%40gov.ky")).json();assert.equal(gov.company,"Cayman Islands Government");assert.equal(gov.subCompanies.length,67);assert.equal(gov.requiresSubCompany,true);
+    const gov=await(await req("/account/company-suggestion?email=staff%40gov.ky")).json();assert.equal(gov.company,"Cayman Islands Government");assert.equal(gov.subCompanies.length,governmentCount);assert.equal(gov.requiresSubCompany,true);
     const nra=await(await req("/account/company-suggestion?email=staff%40nra.ky")).json();assert.equal(nra.company,root.name);assert.equal(nra.subCompanies.length,1);assert.match(nra.subCompanies[0].name,/National Roads Authority/);
     const personal=await(await req("/account/company-suggestion?email=staff%40gmail.com")).json();assert.equal(personal.company,null);
     const pwd=root.subCompanies.find(s=>s.name==="Public Works Department (PWD)")!;
@@ -1046,6 +1050,42 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const user=await prisma.user.findUniqueOrThrow({where:{email:"staff@gov.ky"}});assert.equal(user.companyAccountId,null);assert.equal(user.subCompanyId,pwd.id);
     await syncCompanyMembership(user.id);assert.equal((await prisma.user.findUniqueOrThrow({where:{id:user.id}})).companyAccountId,null);
     await prisma.user.update({where:{id:user.id},data:{emailVerifiedAt:new Date()}});await syncCompanyMembership(user.id);assert.equal((await prisma.user.findUniqueOrThrow({where:{id:user.id}})).companyAccountId,root.id);
+  });
+  test("verified government domains recommend only their own units and reject unrelated membership", async () => {
+    const root = await seedGovernment();
+    for (const domain of new Set(governmentDirectory.subCompanies.map(s => s.domain).filter(Boolean))) {
+      const suggestion = await (await req(`/account/company-suggestion?email=staff%40${domain}`)).json();
+      assert.equal(suggestion.company, root.name, String(domain));
+      assert.deepEqual(suggestion.subCompanies.map((s: {name: string}) => s.name).sort(), governmentDirectory.subCompanies.filter(s => s.domain === domain).map(s => s.name).sort());
+    }
+    const rcips = root.subCompanies.find(s => s.domain === "rcips.ky")!;
+    const pwd = root.subCompanies.find(s => s.name === "Public Works Department (PWD)")!;
+    const signup = (email: string, id: number) => req("/account/signup", {form: {name:"Police Staff",email,phone:"345 555 0111",password:"longenough1",company:root.name,subCompanyId:String(id)}});
+    assert.equal((await signup("staff@rcips.ky", pwd.id)).status,400);
+    assert.equal((await signup("staff@rcips.ky.evil.com", rcips.id)).status,400);
+    assert.equal((await signup("staff@gmail.com", rcips.id)).status,400);
+    assert.equal((await signup("staff@rcips.ky", rcips.id)).status,302);
+    const user = await prisma.user.update({where:{email:"staff@rcips.ky"},data:{emailVerifiedAt:new Date()}});
+    await syncCompanyMembership(user.id);
+    assert.equal((await prisma.user.findUniqueOrThrow({where:{id:user.id}})).companyAccountId,root.id);
+    const foreign = await (await req("/account/company-suggestion?email=unrelated%40fcdo.gov.uk")).json();
+    assert.equal(foreign.company,null);
+  });
+  test("Cayman business expansion preserves existing company ownership and matches each verified domain", async () => {
+    const directory = JSON.parse(readFileSync("data/cayman-pool-logistics-transport-companies.json", "utf8")) as {companies: {name:string;domain:string;publishedEmail:string}[]};
+    const sql = expansionSQL.match(/INSERT INTO "Company"[^;]+;/)![0];
+    const first = directory.companies[0];
+    const existing = await prisma.company.create({data:{name:"Existing Pool Account",nameKey:"existingpoolaccount",domain:first.domain,rewardCreditCents:9876}});
+    await prisma.$executeRawUnsafe(sql);await prisma.$executeRawUnsafe(sql);
+    assert.equal(await prisma.company.count(),directory.companies.length);
+    const preserved = await prisma.company.findUniqueOrThrow({where:{id:existing.id}});
+    assert.equal(preserved.name,existing.name);assert.equal(preserved.rewardCreditCents,9876);
+    for (const entry of directory.companies) {
+      assert.equal(companyEmailDomain(entry.publishedEmail),entry.domain);
+      const suggestion = await (await req(`/account/company-suggestion?email=staff%40${entry.domain}`)).json();
+      assert.equal(suggestion.company,entry.domain===first.domain?existing.name:entry.name);
+    }
+    assert.equal((await (await req("/account/company-suggestion?email=staff%40candw.ky")).json()).company,null);
   });
   test("government loyalty and credits stay with each sub-company and bookings keep their original department", async () => {
     const root=await seedGovernment();const pwd=root.subCompanies.find(s=>s.name==="Public Works Department (PWD)")!,planning=root.subCompanies.find(s=>s.name==="Department of Planning")!;
@@ -1062,7 +1102,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const latest=await prisma.booking.findFirstOrThrow({where:{userId:one.user.id,status:"PENDING"}});assert.equal(latest.subCompanyId,pwd.id);assert.equal(latest.companyAccountId,root.id);assert.match(latest.company!,/Public Works Department/);
     await req("/account/profile",{cookie:one.cookie,form:{name:"Gov Staff",email:"one@gov.ky",phone:"345 555 0111",company:root.name,subCompanyId:String(planning.id)}});
     assert.equal(await points(one.cookie),2000);assert.equal(await points(two.cookie),6100);assert.equal((await prisma.booking.findUniqueOrThrow({where:{id:old.id}})).subCompanyId,pwd.id);
-    const parentPage=await(await req("/admin/companies",{cookie:admin})).text();assert.match(parentPage,/67 sub-companies/);assert.match(parentPage,/Separate loyalty points/);
+    const parentPage=await(await req("/admin/companies",{cookie:admin})).text();assert.ok(parentPage.includes(`${governmentCount} sub-companies`));assert.match(parentPage,/Separate loyalty points/);
     const renamed=await req(`/admin/companies/${root.id}/sub-companies/${pwd.id}/update`,{cookie:admin,form:{name:"Public Works Department - Updated",domain:""}});assert.equal(renamed.status,302);assert.equal((await prisma.subCompany.findUniqueOrThrow({where:{id:pwd.id}})).name,"Public Works Department - Updated");
     assert.equal((await req(`/admin/companies/${root.id}/sub-companies/${pwd.id}/update`,{cookie:two.cookie,form:{name:"Hijack",domain:"gmail.com"}})).status,302);
   });

@@ -6,341 +6,1970 @@
     {
       "name": "Office of the Premier (OTP)",
       "group": "Executive Offices, Ministries & Portfolios",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Office of the Premier (OTP)"
+      ],
+      "publishedEmails": [
+        "officeofthepremier@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Office of the Deputy Governor",
       "group": "Executive Offices, Ministries & Portfolios",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Office of The Deputy Governor (ODG)"
+      ],
+      "publishedEmails": [
+        "botc@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Cabinet Office",
       "group": "Executive Offices, Ministries & Portfolios",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cabinet Office"
+      ],
+      "publishedEmails": [
+        "queriescaboffice@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Ministry of Caymanian Employment & Immigration (MCEI)",
       "group": "Executive Offices, Ministries & Portfolios",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Ministry of Caymanian Employment & Immigration (MCEI)"
+      ],
+      "publishedEmails": [
+        "mcei@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Ministry of District Administration & Home Affairs (MDAHA)",
       "group": "Executive Offices, Ministries & Portfolios",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Ministry of District Administration & Home Affairs (MDAHA)"
+      ],
+      "publishedEmails": [
+        "mdaha.info@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Ministry of Education & Training (MoET)",
       "group": "Executive Offices, Ministries & Portfolios",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Ministry of Education & Training (MoET)"
+      ],
+      "publishedEmails": [
+        "moet@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Ministry of Finance & Economic Development (MFED)",
       "group": "Executive Offices, Ministries & Portfolios",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Ministry of Finance & Economic Development (MFED)"
+      ],
+      "publishedEmails": [
+        "foi.fin@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Ministry of Financial Services & Commerce (MFSC)",
       "group": "Executive Offices, Ministries & Portfolios",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Ministry of Financial Services & Commerce (MFSC)"
+      ],
+      "publishedEmails": [
+        "fsinquiries@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Ministry of Health, Environment & Sustainability (MHES)",
       "group": "Executive Offices, Ministries & Portfolios",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Ministry of Health, Environment & Sustainability (MHES)"
+      ],
+      "publishedEmails": [
+        "healthandwellness@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Ministry of Planning, Lands, Agriculture, Housing & Infrastructure (MPLAHI)",
       "group": "Executive Offices, Ministries & Portfolios",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Ministry of Planning, Lands, Agriculture, Housing & Infrastructure (MPLAHI)"
+      ],
+      "publishedEmails": [
+        "publicrelations.plahi@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Ministry of Social Development & Innovation (MSDI)",
       "group": "Executive Offices, Ministries & Portfolios",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Ministry of Social Development & Innovation (MSDI)"
+      ],
+      "publishedEmails": [
+        "miisd@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Ministry of Tourism & Trade Development (MTTD)",
       "group": "Executive Offices, Ministries & Portfolios",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Ministry of Tourism & Trade Development (MTTD)"
+      ],
+      "publishedEmails": [
+        "admin.motp@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Ministry of Youth, Sports, Culture & Heritage (MYSCH)",
       "group": "Executive Offices, Ministries & Portfolios",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Ministry of Youth, Sports, Culture & Heritage (MYSCH)"
+      ],
+      "publishedEmails": [
+        "ysch-admin@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Portfolio of Legal Affairs (PoLA)",
       "group": "Executive Offices, Ministries & Portfolios",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Portfolio of Legal Affairs (PoLA)"
+      ],
+      "publishedEmails": [
+        "info.pola@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Portfolio of the Civil Service (PoCS)",
       "group": "Executive Offices, Ministries & Portfolios",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Portfolio of the Civil Service (PoCS)"
+      ],
+      "publishedEmails": [
+        "pocs@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Appeals Tribunal Secretariat",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Appeals Tribunal Secretariat"
+      ],
+      "publishedEmails": [
+        "queriescaboffice@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Cabinet Secretariat",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cabinet Secretariat"
+      ],
+      "publishedEmails": [
+        "queriescaboffice@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Cayman Brac Adult Training Centre (CBATC)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Brac Adult Training Centre (CBATC)",
+        "Joy Marie Tibbetts Adult Training Centre"
+      ],
+      "publishedEmails": [
+        "cbatc@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible.",
+      "aliases": [
+        "Joy Marie Tibbetts Adult Training Centre"
+      ]
     },
     {
       "name": "Cayman Brac Museum",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Brac Museum"
+      ],
+      "publishedEmails": [
+        "chevala.burke@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Cayman Islands Cadet Corps",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands Cadet Corps"
+      ],
+      "publishedEmails": [
+        "cadetcorps@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Cayman Islands Centre for Business Development (CICBD)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands Centre for Business Development (CICBD)"
+      ],
+      "publishedEmails": [
+        "cicbd@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Cayman Islands Customs & Border Control (CBC)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Customs and Border Control (CBC)"
+      ],
+      "publishedEmails": [
+        "cbc.onlinesupport@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Cayman Islands Fire Service (CIFS)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands Fire Service (CIFS)"
+      ],
+      "publishedEmails": [
+        "cifsenquiry@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Cayman Islands General Registry",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands General Registry"
+      ],
+      "publishedEmails": [
+        "cigenreg@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Cayman Islands Government Offices (Asia, North America & UK)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands Government Office - Asia",
+        "Cayman Islands Government Office - North America",
+        "Cayman Islands Government Office in the United Kingdom (CIGO-UK)"
+      ],
+      "publishedEmails": [
+        "info.cigo@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Cayman Islands Government Television (CIGTV)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands Government Television (CIGTV)"
+      ],
+      "publishedEmails": [
+        "communications@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Cayman Islands National Archive (CINA)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands National Archive (CINA)"
+      ],
+      "publishedEmails": [
+        "cina@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Cayman Islands National Weather Service (CINWS)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands National Weather Service (CINWS)"
+      ],
+      "publishedEmails": [
+        "met.office@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Cayman Islands Postal Service (CIPS)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands Postal Service (CIPS)"
+      ],
+      "publishedEmails": [
+        "caymanpost@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Cayman Islands Public Library Service",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": "library.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands Public Library Service (CIPLS)"
+      ],
+      "publishedEmails": [
+        "info@library.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Commissions Secretariat",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": "humanrightscommission.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Commissions Secretariat"
+      ],
+      "publishedEmails": [
+        "info@humanrightscommission.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Computer Services Department (CSD)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Computer Services Department (CSD)"
+      ],
+      "publishedEmails": [
+        "infocsd@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department for International Tax Cooperation (DITC)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department for International Tax Cooperation (DITC)"
+      ],
+      "publishedEmails": [
+        "caymancbcrportal@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Agriculture",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Agriculture (DoA)"
+      ],
+      "publishedEmails": [
+        "agriculture@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Children & Family Services (DCFS)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Children and Family Services (DCFS)"
+      ],
+      "publishedEmails": [
+        "dcfs@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Commerce & Investment (DCI)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Commerce and Investment (DCI)"
+      ],
+      "publishedEmails": [
+        "info@dci.gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Communications",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Communications (DoC)"
+      ],
+      "publishedEmails": [
+        "communications@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Community Rehabilitation",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Community Rehabilitation (DCR)"
+      ],
+      "publishedEmails": [
+        "dcr.info@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Counselling Services",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Counselling Services (DCS)"
+      ],
+      "publishedEmails": [
+        "counselling.services@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of District Administration",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of District Administration (Cayman Brac)"
+      ],
+      "publishedEmails": [
+        "chevala.burke@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Education Services (DES)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Education Services (DES)"
+      ],
+      "publishedEmails": [
+        "moetcommunications@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Environment (DoE)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Environment (DoE)"
+      ],
+      "publishedEmails": [
+        "doe@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Environmental Health (DEH)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Environmental Health (DEH)"
+      ],
+      "publishedEmails": [
+        "dehcustomerservice@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Financial Assistance",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Financial Assistance (DFA)"
+      ],
+      "publishedEmails": [
+        "dfainfo@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Health Regulatory Services (DHRS)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Health Regulatory Services (DHRS)"
+      ],
+      "publishedEmails": [
+        "hic@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Labour & Pensions (DLP)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Labour and Pensions (DLP)"
+      ],
+      "publishedEmails": [
+        "dlp@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Planning",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Planning"
+      ],
+      "publishedEmails": [
+        "planning.dept@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Public Safety Communications",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+      "directoryNames": [
+        "Department of Public Safety Communications (DPSC)"
+      ],
+      "publishedEmails": [
+        "foi.psc@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Sports",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Sports (DoS)"
+      ],
+      "publishedEmails": [
+        "sports@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Vehicle & Drivers' Licensing (DVDL)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Vehicle and Drivers Licensing (DVDL)"
+      ],
+      "publishedEmails": [
+        "dvdl.helpdesk@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Department of Vehicle & Equipment Services (DVES)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Vehicle and Equipment Services (DVES)"
+      ],
+      "publishedEmails": [
+        "dvesfleetmanagement@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Economics & Statistics Office (ESO)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Economics and Statistics Office (ESO)"
+      ],
+      "publishedEmails": [
+        "economics.statistics@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Hazard Management Cayman Islands (HMCI)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Hazard Management Cayman Islands (HMCI)"
+      ],
+      "publishedEmails": [
+        "hmci@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "HM Cayman Islands Prison Service",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "His Majesty's Cayman Islands Prison Service (HMCIPS)"
+      ],
+      "publishedEmails": [
+        "hmcips.info@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Lands & Survey Department",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://www.caymanlandinfo.ky/support/contact-us",
+      "directoryNames": [
+        "Lands and Survey Department (LSD)"
+      ],
+      "publishedEmails": [
+        "landsurv.info@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Mosquito Research & Control Unit (MRCU)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Mosquito Research and Control Unit (MRCU)"
+      ],
+      "publishedEmails": [
+        "mrcu@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Office of the Auditor General",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Office of the Auditor General (OAG)"
+      ],
+      "publishedEmails": [
+        "auditorgeneral@oag.gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Office of the Director of Public Prosecutions (DPP)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Office of Director of Public Prosecutions (ODPP)"
+      ],
+      "publishedEmails": [
+        "dppinternationalrequests@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Poinciana Rehabilitation Centre",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+      "directoryNames": [
+        "Poinciana Rehabilitation Centre"
+      ],
+      "publishedEmails": [
+        "foi.prc@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Public Works Department (PWD)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Public Works Department (PWD)"
+      ],
+      "publishedEmails": [
+        "pwdadmin@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Radio Cayman",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Radio Cayman"
+      ],
+      "publishedEmails": [
+        "radiocayman@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Sunrise Adult Training Centre",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Sunrise Adult Training Centre (SATC)"
+      ],
+      "publishedEmails": [
+        "infosatc@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Treasury Department",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+      "directoryNames": [
+        "Treasury Department"
+      ],
+      "publishedEmails": [
+        "foi.tsy@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Workforce Opportunities & Residency Cayman (WORC)",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Workforce Opportunities & Residency Cayman (WORC)"
+      ],
+      "publishedEmails": [
+        "worc@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "Youth Services Unit",
       "group": "Departments, Sections & Units",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Youth Services Unit (YSU)"
+      ],
+      "publishedEmails": [
+        "info.ysu@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "National Housing Development Trust (NHDT)",
       "group": "Statutory Authorities & Other Public Entities",
-      "domain": null
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "National Housing Development Trust (NHDT)"
+      ],
+      "publishedEmails": [
+        "nhdt@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
     },
     {
       "name": "National Roads Authority (NRA)",
       "group": "Statutory Authorities & Other Public Entities",
-      "domain": "nra.ky"
+      "domain": "nra.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "National Roads Authority (NRA)"
+      ],
+      "publishedEmails": [
+        "nra@nra.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Governor's Office",
+      "group": "Executive Offices, Ministries & Portfolios",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Governor's Office"
+      ],
+      "publishedEmails": [
+        "governorsoffice.cayman@fcdo.gov.uk"
+      ],
+      "emailEvidence": "Published address uses the shared UK FCDO domain. That domain is not enabled for automatic Cayman membership; only verified gov.ky accounts are eligible."
+    },
+    {
+      "name": "Royal Cayman Islands Police Service (RCIPS)",
+      "group": "Departments, Sections & Units",
+      "domain": "rcips.ky",
+      "source": "https://www.rcips.ky/employee-privacy-policy",
+      "directoryNames": [
+        "Office of the Commissioner of Police (OCP)",
+        "Royal Cayman Islands Police Service (RCIPS)"
+      ],
+      "publishedEmails": [
+        "pr@rcips.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible.",
+      "aliases": [
+        "Office of the Commissioner of Police (OCP)"
+      ]
+    },
+    {
+      "name": "Cayman Brac Government Day Care Centre",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Brac Government Day Care Centre"
+      ],
+      "publishedEmails": [],
+      "emailEvidence": "Listed government unit; no individual email published in the directory. Eligibility uses the verified parent gov.ky domain only."
+    },
+    {
+      "name": "Cayman Brac Heritage House",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Brac Heritage House"
+      ],
+      "publishedEmails": [],
+      "emailEvidence": "Listed government unit; no individual email published in the directory. Eligibility uses the verified parent gov.ky domain only."
+    },
+    {
+      "name": "Cayman Islands Coast Guard (CICG)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands Coast Guard (CICG)"
+      ],
+      "publishedEmails": [
+        "hq@cicg.gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Cayman Islands Department of Tourism (CIDOT)",
+      "group": "Departments, Sections & Units",
+      "domain": "caymanislands.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands Department of Tourism (CIDOT)"
+      ],
+      "publishedEmails": [
+        "contact_us@caymanislands.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Cayman Islands Intellectual Property Office (CIIPO)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands Intellectual Property Office (CIIPO)"
+      ],
+      "publishedEmails": [
+        "info@ciipo.gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Auditors Oversight Authority (AOA)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "aoa.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Auditors  Oversight Authority (AOA)"
+      ],
+      "publishedEmails": [
+        "kimberly.lutz@aoa.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Cayman Airways",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "caymanairways.net",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Airways"
+      ],
+      "publishedEmails": [
+        "customerrelations@caymanairways.net"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Cayman Islands Airports Authority (CIAA)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "caymanairports.com",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands Airports Authority (CIAA)"
+      ],
+      "publishedEmails": [
+        "ciaa@caymanairports.com"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Cayman Islands Development Bank (CIDB)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "cidb.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands Development Bank (CIDB)"
+      ],
+      "publishedEmails": [
+        "cidb.manager@cidb.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Cayman Islands Monetary Authority (CIMA)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "cima.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands Monetary Authority (CIMA)"
+      ],
+      "publishedEmails": [
+        "contactpublicrelations@cima.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Cayman Islands National Attractions Authority (CINAA)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "cinaa.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands National Attractions Authority (CINAA)"
+      ],
+      "publishedEmails": [
+        "info@cinaa.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Cayman Islands National Insurance Company (CINICO)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "cinico.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands National Insurance Company (CINICO)"
+      ],
+      "publishedEmails": [
+        "hhccinico@cinico.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Cayman Islands National Museum",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "museum.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands National Museum"
+      ],
+      "publishedEmails": [
+        "info@museum.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Maritime Authority of the Cayman Islands (MACI)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "cishipping.com",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands Shipping Registry",
+        "Maritime Authority of the Cayman Islands(MACI)"
+      ],
+      "publishedEmails": [
+        "pr@cishipping.com",
+        "cisr@cishipping.com"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible.",
+      "aliases": [
+        "Cayman Islands Shipping Registry"
+      ]
+    },
+    {
+      "name": "Cayman Islands Stock Exchange (CSX)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "csx.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands Stock Exchange (CSX)"
+      ],
+      "publishedEmails": [
+        "csx@csx.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Cayman National Cultural Foundation (CNCF)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "artscayman.org",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman National Cultural Foundation (CNCF)"
+      ],
+      "publishedEmails": [
+        "office@artscayman.org"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Cayman Turtle Centre: Island Wildlife Encounter",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "turtle.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Turtle Centre: Island Wildlife Encounter"
+      ],
+      "publishedEmails": [
+        "info@turtle.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Children and Youth Services Foundation (CAYS)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "cays.org.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Children and Youth Services Foundation (CAYS)"
+      ],
+      "publishedEmails": [
+        "caysmanagers@cays.org.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Civil Aviation Authority Cayman Islands (CAA)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "caacayman.com",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Civil Aviation Authority Cayman Islands (CAA)"
+      ],
+      "publishedEmails": [
+        "civil.aviation@caacayman.com"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Health Services Authority (HSA)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "hsa.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Health Services Authority (HSA)"
+      ],
+      "publishedEmails": [
+        "info@hsa.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "National Drug Council (NDC)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "ndc.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "National Drug Council (NDC)"
+      ],
+      "publishedEmails": [
+        "info@ndc.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "National Gallery of the Cayman Islands (NGCI)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "nationalgallery.org.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "National Gallery of the Cayman Islands (NGCI)"
+      ],
+      "publishedEmails": [
+        "communications@nationalgallery.org.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Cayman Islands Regiment",
+      "group": "Departments, Sections & Units",
+      "domain": "ciregiment.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cayman Islands Regiment"
+      ],
+      "publishedEmails": [
+        "info@ciregiment.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Central Procurement Office",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Central Procurement Office"
+      ],
+      "publishedEmails": [
+        "taraq.bashir@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Civil Service College (CSC)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Civil Service College (CSC)"
+      ],
+      "publishedEmails": [
+        "csc@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Corporate Unit",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Corporate Unit"
+      ],
+      "publishedEmails": [
+        "info@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Cyber Security Unit",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Cyber Security Unit"
+      ],
+      "publishedEmails": [],
+      "emailEvidence": "Listed government unit; no individual email published in the directory. Eligibility uses the verified parent gov.ky domain only."
+    },
+    {
+      "name": "Department of eGovernment (eGov)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of eGovernment (eGov)"
+      ],
+      "publishedEmails": [
+        "egov@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Port Authority of the Cayman Islands (PACI)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "caymanport.com",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Port Authority of the Cayman Islands (PACI)"
+      ],
+      "publishedEmails": [
+        "support@caymanport.com"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Public Service Pensions Board (PSPB)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "pspb.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Public Service Pensions Board (PSPB)"
+      ],
+      "publishedEmails": [
+        "pspb@pspb.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Sister Islands Affordable Housing Development Corporation (SIAH)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": null,
+      "source": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+      "directoryNames": [
+        "Sister Islands Affordable Housing Development Corporation (SIAH)"
+      ],
+      "publishedEmails": [
+        "siahdc@candw.ky",
+        "foi.sih@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "University College of the Cayman Islands (UCCI)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "ucci.edu.ky",
+      "source": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+      "directoryNames": [
+        "University College of the Cayman Islands (UCCI)"
+      ],
+      "publishedEmails": [
+        "foi@ucci.edu.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Utility Regulation and Competition Office (OfReg)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "ofreg.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Utility Regulation and Competition Office (OfReg)"
+      ],
+      "publishedEmails": [
+        "info@ofreg.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Water Authority (WA)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "waterauthority.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Water Authority (WA)"
+      ],
+      "publishedEmails": [
+        "info@waterauthority.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Department of Facilities Management (DFM)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Department of Facilities Management (DFM)"
+      ],
+      "publishedEmails": [
+        "fm.helpdesk@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "District Office (Little Cayman)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "District Office (Little Cayman)"
+      ],
+      "publishedEmails": [],
+      "emailEvidence": "Listed government unit; no individual email published in the directory. Eligibility uses the verified parent gov.ky domain only."
+    },
+    {
+      "name": "Early Childhood Care & Education Unit (ECCE)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Early Childhood Care & Education Unit (ECCE)"
+      ],
+      "publishedEmails": [
+        "ecce@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Elections Office",
+      "group": "Departments, Sections & Units",
+      "domain": "elections.ky",
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Elections Office"
+      ],
+      "publishedEmails": [
+        "office@elections.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Financial Administration",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Financial Administration"
+      ],
+      "publishedEmails": [],
+      "emailEvidence": "Listed government unit; no individual email published in the directory. Eligibility uses the verified parent gov.ky domain only."
+    },
+    {
+      "name": "Financial Reporting Authority (FRA)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Financial Reporting Authority (FRA)"
+      ],
+      "publishedEmails": [
+        "financialreportingauthority@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Gender Affairs Unit (GAU)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Gender Affairs Unit (GAU)"
+      ],
+      "publishedEmails": [
+        "gau@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Health Practice Commission (HPC)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Health Practice Commission (HPC)"
+      ],
+      "publishedEmails": [
+        "hpbusers@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Immigration Appeals Secretariat",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Immigration Appeals Secretariat"
+      ],
+      "publishedEmails": [
+        "iat@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Immigration Appeals Tribunal",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Immigration Appeals Tribunal"
+      ],
+      "publishedEmails": [
+        "iat@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Information Rights Unit",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Information Rights Unit"
+      ],
+      "publishedEmails": [
+        "queriescaboffice@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Information, Communications & Technology (ICT) Unit",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Information, Communications & Technology (ICT) Unit"
+      ],
+      "publishedEmails": [],
+      "emailEvidence": "Listed government unit; no individual email published in the directory. Eligibility uses the verified parent gov.ky domain only."
+    },
+    {
+      "name": "Internal Audit Services (IAS)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Internal Audit Services (IAS)"
+      ],
+      "publishedEmails": [
+        "john.wesley@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Law Revision",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Law Revision"
+      ],
+      "publishedEmails": [
+        "cilawreform@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Legislative Drafting Department",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Legislative Drafting Department"
+      ],
+      "publishedEmails": [
+        "info.pola@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Management Support Unit",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Management Support Unit"
+      ],
+      "publishedEmails": [],
+      "emailEvidence": "Listed government unit; no individual email published in the directory. Eligibility uses the verified parent gov.ky domain only."
+    },
+    {
+      "name": "National Energy Policy (NEP)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "National Energy Policy (NEP)"
+      ],
+      "publishedEmails": [
+        "energy@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "National Maritime Affairs Secretariat",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "National Maritime Affairs Secretariat"
+      ],
+      "publishedEmails": [
+        "mfscpublic@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "National Training & Development Unit (NTDU)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "National Training & Development Unit (NTDU)"
+      ],
+      "publishedEmails": [
+        "moet@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Office for Strategic Action on Illicit Finance (OSAIF)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Office for Strategic Action on Illicit Finance (OSAIF)"
+      ],
+      "publishedEmails": [
+        "amlu@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Office of Educational Standards (OES)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Office of Educational Standards (OES)"
+      ],
+      "publishedEmails": [
+        "adminoes@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Passport & Corporate Services Office (P&CSO)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Passport & Corporate Services Office (P&CSO)"
+      ],
+      "publishedEmails": [
+        "passport&corporate@gov.ky",
+        "corporate@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Policy Coordination Unit (PCU)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Policy Coordination Unit (PCU)"
+      ],
+      "publishedEmails": [
+        "queriescaboffice@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Protocol Office",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Protocol Office"
+      ],
+      "publishedEmails": [
+        "protocol@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Public Lands Inspectorate",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Public Lands Inspectorate"
+      ],
+      "publishedEmails": [
+        "plc@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Public Transport Unit (PTU)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Public Transport Unit (PTU)"
+      ],
+      "publishedEmails": [
+        "cayman.transport@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Public Works - Cayman Brac & Little Cayman",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Public Works - Cayman Brac & Little Cayman"
+      ],
+      "publishedEmails": [],
+      "emailEvidence": "Listed government unit; no individual email published in the directory. Eligibility uses the verified parent gov.ky domain only."
+    },
+    {
+      "name": "Risk Management Unit",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Risk Management Unit"
+      ],
+      "publishedEmails": [],
+      "emailEvidence": "Listed government unit; no individual email published in the directory. Eligibility uses the verified parent gov.ky domain only."
+    },
+    {
+      "name": "Scholarship Secretariat Unit",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Scholarship Secretariat Unit"
+      ],
+      "publishedEmails": [
+        "scholarships@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Sister Islands Sports",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Sister Islands Sports"
+      ],
+      "publishedEmails": [
+        "mdaha.info@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Solicitor General’s Office",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Solicitor General’s Office"
+      ],
+      "publishedEmails": [
+        "cilawreform@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Strategic and Corporate HR Unit",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Strategic and Corporate HR Unit"
+      ],
+      "publishedEmails": [
+        "pocs@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Strategic Reforms Implementation Unit (SRIU)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Strategic Reforms Implementation Unit (SRIU)"
+      ],
+      "publishedEmails": [
+        "sriu@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Truman Bodden Law School (TBLS)",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Truman Bodden Law School (TBLS)"
+      ],
+      "publishedEmails": [
+        "tblsadmin@gov.ky"
+      ],
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Vehicle Licensing (Cayman Brac )",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "source": "https://gov.ky/directory",
+      "directoryNames": [
+        "Vehicle Licensing (Cayman Brac )"
+      ],
+      "publishedEmails": [],
+      "emailEvidence": "Listed government unit; no individual email published in the directory. Eligibility uses the verified parent gov.ky domain only."
+    },
+    {
+      "name": "Cayman Islands Law Courts",
+      "group": "Departments, Sections & Units",
+      "domain": "judicial.ky",
+      "publishedEmails": [
+        "foi@judicial.ky"
+      ],
+      "source": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+      "emailEvidence": "Published contact of the responsible public authority in the official FOI list."
+    },
+    {
+      "name": "Office of the Ombudsman",
+      "group": "Departments, Sections & Units",
+      "domain": "ombudsman.ky",
+      "publishedEmails": [
+        "foi@ombudsman.ky"
+      ],
+      "source": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+      "emailEvidence": "Published contact of the responsible public authority in the official FOI list."
+    },
+    {
+      "name": "Parliament of the Cayman Islands",
+      "group": "Departments, Sections & Units",
+      "domain": "parliament.ky",
+      "publishedEmails": [
+        "foi@parliament.ky"
+      ],
+      "source": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+      "emailEvidence": "Published contact of the responsible public authority in the official FOI list."
+    },
+    {
+      "name": "Anti-Corruption Commission",
+      "group": "Departments, Sections & Units",
+      "domain": "anticorruptioncommission.ky",
+      "publishedEmails": [
+        "info@anticorruptioncommission.ky"
+      ],
+      "source": "https://www.anticorruptioncommission.ky/contact-us",
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Civil Service Appeals Commission",
+      "group": "Departments, Sections & Units",
+      "domain": "civilserviceappealscommission.ky",
+      "publishedEmails": [
+        "info@civilserviceappealscommission.ky"
+      ],
+      "source": "https://www.civilserviceappealscommission.ky/contact-us",
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Judicial and Legal Services Commission",
+      "group": "Departments, Sections & Units",
+      "domain": "judicialandlegalservicescommission.ky",
+      "publishedEmails": [
+        "info@judicialandlegalservicescommission.ky"
+      ],
+      "source": "https://www.judicialandlegalservicescommission.ky/contact-us",
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Human Rights Commission",
+      "group": "Departments, Sections & Units",
+      "domain": "humanrightscommission.ky",
+      "publishedEmails": [
+        "info@humanrightscommission.ky"
+      ],
+      "source": "https://www.humanrightscommission.ky/contact-us",
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Constitutional Commission",
+      "group": "Departments, Sections & Units",
+      "domain": "constitutionalcommission.ky",
+      "publishedEmails": [
+        "info@constitutionalcommission.ky"
+      ],
+      "source": "https://www.constitutionalcommission.ky/contact-us",
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Commission for Standards in Public Life",
+      "group": "Departments, Sections & Units",
+      "domain": "standardsinpubliclifecommission.ky",
+      "publishedEmails": [
+        "info@standardsinpubliclifecommission.ky"
+      ],
+      "source": "https://www.standardsinpubliclifecommission.ky/contact-us",
+      "emailEvidence": "Published entity contact; a verified gov.ky email is also eligible."
+    },
+    {
+      "name": "Attorney General Chambers",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "publishedEmails": [
+        "foi.plg@gov.ky"
+      ],
+      "source": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+      "emailEvidence": "Published contact of the responsible public authority in the official FOI list."
+    },
+    {
+      "name": "Law Reform Commission",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "publishedEmails": [
+        "foi.plg@gov.ky"
+      ],
+      "source": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+      "emailEvidence": "Published contact of the responsible public authority in the official FOI list."
+    },
+    {
+      "name": "Refugee Protection Appeals Tribunal",
+      "group": "Departments, Sections & Units",
+      "domain": null,
+      "publishedEmails": [
+        "foi.cab@gov.ky"
+      ],
+      "source": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+      "emailEvidence": "Published contact of the responsible public authority in the official FOI list."
+    },
+    {
+      "name": "Legal Services Supervisory Authority",
+      "group": "Departments, Sections & Units",
+      "domain": "judicial.ky",
+      "publishedEmails": [
+        "foi@judicial.ky"
+      ],
+      "source": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+      "emailEvidence": "Published contact of the responsible public authority in the official FOI list."
     }
   ],
   "domainSources": {
     "gov.ky": "https://gov.ky/directory",
-    "nra.ky": "https://www.caymanroads.com/contact-us"
+    "nra.ky": "https://gov.ky/directory",
+    "library.ky": "https://gov.ky/directory",
+    "humanrightscommission.ky": "https://www.humanrightscommission.ky/contact-us",
+    "rcips.ky": "https://www.rcips.ky/employee-privacy-policy",
+    "caymanislands.ky": "https://gov.ky/directory",
+    "aoa.ky": "https://gov.ky/directory",
+    "caymanairways.net": "https://gov.ky/directory",
+    "caymanairports.com": "https://gov.ky/directory",
+    "cidb.ky": "https://gov.ky/directory",
+    "cima.ky": "https://gov.ky/directory",
+    "cinaa.ky": "https://gov.ky/directory",
+    "cinico.ky": "https://gov.ky/directory",
+    "museum.ky": "https://gov.ky/directory",
+    "cishipping.com": "https://gov.ky/directory",
+    "csx.ky": "https://gov.ky/directory",
+    "artscayman.org": "https://gov.ky/directory",
+    "turtle.ky": "https://gov.ky/directory",
+    "cays.org.ky": "https://gov.ky/directory",
+    "caacayman.com": "https://gov.ky/directory",
+    "hsa.ky": "https://gov.ky/directory",
+    "ndc.ky": "https://gov.ky/directory",
+    "nationalgallery.org.ky": "https://gov.ky/directory",
+    "ciregiment.ky": "https://gov.ky/directory",
+    "caymanport.com": "https://gov.ky/directory",
+    "pspb.ky": "https://gov.ky/directory",
+    "ucci.edu.ky": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+    "ofreg.ky": "https://gov.ky/directory",
+    "waterauthority.ky": "https://gov.ky/directory",
+    "elections.ky": "https://gov.ky/directory",
+    "judicial.ky": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+    "ombudsman.ky": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+    "parliament.ky": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+    "anticorruptioncommission.ky": "https://www.anticorruptioncommission.ky/contact-us",
+    "civilserviceappealscommission.ky": "https://www.civilserviceappealscommission.ky/contact-us",
+    "judicialandlegalservicescommission.ky": "https://www.judicialandlegalservicescommission.ky/contact-us",
+    "constitutionalcommission.ky": "https://www.constitutionalcommission.ky/contact-us",
+    "standardsinpubliclifecommission.ky": "https://www.standardsinpubliclifecommission.ky/contact-us"
+  },
+  "researchedOn": "2026-11-12",
+  "coverage": {
+    "directoryEntriesReviewed": 143,
+    "directorySource": "https://gov.ky/directory",
+    "publicAuthoritiesSource": "https://gov.ky/documents/35692/0/3%2BUpdated%2Blisting%2BMarch%2B2026%2B-%2Bfinal%2Brev.pdf/3d41516f-1293-cc37-4185-6f3d58bb1185?t=1774036974999",
+    "notes": "All unique entries retrieved from all pages of the official directory are mapped in government-directory-coverage.csv. Aliases and government overseas offices share their existing organisation account. Boards, committees and school sites remain within their responsible authority; this is not a claim that every possible public entity is a separate account."
   }
 }

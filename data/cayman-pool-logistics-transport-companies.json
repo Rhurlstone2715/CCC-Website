@@ -1,0 +1,258 @@
+{
+  "researchedOn": "2026-11-12",
+  "scope": "Cayman Islands businesses with publicly documented local operations and a published company-specific email domain. Public listings do not independently certify current legal registration or licence status. No customer accounts are created and no marketing consent is inferred.",
+  "companies": [
+    {
+      "name": "Aqua Dynamics",
+      "domain": "aquadynamics.ky",
+      "publishedEmail": "info@aquadynamics.ky",
+      "categories": [
+        "pool contractor"
+      ],
+      "source": "https://www.aquadynamics.ky/",
+      "location": "Unit 3 JJT Warehouses, Industrial Way, Grand Cayman"
+    },
+    {
+      "name": "Oasis Pool & Spa",
+      "domain": "oasis.ky",
+      "publishedEmail": "info@oasis.ky",
+      "categories": [
+        "pool contractor"
+      ],
+      "source": "https://oasis.ky/contact/",
+      "location": "Harbour Walk, Grand Harbour, Cayman Islands"
+    },
+    {
+      "name": "Pool Patrol",
+      "domain": "poolpatrol.ky",
+      "publishedEmail": "pools@poolpatrol.ky",
+      "categories": [
+        "pool contractor"
+      ],
+      "source": "https://www.poolpatrol.ky/",
+      "location": "North Sound Road, George Town, Cayman Islands"
+    },
+    {
+      "name": "Pools Cayman",
+      "domain": "poolscayman.ky",
+      "publishedEmail": "amar@poolscayman.ky",
+      "categories": [
+        "pool contractor"
+      ],
+      "source": "https://caymanresident.com/profile/pools-cayman",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Splash Inc.",
+      "domain": "splashinc.ky",
+      "publishedEmail": "info@splashinc.ky",
+      "categories": [
+        "pool contractor"
+      ],
+      "source": "https://splashinc.ky/2026/02/26/why-the-same-pool-costs-more-in-the-cayman-islands/",
+      "location": "52 Lincoln Drive, George Town, Cayman Islands"
+    },
+    {
+      "name": "The Pool Store Limited",
+      "domain": "thepoolstoreltd.com",
+      "publishedEmail": "thepool@thepoolstoreltd.com",
+      "categories": [
+        "pool contractor"
+      ],
+      "source": "https://www.thepoolstoreltd.com/contact-us/",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "ASL Shipping & Logistics",
+      "domain": "aslcourier.com",
+      "publishedEmail": "info@aslcourier.com",
+      "categories": [
+        "logistics",
+        "shipping",
+        "transport"
+      ],
+      "source": "https://aslcourier.com/",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "CAY Cargo Ltd.",
+      "domain": "caycargo.ky",
+      "publishedEmail": "services@caycargo.ky",
+      "categories": [
+        "logistics",
+        "shipping"
+      ],
+      "source": "https://caycargo.ky/contact/",
+      "location": "Cayman Islands"
+    },
+    {
+      "name": "Cayman Freight Shipping Services Ltd. / Seaboard Marine",
+      "domain": "seaboardcayman.com",
+      "publishedEmail": "info@seaboardcayman.com",
+      "categories": [
+        "shipping",
+        "logistics"
+      ],
+      "source": "https://www.seaboardmarine.com/grand-cayman/",
+      "location": "Unit 210-212 Canon Place, North Sound Road, Grand Cayman"
+    },
+    {
+      "name": "Freight Pros Cayman",
+      "domain": "freightproscayman.com",
+      "publishedEmail": "info@freightproscayman.com",
+      "categories": [
+        "logistics",
+        "shipping",
+        "transport"
+      ],
+      "source": "https://freightproscayman.com/",
+      "location": "86 Sound Way, George Town, Cayman Islands"
+    },
+    {
+      "name": "Logistics Cayman Limited",
+      "domain": "logisticscaymanlimited.com",
+      "publishedEmail": "info@logisticscaymanlimited.com",
+      "categories": [
+        "logistics",
+        "shipping",
+        "transport"
+      ],
+      "source": "https://www.logisticscaymanltd.com/",
+      "location": "George Town, Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Mail Boxes Etc. Cayman",
+      "domain": "mbe.ky",
+      "publishedEmail": "info@mbe.ky",
+      "categories": [
+        "logistics",
+        "shipping"
+      ],
+      "source": "https://mbe.ky/contact-us/",
+      "location": "10 Market Street, Camana Bay, Grand Cayman"
+    },
+    {
+      "name": "National Logistics",
+      "domain": "nationallogistics.ky",
+      "publishedEmail": "info@nationallogistics.ky",
+      "categories": [
+        "logistics",
+        "shipping",
+        "transport"
+      ],
+      "source": "https://www.nationallogistics.ky/contact",
+      "location": "142 Lincoln Drive, George Town, Grand Cayman"
+    },
+    {
+      "name": "NCI Freight & Logistics Ltd.",
+      "domain": "ncifreight.com",
+      "publishedEmail": "shipping@ncifreight.com",
+      "categories": [
+        "logistics",
+        "shipping",
+        "transport"
+      ],
+      "source": "https://ncifreight.com/location/cayman-islands",
+      "location": "PO Box 1515, George Town, Cayman Islands"
+    },
+    {
+      "name": "Sprint Express Services",
+      "domain": "sprint.ky",
+      "publishedEmail": "sprint@sprint.ky",
+      "categories": [
+        "logistics",
+        "shipping",
+        "transport"
+      ],
+      "source": "https://sprint.ky/",
+      "location": "25 Dorcy Drive, Grand Cayman"
+    },
+    {
+      "name": "Thompson Shipping Company Ltd.",
+      "domain": "thompsonshipping.com",
+      "publishedEmail": "info@thompsonshipping.com",
+      "categories": [
+        "shipping",
+        "logistics",
+        "transport"
+      ],
+      "source": "https://thompsonshipping.com/contact/",
+      "location": "10 Shipping Lane, Industrial Park, Grand Cayman"
+    },
+    {
+      "name": "Tibbetts Logistics Ltd.",
+      "domain": "tibbettslogisticsci.com",
+      "publishedEmail": "customercare@tibbettslogisticsci.com",
+      "categories": [
+        "logistics",
+        "shipping"
+      ],
+      "source": "https://tibbettslogisticsci.com/contact-us/",
+      "location": "48 Washington Road, George Town, Grand Cayman"
+    },
+    {
+      "name": "Cayman Routes Island Tours",
+      "domain": "caymanroutes.com",
+      "publishedEmail": "shirley@caymanroutes.com",
+      "categories": [
+        "transport"
+      ],
+      "source": "https://caymanroutes.com/contact/",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Royal Limo",
+      "domain": "royallimocayman.com",
+      "publishedEmail": "contact@royallimocayman.com",
+      "categories": [
+        "transport"
+      ],
+      "source": "https://royallimocayman.com/about",
+      "location": "250 Owen Roberts Drive, Suite 10, Grand Cayman"
+    },
+    {
+      "name": "Island Waste Carriers",
+      "domain": "iwc.ky",
+      "publishedEmail": "jason@iwc.ky",
+      "categories": [
+        "transport"
+      ],
+      "source": "https://islandwastecarriers.com/contact-us/",
+      "location": "19E33 Sparky Drive, George Town, Grand Cayman"
+    }
+  ],
+  "excludedPendingVerification": [
+    {
+      "name": "Bodden Pools & Construction",
+      "reason": "Only a Gmail contact could be verified."
+    },
+    {
+      "name": "Cayman Pool Construction & Service",
+      "reason": "The website belongs to a Florida business, not a verified Cayman Islands business."
+    },
+    {
+      "name": "Divers World Trucking",
+      "reason": "Only a Gmail contact was published."
+    },
+    {
+      "name": "Webster’s Tours Ltd.",
+      "reason": "Only a shared candw.ky contact was verified."
+    },
+    {
+      "name": "Majestic Tours",
+      "reason": "Only a shared candw.ky contact was verified."
+    },
+    {
+      "name": "Cayman VIP Transport",
+      "reason": "Only a Gmail contact was verified."
+    },
+    {
+      "name": "Lemmie’s Trucking Services Ltd.",
+      "reason": "A company-specific email domain was not verified."
+    },
+    {
+      "name": "Jacko’s Delivery Service & Trucking",
+      "reason": "A company-specific email domain was not verified."
+    }
+  ]
+}
