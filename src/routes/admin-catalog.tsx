@@ -157,6 +157,7 @@ type ProductFields = {
   delivery: boolean;
   photo: boolean;
   needsPower: boolean;
+  fuelType: string | null;
   setPart: string | null;
   addOns: string[];
   sortOrder: number;
@@ -222,6 +223,9 @@ function parseFields(body: Record<string, unknown>, existing: ProductWithSizes |
     if (!CATEGORIES.includes(category)) return { error: "Choose a category." };
   }
 
+  const fuelType = body.fuelType === undefined ? existing?.fuelType ?? null : text(body.fuelType).toLowerCase() || null;
+  if (fuelType && !["diesel", "gasoline"].includes(fuelType)) return { error: "Choose diesel, gasoline, or no fuel tank." };
+
   const rates: Rates = {};
   if (rigging) Object.assign(rates, orderedRates(existing!.rates));
   else {
@@ -262,6 +266,7 @@ function parseFields(body: Record<string, unknown>, existing: ProductWithSizes |
     delivery: body.delivery === "on",
     photo: body.photo === "on",
     needsPower: body.needsPower === "on",
+    fuelType,
     setPart: setPart || null,
     addOns,
     sortOrder: Number(orderRaw),
@@ -396,9 +401,18 @@ const ProductForm: FC<FormState & { nextOrder: number }> = ({ product, values, e
         </label>
       )}
       <label class="check">
-        <input type="checkbox" name="delivery" checked={Boolean(v.delivery)} />
-        <span>Charge the delivery fee (applies to cranes, boom trucks and telehandlers on hourly or daily terms)</span>
+        <input type="checkbox" name="delivery" checked={v.delivery ?? true} />
+        <span>Apply the per-item area delivery fee. Weekly and monthly delivery is free; customers can collect tools and other rental items.</span>
       </label>
+      <div class="field">
+        <label for="fuelType">Engine fuel type</label>
+        <select id="fuelType" name="fuelType">
+          <option value="" selected={!v.fuelType}>No fuel tank (electric / manual)</option>
+          <option value="diesel" selected={v.fuelType === "diesel"}>Diesel</option>
+          <option value="gasoline" selected={v.fuelType === "gasoline"}>Gasoline</option>
+        </select>
+        <small class="hint">Fuel-powered rentals must be returned with a full tank of this fuel.</small>
+      </div>
       <label class="check">
         <input type="checkbox" name="needsPower" checked={Boolean(v.needsPower)} />
         <span>Runs on electric power, so suggest generators at checkout when it's in the cart</span>
@@ -591,6 +605,7 @@ function formValues(body: Record<string, unknown>): Partial<ProductFields> {
     delivery: body.delivery === "on",
     photo: body.photo === "on",
     needsPower: body.needsPower === "on",
+    fuelType: text(body.fuelType) || null,
     setPart: text(body.setPart) || null,
     addOns: (Array.isArray(body.addOns) ? body.addOns : body.addOns === undefined ? [] : [body.addOns]).filter((v): v is string => typeof v === "string"),
     sortOrder: Number(text(body.sortOrder)) || 0,

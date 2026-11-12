@@ -650,6 +650,28 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.match(page, /To be quoted/);
   });
 
+  test("fuel-return conditions come from catalog engines and remain in the signed booking", async () => {
+    const cookie=await signup();
+    await req("/api/bookings",{cookie,json:{...booking,details:{rentalCollection:"pickup",items:[{id:"compressor",term:"daily",qty:1,fuelType:"diesel"},{id:"diesel-mixer-9-cu-ft",term:"daily",qty:2},{id:"g25",term:"weekly",qty:1},{id:"palletjacks",term:"daily",qty:1}]}}});
+    const saved=await prisma.booking.findFirstOrThrow();assert.equal(saved.rentalCollection,"pickup");
+    assert.match(saved.termsText,/40 Gal Gas Air Compressor: Return with a full tank of gasoline/);
+    assert.match(saved.termsText,/9 cu ft Towable Cement Mixer.*Return with a full tank of diesel fuel/);
+    assert.match(saved.termsText,/Wacker Neuson G25: Return with a full tank of diesel fuel/);
+    assert.doesNotMatch(saved.termsText.split("FUEL RETURN REQUIREMENTS")[1],/Pallet Jacks/);
+    const lines=saved.items as {id:string;fuelType?:string}[];assert.equal(lines.find(i=>i.id==="compressor")?.fuelType,"gasoline");assert.equal(lines.find(i=>i.id==="diesel-mixer-9-cu-ft")?.fuelType,"diesel");
+    await req("/api/bookings",{cookie,json:{...booking,details:{items:[{id:"mini-welder",term:"daily",qty:1},{id:"cord100",term:"daily",qty:1}]}}});
+    const electric=await prisma.booking.findFirstOrThrow({orderBy:{id:"desc"}});assert.equal(electric.termsText,booking.termsText);assert.equal(electric.rentalCollection,null);
+  });
+  test("admins maintain engine fuel without losing it on unrelated edits", async () => {
+    const admin=await makeAdmin();const form={name:"40 Gal Gas Air Compressor",spec:"Gasoline compressor",description:"Jobsite compressor",rate_daily:"75",sortOrder:"20",listed:"on",delivery:"on"};
+    assert.equal((await req("/admin/catalog/compressor",{cookie:admin,form})).status,302);
+    assert.equal((await prisma.product.findUniqueOrThrow({where:{id:"compressor"}})).fuelType,"gasoline");
+    const bad=await req("/admin/catalog/compressor",{cookie:admin,form:{...form,fuelType:"kerosene"}});assert.equal(bad.status,400);
+    assert.equal((await req("/admin/catalog/compressor",{cookie:admin,form:{...form,fuelType:"diesel"}})).status,302);
+    assert.equal((await prisma.product.findUniqueOrThrow({where:{id:"compressor"}})).fuelType,"diesel");
+    const changed=(await buildCatalog()).products.find(p=>p.id==="compressor")!;assert.equal(changed.fuelType,"diesel");assert.equal(changed.delivery,true);
+  });
+
   test("admin price changes reach the site and new bookings, not old ones", async () => {
     const admin = await makeAdmin();
     const items = [{ id: "rt40", term: "hourly", qty: 4 }];

@@ -153,11 +153,14 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
   // stored estimate reflects the prices in effect when the booking was made.
   const { details, ...fields } = input;
   const priced = details.items.length ? await priceItems(details.items, discountPercent) : null;
+  const fuelConditions = priced?.lines.filter(line => line.fuelType).map(line => `${line.name}: Return with a full tank of ${line.fuelType === "diesel" ? "diesel fuel" : "gasoline"}.`) ?? [];
   const membership = await verifiedCompanyMembership(user.id);
   const companyAccountId = membership?.companyAccountId ?? null;
   const booking = await prisma.booking.create({
     data: {
       ...fields,
+      termsText: fields.termsText + (fuelConditions.length ? `\n\nFUEL RETURN REQUIREMENTS\n${fuelConditions.join("\n")}` : ""),
+      rentalCollection: details.rentalCollection,
       // The booking goes to the account's email, whatever the form says.
       customerEmail: user.email,
       companyAccountId,

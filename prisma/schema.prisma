@@ -126,6 +126,7 @@ model Booking {
   startDate       DateTime?     @db.Date
   startTime       String?
   area            String?
+  rentalCollection  String?
   siteAddress     String?
   // Lines priced by the server from the catalog at booking time:
   // [{ id, name, term, qty, rate, amount, operator }] with rate/amount in CI$ (null = quoted manually).
@@ -169,6 +170,7 @@ model Product {
   addOns            String[]        @default([])
   // Electric equipment: generators are suggested at checkout only when the cart has one of these.
   needsPower        Boolean         @default(false)
+  fuelType          String?
   // Parts that only work with a main item (a vibrator's shaft or head). Anything
   // offering set parts as add-ons is rented with one of each kind, never alone.
   setPart           String?

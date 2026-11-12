@@ -187,7 +187,8 @@ const JobDetails: FC<{ booking: Booking }> = ({ booking: b }) => {
         <>
           <dl class="facts mt-3">
             <dt>Requested start</dt>
-            <dd>{b.startDate ? `${calendarDate(b.startDate)}${b.startTime ? ` at ${b.startTime}` : ""}` : "Not asked (no crane, boom truck or telehandler)"}</dd>
+            <dd>{b.startDate ? `${calendarDate(b.startDate)}${b.startTime ? ` at ${b.startTime}` : ""}` : "Not provided"}</dd>
+            {b.rentalCollection ? <><dt>Tools / rental-item collection</dt><dd>{b.rentalCollection === "pickup" ? "Customer pickup" : "Delivery"}</dd></> : null}
             {b.area ? (
               <>
                 <dt>Area</dt>

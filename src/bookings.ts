@@ -24,6 +24,7 @@ export type BookingDetails = {
   startTime: string | null;
   area: string | null;
   siteAddress: string | null;
+  rentalCollection: "delivery" | "pickup" | null;
   items: CartItem[];
 };
 
@@ -65,6 +66,7 @@ export function parseDetails(value: unknown): BookingDetails {
     startTime,
     area: text(d.area, 60),
     siteAddress: text(d.siteAddress, 300),
+    rentalCollection: d.rentalCollection === "delivery" || d.rentalCollection === "pickup" ? d.rentalCollection : null,
     items,
   };
 }

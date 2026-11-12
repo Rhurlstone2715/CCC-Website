@@ -61,3 +61,9 @@
 .specifications-content dd{margin:3px 0 0}
 .specifications-note,.specifications-origin{margin:12px 0 0;font-size:.875rem;color:#4a5361}
 .specifications-content a{display:inline-block;margin-top:12px;color:#a51f29;text-decoration:underline}
+
+/* Fuel policy applies only to rentals with an engine fuel tank. */
+.fuel-return-note{font-size:.82rem;line-height:1.5;padding:10px 12px;background:#fff7df;border-left:3px solid #d2a11f;border-radius:3px;color:#403919}
+.fuel-return-note b{font-size:.8rem}.fuel-policy{margin-top:22px;padding:18px;background:#fff7df;border-radius:8px}.fuel-policy p{margin:6px 0 0}
+#fuelReturnItems{padding-left:20px}#fuelReturnItems li{margin:8px 0;line-height:1.5}
+[hidden]{display:none!important}

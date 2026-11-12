@@ -5,10 +5,10 @@ import { runInNewContext } from 'node:vm';
 
 const source = readFileSync(new URL('../public/app.js', import.meta.url), 'utf8');
 const catalog = JSON.parse(readFileSync(new URL('../prisma/catalog-seed.json', import.meta.url), 'utf8')).products;
-function checkout(cart, area = 'George Town') {
-  const context = { cart, products: catalog, $: () => ({ value: area }), money: n => `CI$${n}` };
+function checkout(cart, area = 'George Town', collection = 'delivery') {
+  const context = { cart, products: catalog, $: selector => ({ value: selector === '#rentalCollection' ? collection : area }), money: n => `CI$${n}` };
   const declarations = source.split('\n').filter(line =>
-    /^const deliveryFees=|^function (deliveryEligible|deliveryQuantity|itemDeliveryEstimate|deliveryEstimate|deliveryLine)\(/.test(line));
+    /^const deliveryFees=|^function (collectableRental|hasCollectableRentals|rentalCollection|deliveryAvailable|deliveryEligible|deliveryQuantity|itemDeliveryEstimate|deliveryEstimate|deliveryLine)\(/.test(line));
   return runInNewContext(`${declarations.join('\n')}\n({ total: deliveryEstimate(), lines: cart.map(deliveryLine) })`, context);
 }
 const line = (id, qty = 1, term = 'daily') => ({ id, qty, term });
@@ -25,9 +25,9 @@ test('multiple units of the same daily equipment each incur delivery', () => {
 test('hourly hours do not multiply delivery charges', () => {
   assert.equal(checkout([line('rt40', 8, 'hourly'), line('rt175', 4, 'hourly')]).total, 300);
 });
-test('weekly, monthly, tools and operator services do not incur delivery', () => {
+test('weekly, monthly and operator services do not incur delivery', () => {
   const tool = catalog.find(p => p.category === 'Tools');
-  assert.equal(checkout([line('rt40', 2, 'weekly'), line('rt175', 3, 'monthly'), line(tool.id, 2), line('telehandler-operator', 8, 'hourly')]).total, 0);
+  assert.equal(checkout([line('rt40', 2, 'weekly'), line('rt175', 3, 'monthly'), line('telehandler-operator', 8, 'hourly')]).total, 0);
 });
 test('unknown areas require confirmation only when delivery is needed', () => {
   assert.equal(checkout([line('rt40')], '').total, null);
@@ -43,3 +43,18 @@ test('changing quantity or removing equipment recalculates delivery', () => {
   cart.pop();
   assert.equal(checkout(cart).total, 150);
 });
+
+ test('tools, generators and other physical rentals use the same per-item delivery rates', () => {
+  assert.equal(checkout([line('diesel-mixer-9-cu-ft',2),line('compressor'),line('g25')],'West Bay').total,1000);
+  assert.equal(checkout([line('plumwall'),line('cord100'),line('concrete-bottom')],'East End').total,1050);
+ });
+ test('pickup removes rental-item fees while mixed-cart crane delivery remains chargeable', () => {
+  assert.equal(checkout([line('diesel-mixer-9-cu-ft',2),line('g25')],'George Town','pickup').total,0);
+  assert.equal(checkout([line('rt40'),line('compressor')],'West Bay','pickup').total,250);
+ });
+ test('weekly and monthly tool delivery is waived, even before an area is selected', () => {
+  assert.equal(checkout([line('diesel-mixer-9-cu-ft',2,'weekly'),line('compressor',1,'monthly')],'').total,0);
+ });
+ test('complete vibrator parts do not attract separate delivery fees', () => {
+  assert.equal(checkout([line('wyco-995'),{...line('wyco-8914'),inSet:true},{...line('wyco-750d'),inSet:true}]).total,150);
+ });

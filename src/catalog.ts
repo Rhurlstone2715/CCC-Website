@@ -43,7 +43,7 @@ type SeedProduct = { id: string; name: string; category: string; spec: string; d
 type SeedOption = { id: string; size: string; length: number; depth?: number; width?: number; swl?: number; price?: number };
 
 const SEED_FILE = fileURLToPath(new URL("../prisma/catalog-seed.json", import.meta.url));
-const COLUMNS = new Set(["id", "name", "category", "spec", "desc", "image", "chart", "photo", "delivery", "availableQuantity", "rates", "hidden", "operatorService", "addOns", "needsPower", "setPart"]);
+const COLUMNS = new Set(["id", "name", "category", "spec", "desc", "image", "chart", "photo", "delivery", "availableQuantity", "rates", "hidden", "operatorService", "addOns", "needsPower", "fuelType", "setPart"]);
 
 // Loads the catalog the site launched with, the first time the database has none.
 export async function ensureCatalogSeeded(): Promise<void> {
@@ -70,6 +70,7 @@ export async function ensureCatalogSeeded(): Promise<void> {
           hidden: p.hidden === true,
           addOns: Array.isArray(p.addOns) ? (p.addOns as string[]) : [],
           needsPower: p.needsPower === true,
+          fuelType: p.fuelType === "diesel" || p.fuelType === "gasoline" ? p.fuelType : null,
           setPart: typeof p.setPart === "string" ? p.setPart : null,
           sortOrder: (i + 1) * 10,
           extra: Object.keys(extra).length ? (extra as object) : undefined,
@@ -110,6 +111,7 @@ export function clientProduct(p: Product): Record<string, unknown> {
   if (p.operatorService) out.operatorService = true;
   if (p.addOns.length) out.addOns = p.addOns;
   if (p.needsPower) out.needsPower = true;
+  if (p.fuelType) out.fuelType = p.fuelType;
   if (p.setPart) out.setPart = p.setPart;
   return out;
 }
@@ -145,7 +147,7 @@ export async function catalogScript(): Promise<string> {
 // ---- Pricing booking lines on the server ----
 
 export type CartItem = { id: string; term: string; qty: number };
-export type PricedLine = { id: string; name: string; term: string; qty: number; rate: number | null; amount: number | null; operator: boolean };
+export type PricedLine = { id: string; name: string; term: string; qty: number; rate: number | null; amount: number | null; operator: boolean; fuelType?: string };
 
 const toCents = (dollars: number) => Math.round(dollars * 100);
 
@@ -184,7 +186,7 @@ export async function priceItems(items: CartItem[], discountPercent: number): Pr
       if (operator) operatorCents += toCents(amount);
       else equipmentCents += toCents(amount);
     }
-    return { id: item.id, name, term: item.term, qty: item.qty, rate, amount, operator };
+    return { id: item.id, name, term: item.term, qty: item.qty, rate, amount, operator, ...(product?.fuelType ? { fuelType: product.fuelType } : {}) };
   });
 
   const estimateCents = anyPriced ? Math.round((equipmentCents * (100 - discountPercent)) / 100) + operatorCents : null;

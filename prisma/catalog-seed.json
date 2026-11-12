@@ -25,7 +25,8 @@
     "concrete-bottom",
     "concrete-side",
     "blockforks"
-   ]
+   ],
+   "fuelType": "diesel"
   },
   {
    "id": "rt175",
@@ -52,7 +53,8 @@
     "concrete-bottom",
     "concrete-side",
     "blockforks"
-   ]
+   ],
+   "fuelType": "diesel"
   },
   {
    "id": "rt40",
@@ -79,7 +81,8 @@
     "concrete-bottom",
     "concrete-side",
     "blockforks"
-   ]
+   ],
+   "fuelType": "diesel"
   },
   {
    "id": "rt635c",
@@ -106,7 +109,8 @@
     "concrete-bottom",
     "concrete-side",
     "blockforks"
-   ]
+   ],
+   "fuelType": "diesel"
   },
   {
    "id": "national1400",
@@ -134,7 +138,8 @@
     "concrete-bottom",
     "concrete-side",
     "blockforks"
-   ]
+   ],
+   "fuelType": "diesel"
   },
   {
    "id": "altec2595",
@@ -161,7 +166,8 @@
     "concrete-bottom",
     "concrete-side",
     "blockforks"
-   ]
+   ],
+   "fuelType": "diesel"
   },
   {
    "id": "gth1056",
@@ -183,7 +189,8 @@
     "bucket",
     "manbasket",
     "telehandler-blockfork"
-   ]
+   ],
+   "fuelType": "diesel"
   },
   {
    "id": "gth844",
@@ -205,7 +212,8 @@
     "bucket",
     "manbasket",
     "telehandler-blockfork"
-   ]
+   ],
+   "fuelType": "diesel"
   },
   {
    "id": "gth636",
@@ -227,7 +235,8 @@
     "bucket",
     "manbasket",
     "telehandler-blockfork"
-   ]
+   ],
+   "fuelType": "diesel"
   },
   {
    "id": "lowboy",
@@ -267,7 +276,8 @@
     "daily": 75,
     "weekly": 250
    },
-   "needsPower": true
+   "needsPower": true,
+   "delivery": true
   },
   {
    "id": "fr800c",
@@ -281,7 +291,8 @@
     "daily": 150,
     "weekly": 400
    },
-   "needsPower": true
+   "needsPower": true,
+   "delivery": true
   },
   {
    "id": "handheld-rebar",
@@ -295,7 +306,8 @@
     "daily": 25,
     "weekly": 80
    },
-   "needsPower": true
+   "needsPower": true,
+   "delivery": true
   },
   {
    "id": "wyco-995",
@@ -315,7 +327,8 @@
     "wyco-750d",
     "wyco-750eh"
    ],
-   "needsPower": true
+   "needsPower": true,
+   "delivery": true
   },
   {
    "id": "diesel-mixer-9-cu-ft",
@@ -329,7 +342,9 @@
     "daily": 40,
     "weekly": 175,
     "monthly": 600
-   }
+   },
+   "fuelType": "diesel",
+   "delivery": true
   },
   {
    "id": "wyco-8914",
@@ -401,7 +416,8 @@
    "rates": {
     "fourhour": 75,
     "daily": 125
-   }
+   },
+   "delivery": true
   },
   {
    "id": "manbasket",
@@ -413,7 +429,8 @@
    "image": "assets/catalog/14-crane-telehandler-man-baskets.jpg",
    "rates": {
     "daily": 25
-   }
+   },
+   "delivery": true
   },
   {
    "id": "bucket",
@@ -425,7 +442,8 @@
    "image": "assets/catalog/15-telehandler-bucket.png",
    "rates": {
     "daily": 20
-   }
+   },
+   "delivery": true
   },
   {
    "id": "telehandler-blockfork",
@@ -439,7 +457,8 @@
     "daily": 25,
     "weekly": 100,
     "monthly": 300
-   }
+   },
+   "delivery": true
   },
   {
    "id": "jib",
@@ -451,7 +470,8 @@
    "image": "assets/catalog/16-telehandler-jib-attachment.jpg",
    "rates": {
     "daily": 25
-   }
+   },
+   "delivery": true
   },
   {
    "id": "bin",
@@ -463,7 +483,8 @@
    "image": "assets/catalog/17-self-dumping-crane-bin.webp",
    "rates": {
     "daily": 35
-   }
+   },
+   "delivery": true
   },
   {
    "id": "liftingbeams",
@@ -475,7 +496,8 @@
    "rates": {
     "daily": 15
    },
-   "from": true
+   "from": true,
+   "delivery": true
   },
   {
    "id": "spreaderbars",
@@ -487,7 +509,8 @@
    "rates": {
     "daily": 75
    },
-   "from": true
+   "from": true,
+   "delivery": true
   },
   {
    "id": "spreaderbeams",
@@ -498,7 +521,8 @@
    "image": "assets/catalog/spreader-beam-transparent.png",
    "rates": {
     "daily": 25
-   }
+   },
+   "delivery": true
   },
   {
    "id": "concrete-bottom",
@@ -512,7 +536,8 @@
     "daily": 100,
     "weekly": 300,
     "monthly": 850
-   }
+   },
+   "delivery": true
   },
   {
    "id": "concrete-side",
@@ -526,7 +551,8 @@
     "daily": 75,
     "weekly": 225,
     "monthly": 700
-   }
+   },
+   "delivery": true
   },
   {
    "id": "blockforks",
@@ -538,7 +564,8 @@
    "image": "assets/catalog/20-concrete-block-forks.jpg",
    "rates": {
     "daily": 50
-   }
+   },
+   "delivery": true
   },
   {
    "id": "palletjacks",
@@ -550,7 +577,8 @@
    "image": "assets/catalog/21-pallet-jacks.jpg",
    "rates": {
     "daily": 20
-   }
+   },
+   "delivery": true
   },
   {
    "id": "compressor",
@@ -565,7 +593,9 @@
    },
    "addOns": [
     "impactgun"
-   ]
+   ],
+   "fuelType": "gasoline",
+   "delivery": true
   },
   {
    "id": "rollers",
@@ -578,7 +608,8 @@
    "rates": {
     "daily": 25,
     "weekly": 100
-   }
+   },
+   "delivery": true
   },
   {
    "id": "impactgun",
@@ -590,7 +621,8 @@
    "image": "assets/current-site/618c9a_fa86f44e4ca743e89087e8828e8b9f43~mv2.png",
    "rates": {
     "daily": 25
-   }
+   },
+   "delivery": true
   },
   {
    "id": "mini-welder",
@@ -603,7 +635,8 @@
    "rates": {
     "daily": 35
    },
-   "needsPower": true
+   "needsPower": true,
+   "delivery": true
   },
   {
    "id": "mini-plasma",
@@ -616,7 +649,8 @@
    "rates": {
     "daily": 30
    },
-   "needsPower": true
+   "needsPower": true,
+   "delivery": true
   },
   {
    "id": "mats",
@@ -629,7 +663,8 @@
    "rates": {
     "daily": 5,
     "monthly": 50
-   }
+   },
+   "delivery": true
   },
   {
    "id": "plumwall",
@@ -641,7 +676,8 @@
    "image": "assets/catalog/plumwall-icf-bracing.gif",
    "rates": {
     "daily": 2
-   }
+   },
+   "delivery": true
   },
   {
    "id": "scaffold",
@@ -654,7 +690,8 @@
    "rates": {
     "weekly": 5,
     "monthly": 15
-   }
+   },
+   "delivery": true
   },
   {
    "id": "props",
@@ -667,7 +704,8 @@
    "rates": {
     "weekly": 2,
     "monthly": 7
-   }
+   },
+   "delivery": true
   },
   {
    "id": "ellis",
@@ -680,7 +718,8 @@
    "rates": {
     "daily": 1,
     "monthly": 15
-   }
+   },
+   "delivery": true
   },
   {
    "id": "g100",
@@ -694,7 +733,9 @@
     "daily": 350,
     "weekly": 1500,
     "monthly": 5500
-   }
+   },
+   "fuelType": "diesel",
+   "delivery": true
   },
   {
    "id": "g25",
@@ -708,7 +749,9 @@
     "daily": 175,
     "weekly": 775,
     "monthly": 2450
-   }
+   },
+   "fuelType": "diesel",
+   "delivery": true
   },
   {
    "id": "powerbox",
@@ -720,7 +763,8 @@
    "image": "assets/catalog/29-champion-power-distribution-box.jpg",
    "rates": {
     "daily": 50
-   }
+   },
+   "delivery": true
   },
   {
    "id": "50amp",
@@ -732,7 +776,8 @@
    "image": "assets/catalog/30-50-amp-twist-lock-generator-extension.jpg",
    "rates": {
     "daily": 50
-   }
+   },
+   "delivery": true
   },
   {
    "id": "cord100",
@@ -746,7 +791,8 @@
     "daily": 7,
     "weekly": 20,
     "monthly": 32
-   }
+   },
+   "delivery": true
   },
   {
    "id": "cord300",
@@ -760,7 +806,8 @@
     "daily": 11,
     "weekly": 40,
     "monthly": 65
-   }
+   },
+   "delivery": true
   },
   {
    "id": "telehandler-operator",
