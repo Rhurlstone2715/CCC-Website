@@ -4,18 +4,19 @@ import { welcomeEmail } from "./welcome-email.js";
 import type { User } from "./generated/prisma/client.js";
 
 type Details = { name: string; email: string; phone?: string | null; company?: string | null; companyMode?: string | null; marketing?: boolean; createdAt?: string; baseUrl: string };
-export async function queueSignupAlert(user: User, baseUrl: string, client: Pick<typeof prisma, "accountEmail"> = prisma) {
+export async function queueSignupAlert(user: User, baseUrl: string, client: Pick<typeof prisma, "accountEmail" | "subCompany"> = prisma) {
+  const subCompany = user.subCompanyId ? await client.subCompany.findUnique({ where: { id: user.subCompanyId }, select: { name: true } }) : null;
   await client.accountEmail.upsert({ where: { key: `signup-${user.id}` }, update: {}, create: {
     key: `signup-${user.id}`, kind: "SIGNUP", userId: user.id, recipient: COMPANY_EMAIL,
-    payload: { name: user.name, email: user.email, phone: user.phone, company: user.company, marketing: user.marketingOptIn, createdAt: user.createdAt.toISOString(), baseUrl },
+    payload: { name: user.name, email: user.email, phone: user.phone, company: user.company ? `${user.company}${subCompany ? ` / ${subCompany.name}` : ""}` : null, marketing: user.marketingOptIn, createdAt: user.createdAt.toISOString(), baseUrl },
   } });
 }
 export async function queueWelcomeEmail(userId: number, baseUrl: string) {
-  const user = await prisma.user.findUnique({ where: { id: userId }, include: { companyAccount: true } });
+  const user = await prisma.user.findUnique({ where: { id: userId }, include: { companyAccount: true, subCompany: true } });
   if (!user?.emailVerifiedAt) return;
   await prisma.accountEmail.upsert({ where: { key: `welcome-${user.id}` }, update: {}, create: {
     key: `welcome-${user.id}`, kind: "WELCOME", userId, recipient: user.email,
-    payload: { name: user.name, email: user.email, company: user.companyAccount?.name ?? null, companyMode: user.companyAccount ? (user.companyAccount.domain ? "domain" : "single-email") : null, baseUrl },
+    payload: { name: user.name, email: user.email, company: user.companyAccount ? `${user.companyAccount.name}${user.subCompany ? ` / ${user.subCompany.name}` : ""}` : null, companyMode: user.companyAccount ? (!user.companyAccount.poolSubcompanyRewards && user.subCompany ? "sub-company" : user.companyAccount.domain ? "domain" : "single-email") : null, baseUrl },
   } });
 }
 let running = false;

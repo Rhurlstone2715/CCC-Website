@@ -4,7 +4,9 @@ const escape = (s: string) => s.replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': 
 const money = (cents: number) => `CI$${(cents / 100).toLocaleString('en-US')}`;
 export function welcomeEmail(details: WelcomeDetails, baseUrl: string) {
   const firstName = details.name.trim().split(/\s+/)[0] || "there";
-  const companyNote = details.company ? details.companyMode === "domain"
+  const companyNote = details.company ? details.companyMode === "sub-company"
+    ? `You’re linked to ${details.company}. Verified staff in your sub-company share its loyalty points and tier, while keeping separate logins. Points are separate from other departments.`
+    : details.companyMode === "domain"
     ? `You’re linked to ${details.company}. Verified staff on your registered work domain share the company’s loyalty points and tier, while keeping separate logins.`
     : `You’re linked to ${details.company}. This company account is limited to your verified email login.` : "Your paid rentals earn rewards on your individual account.";
   const text = [

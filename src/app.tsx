@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { type AppEnv, currentUser, mustConfirmEmail, sameOriginWrites } from "./auth.js";
 import { bookingRef, parseBooking, sendBookingAlert } from "./bookings.js";
 import { catalogScript, checkSets, priceItems } from "./catalog.js";
-import { verifiedCompanyId } from "./companies.js";
+import { verifiedCompanyMembership } from "./companies.js";
 import { prisma } from "./db.js";
 import type { Prisma } from "./generated/prisma/client.js";
 import { clientIp, createLimiter } from "./ratelimit.js";
@@ -115,6 +115,7 @@ app.get("/api/rewards", async c => {
   const user = await currentUser(c);
   if (!user) return c.json({ error: "Sign in to view rewards." }, 401);
   const rewards = await rewardsForUser(user.id);
+  const department = await prisma.user.findUnique({ where: { id: user.id }, select: { subCompany: { select: { name: true } } } });
   return c.json({
     rewards: {
       tier: rewards.tier,
@@ -123,7 +124,7 @@ app.get("/api/rewards", async c => {
       amountToNextCents: rewards.amountToNextCents,
       points: rewards.points,
     },
-    profile: { name: user.name, email: user.email, phone: user.phone, company: user.company, emailConfirmed: !mustConfirmEmail(user) },
+    profile: { name: user.name, email: user.email, phone: user.phone, company: user.company, companyDisplayName: department?.subCompany ? `${user.company} / ${department.subCompany.name}` : user.company, emailConfirmed: !mustConfirmEmail(user) },
     admin: user.role === "ADMIN",
   });
 });
@@ -152,17 +153,20 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
   // stored estimate reflects the prices in effect when the booking was made.
   const { details, ...fields } = input;
   const priced = details.items.length ? await priceItems(details.items, discountPercent) : null;
+  const membership = await verifiedCompanyMembership(user.id);
+  const companyAccountId = membership?.companyAccountId ?? null;
   const booking = await prisma.booking.create({
     data: {
       ...fields,
       // The booking goes to the account's email, whatever the form says.
       customerEmail: user.email,
-      companyAccountId: await verifiedCompanyId(user.id),
+      companyAccountId,
+      subCompanyId: membership?.subCompanyId ?? null,
       userId: user.id,
       rewardTier: rewards.tier,
       discountPercent,
       phone: details.phone,
-      company: details.company,
+      company: membership?.companyDisplayName ?? details.company,
       startDate: details.startDate,
       startTime: details.startTime,
       area: details.area,

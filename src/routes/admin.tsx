@@ -3,7 +3,7 @@ import type { FC } from "hono/jsx";
 import { type AppEnv, currentUser, marketingChange, newToken, publicUrl, requireAdmin, safeNext } from "../auth.js";
 import { bookingRef, contractSubject, contractText, parseDate, sendContract } from "../bookings.js";
 import { TERM_LABELS, type PricedLine } from "../catalog.js";
-import { verifiedCompanyId, syncCompanyMembership } from "../companies.js";
+import { verifiedCompanyId, syncCompanyMembership, validateCompany, verifiedCompanyMembership } from "../companies.js";
 import { prisma } from "../db.js";
 import { customerEmailsEnabled } from "../email.js";
 import type { Booking, BookingStatus, User } from "../generated/prisma/client.js";
@@ -803,6 +803,7 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { profi
   ]);
   const companyId = await verifiedCompanyId(customer.id);
   const loyaltyCompany = companyId ? await prisma.company.findUnique({ where: { id: companyId } }) : null;
+  const loyaltySubCompany = loyaltyCompany && !loyaltyCompany.poolSubcompanyRewards && customer.subCompanyId ? await prisma.subCompany.findFirst({ where: { id: customer.subCompanyId, companyId: loyaltyCompany.id } }) : null;
   const notice = noticeFrom(c);
 
   return c.html(
@@ -827,7 +828,7 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { profi
               <Field label="Full name" name="name" value={customer.name} required maxlength={120} />
               <Field label="Email" name="email" type="email" value={customer.email} required maxlength={254} />
               <Field label="Phone" name="phone" type="tel" value={customer.phone} maxlength={40} />
-              <Field label="Company" name="company" value={customer.company} maxlength={120} />
+              <Field label="Company" name="company" value={customer.company} maxlength={120} /><input type="hidden" name="subCompanyId" value={customer.subCompanyId ?? ""} /><script src="/company-signup.js" defer></script>
               <div class="form-actions">
                 <button class="button secondary small" type="submit">
                   Save details
@@ -876,10 +877,10 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { profi
             </dl>
             <form class="amount-form mt-4" method="post" action={`/admin/customers/${customer.id}/credit`}>
               <Field
-                label={loyaltyCompany ? "Company rewards credit (CI$)" : "Rewards credit (CI$)"}
+                label={loyaltySubCompany ? `Sub-company rewards credit: ${loyaltySubCompany.name} (CI$)` : loyaltyCompany ? "Company rewards credit (CI$)" : "Rewards credit (CI$)"}
                 name="credit"
                 inputmode="decimal"
-                value={centsToInput(loyaltyCompany?.rewardCreditCents ?? customer.rewardCreditCents) || "0"}
+                value={centsToInput(loyaltySubCompany?.rewardCreditCents ?? loyaltyCompany?.rewardCreditCents ?? customer.rewardCreditCents) || "0"}
                 required
                 hint="Spend from before their account existed, or a correction. Counts toward their tier."
               />
@@ -986,8 +987,11 @@ admin.post("/customers/:id{[0-9]+}/:action", async c => {
     case "credit": {
       const cents = parseAmount(body.credit);
       if (cents === null) return back("bad-credit");
-      const companyId = await verifiedCompanyId(id);
-      if (companyId) await prisma.company.update({ where: { id: companyId }, data: { rewardCreditCents: cents } });
+      const membership = await verifiedCompanyMembership(id);
+      const companyId = membership?.companyAccountId ?? null;
+      const company = companyId ? await prisma.company.findUnique({ where: { id: companyId } }) : null;
+      if (company && !company.poolSubcompanyRewards && membership?.subCompanyId) await prisma.subCompany.update({ where: { id: membership.subCompanyId, companyId: company.id }, data: { rewardCreditCents: cents } });
+      else if (companyId) await prisma.company.update({ where: { id: companyId }, data: { rewardCreditCents: cents } });
       else await prisma.user.update({ where: { id }, data: { rewardCreditCents: cents } });
       return back("credit-saved");
     }
@@ -997,7 +1001,9 @@ admin.post("/customers/:id{[0-9]+}/:action", async c => {
       if (profile.email !== customer.email && (await prisma.user.findUnique({ where: { email: profile.email } }))) {
         return renderCustomer(c, customer, { profileError: "Another account already uses that email." });
       }
-      // A changed address has to be confirmed again, by the customer's link or the button on this page.
+      const companyIssue = await validateCompany(profile.email, profile.company, profile.subCompanyId);
+      if (companyIssue) return renderCustomer(c, customer, { profileError: companyIssue });
+      // A changed address has to be confirmed again by the customer.
       await prisma.user.update({ where: { id }, data: { ...profile, companyAccountId: null, ...(profile.email !== customer.email ? { emailVerifiedAt: null } : {}) } });
       await syncCompanyMembership(id);
       return back("profile-saved");

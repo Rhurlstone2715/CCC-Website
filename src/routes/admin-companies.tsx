@@ -1,13 +1,13 @@
 import { Hono } from "hono";
 import { type AppEnv, currentUser, requireAdmin, EMAIL_PATTERN } from "../auth.js";
-import { companyAllowsEmail, companyEmailDomain, companyNameKey } from "../companies.js";
+import { companyAllowsEmail, companyEmailDomain, companyNameKey, subCompanyIssue } from "../companies.js";
 import { prisma } from "../db.js";
 import { AdminPage, pendingCount } from "../views/admin-page.js";
 import { Field } from "../views/layout.js";
 export const adminCompanies = new Hono<AppEnv>();
 adminCompanies.use("*", requireAdmin);
 adminCompanies.get("/", async c => {
-  const companies = await prisma.company.findMany({ where: { archivedAt: null }, orderBy: { name: "asc" }, include: { _count: { select: { users: true } } } });
+  const companies = await prisma.company.findMany({ where: { archivedAt: null }, orderBy: { name: "asc" }, include: { subCompanies: { orderBy: [{ group: "asc" }, { name: "asc" }], include: { _count: { select: { users: true } } } }, _count: { select: { users: true } } } });
   return c.html(<AdminPage title="Company loyalty accounts" user={(await currentUser(c))!} pending={await pendingCount()} active="customers">
     <div class="page-head"><h1>Company loyalty accounts</h1><p class="lede">Work-domain companies can share staff rewards. Companies without a work domain are restricted to one registered email login.</p></div>
     {c.req.query("updated") ? <p role="status">Company updated. Staff accounts were checked against its current email rule.{Number(c.req.query("detached")) > 0 ? ` ${Number(c.req.query("detached"))} account(s) no longer match and were unlinked. Customer logins and historical bookings are retained.` : ""}</p> : null}
@@ -24,6 +24,7 @@ adminCompanies.get("/", async c => {
         <p class="hint">Changing the domain or email unlinks staff who no longer match. Their logins and historical bookings are retained.</p>
         <button class="button secondary" type="submit">Save company changes</button>
       </form>
+      {co.subCompanies.length ? <details class="company-sublist"><summary>{co.subCompanies.length} sub-companies · {co.poolSubcompanyRewards ? "Shared parent rewards" : "Separate loyalty points for each sub-company"}</summary>{co.subCompanies.map(sub => <section class="card" style="margin:12px 0 12px 16px"><p class="eyebrow">{sub.group}</p><h4>{sub.name}</h4><p>{sub.domain ? `@${co.domain} or @${sub.domain}` : `@${co.domain} (parent company domain)`} · {sub._count.users} staff account(s)</p><form class="form" method="post" action={`/admin/companies/${co.id}/sub-companies/${sub.id}/update`}><label for={`sub-name-${sub.id}`}>Sub-company name</label><input id={`sub-name-${sub.id}`} name="name" value={sub.name} required maxlength={120} /><label for={`sub-domain-${sub.id}`}>Additional work-email domain (optional)</label><input id={`sub-domain-${sub.id}`} name="domain" value={sub.domain ? `@${sub.domain}` : ""} maxlength={253} /><p class="hint">Leave blank to use the parent company’s work-email domain. Historical bookings and rewards stay with this sub-company.</p><button type="submit" class="button secondary">Save sub-company</button></form></section>)}</details> : null}
     </article>) : <p>No active companies yet. A company is saved after its customer verifies their email.</p>}</section>
     <a href="/admin/customers">Back to customers</a>
   </AdminPage>);
@@ -54,11 +55,11 @@ adminCompanies.post("/:id{[0-9]+}/update", async c => {
   if (!name || name.length > 120 || !companyNameKey(name) || (current.domain ? !domain : !ownerEmail || ownerEmail.length > 254 || !EMAIL_PATTERN.test(ownerEmail))) return c.redirect("/admin/companies?error=invalid");
   try {
     const detached = await prisma.$transaction(async tx => {
-      const updated = await tx.company.update({ where: { id }, data: { name, nameKey: companyNameKey(name), domain, ownerEmail } });
+      const updated = await tx.company.update({ where: { id }, data: { name, nameKey: companyNameKey(name), domain, ownerEmail }, include: { subCompanies: true } });
       const staff = await tx.user.findMany({ where: { companyAccountId: id } });
       let removed = 0;
       for (const member of staff) {
-        const matches = Boolean(member.emailVerifiedAt && companyAllowsEmail(updated, member.email));
+        const matches = Boolean(member.emailVerifiedAt && companyAllowsEmail(updated, member.email) && !subCompanyIssue(updated, member.email, member.subCompanyId));
         await tx.user.update({ where: { id: member.id }, data: matches ? { company: name } : { companyAccountId: null, company: null } });
         if (!matches) removed++;
       }
@@ -66,4 +67,20 @@ adminCompanies.post("/:id{[0-9]+}/update", async c => {
     });
     return c.redirect(`/admin/companies?updated=1&detached=${detached}`);
   } catch (error) { if ((error as { code?: string }).code === "P2002") return c.redirect("/admin/companies?error=duplicate"); throw error; }
+});
+
+adminCompanies.post("/:companyId{[0-9]+}/sub-companies/:id{[0-9]+}/update", async c => {
+ const companyId=Number(c.req.param("companyId")),id=Number(c.req.param("id"));
+ const company=await prisma.company.findUnique({where:{id:companyId},include:{subCompanies:true}});
+ if(!company||company.archivedAt||!company.subCompanies.some(sub=>sub.id===id))return c.notFound();
+ const body=await c.req.parseBody();const name=typeof body.name==="string"?body.name.trim():"";const raw=typeof body.domain==="string"?body.domain.trim().toLowerCase():"";const normalized=raw.replace(/^@/,"");const domain=raw?companyEmailDomain(normalized.includes("@")?normalized:`staff@${normalized}`):null;
+ if(!name||name.length>120||!companyNameKey(name)||(raw&&!domain))return c.redirect("/admin/companies?error=invalid");
+ try{
+  const detached=await prisma.$transaction(async tx=>{
+   const updated=await tx.subCompany.update({where:{id},data:{name,nameKey:companyNameKey(name),domain}});const parent={...company,subCompanies:company.subCompanies.map(sub=>sub.id===id?updated:sub)};
+   const staff=await tx.user.findMany({where:{subCompanyId:id}});let detached=0;
+   for(const member of staff)if(member.companyAccountId===companyId&&(!member.emailVerifiedAt||!companyAllowsEmail(parent,member.email)||subCompanyIssue(parent,member.email,id))){await tx.user.update({where:{id:member.id},data:{companyAccountId:null}});detached++}
+   return detached;
+  });return c.redirect(`/admin/companies?updated=1&detached=${detached}`);
+ }catch(error){if((error as{code?:string}).code==="P2002")return c.redirect("/admin/companies?error=duplicate");throw error}
 });

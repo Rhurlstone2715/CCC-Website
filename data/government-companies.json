@@ -1,0 +1,346 @@
+{
+  "name": "Cayman Islands Government",
+  "domain": "gov.ky",
+  "poolSubcompanyRewards": false,
+  "subCompanies": [
+    {
+      "name": "Office of the Premier (OTP)",
+      "group": "Executive Offices, Ministries & Portfolios",
+      "domain": null
+    },
+    {
+      "name": "Office of the Deputy Governor",
+      "group": "Executive Offices, Ministries & Portfolios",
+      "domain": null
+    },
+    {
+      "name": "Cabinet Office",
+      "group": "Executive Offices, Ministries & Portfolios",
+      "domain": null
+    },
+    {
+      "name": "Ministry of Caymanian Employment & Immigration (MCEI)",
+      "group": "Executive Offices, Ministries & Portfolios",
+      "domain": null
+    },
+    {
+      "name": "Ministry of District Administration & Home Affairs (MDAHA)",
+      "group": "Executive Offices, Ministries & Portfolios",
+      "domain": null
+    },
+    {
+      "name": "Ministry of Education & Training (MoET)",
+      "group": "Executive Offices, Ministries & Portfolios",
+      "domain": null
+    },
+    {
+      "name": "Ministry of Finance & Economic Development (MFED)",
+      "group": "Executive Offices, Ministries & Portfolios",
+      "domain": null
+    },
+    {
+      "name": "Ministry of Financial Services & Commerce (MFSC)",
+      "group": "Executive Offices, Ministries & Portfolios",
+      "domain": null
+    },
+    {
+      "name": "Ministry of Health, Environment & Sustainability (MHES)",
+      "group": "Executive Offices, Ministries & Portfolios",
+      "domain": null
+    },
+    {
+      "name": "Ministry of Planning, Lands, Agriculture, Housing & Infrastructure (MPLAHI)",
+      "group": "Executive Offices, Ministries & Portfolios",
+      "domain": null
+    },
+    {
+      "name": "Ministry of Social Development & Innovation (MSDI)",
+      "group": "Executive Offices, Ministries & Portfolios",
+      "domain": null
+    },
+    {
+      "name": "Ministry of Tourism & Trade Development (MTTD)",
+      "group": "Executive Offices, Ministries & Portfolios",
+      "domain": null
+    },
+    {
+      "name": "Ministry of Youth, Sports, Culture & Heritage (MYSCH)",
+      "group": "Executive Offices, Ministries & Portfolios",
+      "domain": null
+    },
+    {
+      "name": "Portfolio of Legal Affairs (PoLA)",
+      "group": "Executive Offices, Ministries & Portfolios",
+      "domain": null
+    },
+    {
+      "name": "Portfolio of the Civil Service (PoCS)",
+      "group": "Executive Offices, Ministries & Portfolios",
+      "domain": null
+    },
+    {
+      "name": "Appeals Tribunal Secretariat",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Cabinet Secretariat",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Cayman Brac Adult Training Centre (CBATC)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Cayman Brac Museum",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Cayman Islands Cadet Corps",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Cayman Islands Centre for Business Development (CICBD)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Cayman Islands Customs & Border Control (CBC)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Cayman Islands Fire Service (CIFS)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Cayman Islands General Registry",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Cayman Islands Government Offices (Asia, North America & UK)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Cayman Islands Government Television (CIGTV)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Cayman Islands National Archive (CINA)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Cayman Islands National Weather Service (CINWS)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Cayman Islands Postal Service (CIPS)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Cayman Islands Public Library Service",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Commissions Secretariat",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Computer Services Department (CSD)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department for International Tax Cooperation (DITC)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Agriculture",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Children & Family Services (DCFS)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Commerce & Investment (DCI)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Communications",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Community Rehabilitation",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Counselling Services",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of District Administration",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Education Services (DES)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Environment (DoE)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Environmental Health (DEH)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Financial Assistance",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Health Regulatory Services (DHRS)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Labour & Pensions (DLP)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Planning",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Public Safety Communications",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Sports",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Vehicle & Drivers' Licensing (DVDL)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Department of Vehicle & Equipment Services (DVES)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Economics & Statistics Office (ESO)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Hazard Management Cayman Islands (HMCI)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "HM Cayman Islands Prison Service",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Lands & Survey Department",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Mosquito Research & Control Unit (MRCU)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Office of the Auditor General",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Office of the Director of Public Prosecutions (DPP)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Poinciana Rehabilitation Centre",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Public Works Department (PWD)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Radio Cayman",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Sunrise Adult Training Centre",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Treasury Department",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Workforce Opportunities & Residency Cayman (WORC)",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "Youth Services Unit",
+      "group": "Departments, Sections & Units",
+      "domain": null
+    },
+    {
+      "name": "National Housing Development Trust (NHDT)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": null
+    },
+    {
+      "name": "National Roads Authority (NRA)",
+      "group": "Statutory Authorities & Other Public Entities",
+      "domain": "nra.ky"
+    }
+  ],
+  "domainSources": {
+    "gov.ky": "https://gov.ky/directory",
+    "nra.ky": "https://www.caymanroads.com/contact-us"
+  }
+}

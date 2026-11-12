@@ -1259,3 +1259,5 @@ hr.divider {
     transform: none;
   }
 }
+/* Conditional company and department fields must stay hidden until eligible. */
+[hidden]{display:none!important}

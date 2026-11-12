@@ -85,7 +85,7 @@ export async function attemptLogin(c: Context<AppEnv>, emailInput: string, passw
   return { user };
 }
 
-type ProfileInput = { name: string; email: string; phone: string | null; company: string | null };
+type ProfileInput = { name: string; email: string; phone: string | null; company: string | null; subCompanyId: number | null };
 
 export function parseProfile(body: Record<string, unknown>): ProfileInput | { error: string; values: ProfileInput } {
   const values = {
@@ -93,7 +93,9 @@ export function parseProfile(body: Record<string, unknown>): ProfileInput | { er
     email: normalizeEmail(text(body.email)),
     phone: text(body.phone) || null,
     company: text(body.company) || null,
+    subCompanyId: text(body.subCompanyId) ? Number(text(body.subCompanyId)) : null,
   };
+  if (values.subCompanyId !== null && (!Number.isSafeInteger(values.subCompanyId) || values.subCompanyId < 1)) return { error: "Select a valid sub-company.", values };
   if (!values.name || values.name.length > 120) return { error: "Enter your name.", values };
   if (!EMAIL_PATTERN.test(values.email) || values.email.length > 254) return { error: "Enter a valid email address.", values };
   if ((values.phone?.length ?? 0) > 40) return { error: "That phone number is too long.", values };
@@ -195,7 +197,7 @@ const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupE
           <Field label="Email" name="email" type="email" value={signup?.email} required autocomplete="email" maxlength={254} />
           <Field label="Phone" name="phone" type="tel" value={signup?.phone} required autocomplete="tel" maxlength={40} />
           <Field label="Company" name="company" value={signup?.company} autocomplete="organization" maxlength={120} hint="Use a matching work email for shared company rewards, or register a new company with this email as its only login. Email verification is required." />
-          <script src="/company-signup.js" defer></script>
+          <input type="hidden" name="subCompanyId" value={signup?.subCompanyId ?? ""} /><script src="/company-signup.js" defer></script>
           <Field
             label="Password"
             name="password"
@@ -247,8 +249,8 @@ account.get("/company-suggestion", async c => {
   const domain = companyEmailDomain(c.req.query("email") || "");
   c.header("Cache-Control", "private, no-store");
   if (!domain) return c.json({ eligible: true, mode: "single-email", company: null });
-  const company = await prisma.company.findFirst({ where: { domain, archivedAt: null }, select: { name: true } });
-  return c.json({ eligible: true, domain, company: company?.name ?? null, suggestion: domain.split('.')[0].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) });
+  const company = await prisma.company.findFirst({ where: { archivedAt: null, OR: [{ domain }, { subCompanies: { some: { domain } } }] }, include: { subCompanies: { orderBy: [{ group: "asc" }, { name: "asc" }] } } });
+  return c.json({ eligible: true, domain, companyDomain: company?.domain ?? domain, company: company?.name ?? null, requiresSubCompany: company?.poolSubcompanyRewards === false && Boolean(company.subCompanies.length), subCompanies: company?.subCompanies.filter(sub => domain === company.domain || domain === sub.domain).map(sub => ({ id: sub.id, name: sub.name, group: sub.group })) ?? [], suggestion: domain.split('.')[0].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) });
 });
 
 account.post("/signup", async c => {
@@ -269,7 +271,7 @@ account.post("/signup", async c => {
     return fail("There's already an account with that email. Log in, or reset your password if you've forgotten it.", profile, 409);
   }
 
-  const companyIssue = await validateCompany(profile.email, profile.company);
+  const companyIssue = await validateCompany(profile.email, profile.company, profile.subCompanyId);
   if (companyIssue) return fail(companyIssue, profile);
   const passwordHash = await hashPassword(password);
   const user = await prisma.$transaction(async tx => {
@@ -349,7 +351,8 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
     prisma.booking.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 50 }),
   ]);
   const notice = state.notice ? NOTICES[state.notice] : undefined;
-  const details = state.detailsValues ?? user;
+  const membership = await prisma.user.findUnique({ where: { id: user.id }, select: { subCompanyId: true, subCompany: { select: { name: true } } } });
+  const details = state.detailsValues ?? { ...user, subCompanyId: membership?.subCompanyId ?? null };
   const companyId = await verifiedCompanyId(user.id);
   const firstName = user.name.split(/\s+/)[0];
 
@@ -364,7 +367,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
       </div>
       <div class="grid-2">
         <div class="stack">
-          <>{companyId ? <p class="hint">Company loyalty: {user.company}. Company rewards are linked to your verified login. Registered work-domain companies can share points across staff.</p> : null}<RewardsCard rewards={rewards} /></>
+          <>{companyId ? <p class="hint">Company loyalty: {user.company}{membership?.subCompany ? ` / ${membership.subCompany.name}` : ""}. {membership?.subCompany ? "Staff in your sub-company share its rewards. Points stay separate from other departments." : "Company rewards are linked to your verified login. Registered work-domain companies can share points across staff."}</p> : null}<RewardsCard rewards={rewards} /></>
           <a class="button primary" href="/rentals#catalog">
             Browse equipment
           </a>
@@ -418,7 +421,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
             <Field label="Email" name="email" type="email" value={details.email} required autocomplete="email" maxlength={254} />
             <Field label="Phone" name="phone" type="tel" value={details.phone} autocomplete="tel" maxlength={40} />
             <Field label="Company" name="company" value={details.company} autocomplete="organization" maxlength={120} hint="Select a matching work-domain company, or register a new company limited to this email login. Verify your email to activate rewards." />
-            <script src="/company-signup.js" defer></script>
+            <input type="hidden" name="subCompanyId" value={details.subCompanyId ?? ""} /><script src="/company-signup.js" defer></script>
             <MarketingChoice checked={user.marketingOptIn} />
             <div class="form-actions">
               <button class="button secondary" type="submit">
@@ -463,7 +466,7 @@ account.post("/profile", requireCustomer, async c => {
   const body = await c.req.parseBody();
   const profile = parseProfile(body);
   if ("error" in profile) return renderProfile(c, user, { detailsError: profile.error, detailsValues: profile.values }, 400);
-  const companyIssue = await validateCompany(profile.email, profile.company);
+  const companyIssue = await validateCompany(profile.email, profile.company, profile.subCompanyId);
   if (companyIssue) return renderProfile(c, user, { detailsError: companyIssue, detailsValues: profile }, 400);
   const emailChanged = profile.email !== user.email;
   if (emailChanged && (await prisma.user.findUnique({ where: { email: profile.email } }))) {

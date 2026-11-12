@@ -33,6 +33,8 @@ model User {
   company            String?
   companyAccountId   Int?
   companyAccount     Company? @relation(fields: [companyAccountId], references: [id], onDelete: SetNull)
+  subCompanyId Int?
+  subCompany SubCompany? @relation(fields: [subCompanyId], references: [id], onDelete: SetNull)
   role               Role                @default(CUSTOMER)
   rewardCreditCents  Int                 @default(0)
   // Set when the customer clicks the link in their confirmation email (or an admin confirms it).
@@ -50,6 +52,7 @@ model User {
   bookings           Booking[]
 
   @@index([companyAccountId])
+  @@index([subCompanyId])
 }
 
 // Session and reset ids are SHA-256 hashes of the token given to the browser,
@@ -118,6 +121,8 @@ model Booking {
   company         String?
   companyAccountId Int?
   companyAccount Company? @relation(fields: [companyAccountId], references: [id], onDelete: SetNull)
+  subCompanyId Int?
+  subCompany SubCompany? @relation(fields: [subCompanyId], references: [id], onDelete: SetNull)
   startDate       DateTime?     @db.Date
   startTime       String?
   area            String?
@@ -139,6 +144,7 @@ model Booking {
   @@index([startDate])
   @@index([scheduleStart])
   @@index([companyAccountId])
+  @@index([subCompanyId])
 }
 
 // Equipment on the rentals page, served to it as /catalog.js. Rates are CI$
@@ -215,6 +221,8 @@ model Company {
   id Int @id @default(autoincrement())
   name String
   rewardCreditCents Int @default(0)
+  poolSubcompanyRewards Boolean @default(true)
+  subCompanies SubCompany[]
   nameKey String @unique
   domain String? @unique
   ownerEmail String? @unique
@@ -238,4 +246,20 @@ model AccountEmail {
   sentAt DateTime?
   createdAt DateTime @default(now())
   @@index([sentAt, nextAttemptAt])
+}
+
+model SubCompany {
+  id Int @id @default(autoincrement())
+  companyId Int
+  company Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  name String
+  nameKey String
+  group String
+  domain String?
+  rewardCreditCents Int @default(0)
+  users User[]
+  bookings Booking[]
+  createdAt DateTime @default(now())
+  @@unique([companyId, nameKey])
+  @@index([companyId])
 }
