@@ -96,6 +96,7 @@ model EmailVerification {
 }
 
 model Booking {
+  paymentProofs PaymentProof[]
   id              Int           @id @default(autoincrement())
   status          BookingStatus @default(PENDING)
   customerName    String
@@ -264,4 +265,18 @@ model SubCompany {
   createdAt DateTime @default(now())
   @@unique([companyId, nameKey])
   @@index([companyId])
+}
+
+// Private payment evidence: never served by the public catalog upload route.
+model PaymentProof {
+  id String @id @default(cuid())
+  bookingId Int
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  uploadedById Int
+  fileName String
+  contentType String
+  size Int
+  data Bytes
+  createdAt DateTime @default(now())
+  @@index([bookingId, createdAt])
 }

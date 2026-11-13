@@ -1,3 +1,4 @@
+import { PaymentProofSection, paymentProofMetadata } from "../payment-proofs.js";
 import { Hono, type Context } from "hono";
 import type { FC } from "hono/jsx";
 import { type AppEnv, currentUser, marketingChange, newToken, publicUrl, requireAdmin, safeNext } from "../auth.js";
@@ -83,7 +84,7 @@ admin.get("/bookings", async c => {
       where: status ? { status } : {},
       orderBy: { createdAt: "desc" },
       take: 200,
-      include: { user: { select: { id: true, name: true } } },
+      include: { user: { select: { id: true, name: true } }, _count: { select: { paymentProofs: true } } },
     }),
   ]);
   const counts = Object.fromEntries(groups.map(g => [g.status, g._count._all])) as Partial<Record<BookingStatus, number>>;
@@ -160,6 +161,7 @@ admin.get("/bookings", async c => {
                   </td>
                   <td data-label="Status">
                     <StatusBadge status={b.status} audience="admin" />
+                    {b._count.paymentProofs ? <a class="sub text-link" href={`/admin/bookings/${b.id}#payment-proofs`}>Payment proof received ({b._count.paymentProofs})</a> : null}
                     {b.amountPaidCents ? <span class="sub">{money(b.amountPaidCents)}</span> : null}
                   </td>
                 </tr>
@@ -453,7 +455,7 @@ const BookingActions: FC<{ booking: Booking }> = ({ booking }) => {
 
 admin.get("/bookings/:id{[0-9]+}", async c => {
   const user = (await currentUser(c))!;
-  const booking = await prisma.booking.findUnique({ where: { id: Number(c.req.param("id")) }, include: { user: true } });
+  const booking = await prisma.booking.findUnique({ where: { id: Number(c.req.param("id")) }, include: { user: true, paymentProofs: { select: paymentProofMetadata, orderBy: { createdAt: "desc" } } } });
   if (!booking) return c.notFound();
   const [pending, matchingAccount] = await Promise.all([
     pendingCount(),
@@ -564,6 +566,10 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
                 </button>
               </form>
             ) : null}
+          </section>
+          <section class="card" id="payment-proofs">
+            <h2>Proof of payment</h2>
+            <PaymentProofSection bookingId={booking.id} proofs={booking.paymentProofs} />
           </section>
           <section class="card">
             <h2>Actions</h2>

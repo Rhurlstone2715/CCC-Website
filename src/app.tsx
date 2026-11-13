@@ -1,3 +1,4 @@
+import { paymentProofs } from "./payment-proofs.js";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
@@ -100,6 +101,7 @@ app.get("/uploads/:id{[a-z0-9]+}", async c => {
   return c.body(new Uint8Array(upload.data));
 });
 
+app.route("/account/bookings", paymentProofs);
 app.route("/account", account);
 app.route("/admin/catalog", adminCatalog);
 app.route("/admin/calendar", adminCalendar);

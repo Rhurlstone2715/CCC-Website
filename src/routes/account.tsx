@@ -1,3 +1,4 @@
+import { PaymentProofSection, paymentProofMetadata } from "../payment-proofs.js";
 import { Hono, type Context } from "hono";
 import type { FC } from "hono/jsx";
 import {
@@ -103,7 +104,12 @@ export function parseProfile(body: Record<string, unknown>): ProfileInput | { er
   return values;
 }
 
-const NOTICES: Record<string, { tone: "success" | "info"; text: string }> = {
+const NOTICES: Record<string, { tone: "success" | "info" | "error"; text: string }> = {
+  "proof-uploaded": { tone: "success", text: "Your proof of payment was uploaded. Cayman Crane will check it before confirming payment." },
+  "proof-invalid": { tone: "error", text: "Choose a JPEG, PNG, WebP image or PDF receipt to upload." },
+  "proof-too-large": { tone: "error", text: "The receipt must be 5 MB or smaller. Choose a smaller file and try again." },
+  "proof-limit": { tone: "error", text: "This booking already has 5 payment files. Contact Cayman Crane to send further documents." },
+  "proof-confirm-email": { tone: "error", text: "Confirm your email address before uploading proof of payment." },
   welcome: { tone: "success", text: "Your account is ready. Every paid rental you book counts toward your rewards." },
   "email-confirmed": { tone: "success", text: "Thanks, your email is confirmed. You can book equipment now." },
   "email-changed": { tone: "info", text: "Your details are saved. We've sent a link to your new email address; confirm it before your next booking." },
@@ -348,7 +354,7 @@ type ProfileState = {
 async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: ProfileState, status: 200 | 400 | 401 | 409 = 200) {
   const [rewards, bookings] = await Promise.all([
     rewardsForUser(user.id),
-    prisma.booking.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 50 }),
+    prisma.booking.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 50, include: { paymentProofs: { select: paymentProofMetadata, orderBy: { createdAt: "desc" } } } }),
   ]);
   const notice = state.notice ? NOTICES[state.notice] : undefined;
   const membership = await prisma.user.findUnique({ where: { id: user.id }, select: { subCompanyId: true, subCompany: { select: { name: true } } } });
@@ -385,7 +391,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
           {bookings.length ? (
             <ul class="booking-list">
               {bookings.map(b => (
-                <li>
+                <li id={`booking-${b.id}`}>
                   <div class="booking-row">
                     <div>
                       <b>{bookingRef(b.id)}</b> <span class="muted">· {caymanDate(b.createdAt, false)}</span>
@@ -402,6 +408,10 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
                   <details>
                     <summary>View request</summary>
                     <pre class="request">{b.requestText}</pre>
+                  </details>
+                  <details class="payment-proof-details" open={c.req.query("notice")?.startsWith("proof-") && c.req.query("booking") === String(b.id) ? true : undefined}>
+                    <summary>{b.paymentProofs.length ? `Proof of payment · ${b.paymentProofs.length} file${b.paymentProofs.length === 1 ? "" : "s"}` : "Upload proof of payment"}</summary>
+                    <PaymentProofSection bookingId={b.id} proofs={b.paymentProofs} customer />
                   </details>
                 </li>
               ))}

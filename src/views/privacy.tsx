@@ -40,6 +40,9 @@ export const PrivacyPage: FC<{ user: SessionUser | null }> = ({ user }) => (
             details, the equipment you ask for, the rental terms shown to you, and the name and initials you type to sign them.
           </li>
           <li>
+            <b>Proof of payment.</b> Receipts and payment screenshots you choose to upload, their filenames and upload dates. These may contain transfer details and are available only to you and Cayman Crane admins for payment verification.
+          </li>
+          <li>
             <b>Rewards.</b> The amounts paid on bookings you made while logged in, and the points and tier they add up to.
           </li>
           <li>
@@ -49,7 +52,7 @@ export const PrivacyPage: FC<{ user: SessionUser | null }> = ({ user }) => (
         </ul>
         <p>
           Your cart is saved in your own browser and isn't sent to us until you submit a booking request. We don't use advertising or analytics
-          cookies, and this website doesn't collect card or bank details.
+          cookies. We do not ask for card numbers or online banking credentials. Avoid including unnecessary bank account information in uploaded receipts.
         </p>
       </section>
 

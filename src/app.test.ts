@@ -288,6 +288,55 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(crossSite.status, 403);
   });
 
+  async function uploadProof(id: number, cookie: string, file: File | null, origin?: string) {
+    const form=new FormData();if(file)form.set("proof",file);
+    return app.request(`/account/bookings/${id}/payment-proofs`,{method:"POST",headers:{cookie,"x-real-ip":randomUUID(),...(origin?{origin}:{})},body:form});
+  }
+  const receiptFile=()=>new File([Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jJ1kAAAAASUVORK5CYII=","base64")],"Transfer receipt.png",{type:"image/png"});
+
+  test("customers upload private proof to their own booking and admins review without automatic payment or points", async () => {
+    const owner=await signup();await req("/api/bookings",{cookie:owner,json:booking});
+    const saved=await prisma.booking.findFirstOrThrow();
+    let response=await uploadProof(saved.id,owner,receiptFile());assert.equal(response.status,302);assert.match(response.headers.get("location")!,/proof-uploaded/);
+    const proof=await prisma.paymentProof.findFirstOrThrow();assert.equal(proof.bookingId,saved.id);assert.equal(proof.fileName,"Transfer receipt.png");assert.equal(proof.contentType,"image/png");
+    const path=`/account/bookings/${saved.id}/payment-proofs/${proof.id}`;
+    response=await req(path,{cookie:owner});assert.equal(response.status,200);assert.match(response.headers.get("cache-control")!,/private, no-store/);assert.match(response.headers.get("content-disposition")!,/attachment/);assert.equal(response.headers.get("x-content-type-options"),"nosniff");assert.deepEqual(Buffer.from(await response.arrayBuffer()),Buffer.from(await receiptFile().arrayBuffer()));
+    const profile=await (await req("/account/profile",{cookie:owner})).text();assert.match(profile,/Proof of payment · 1 file/);assert.match(profile,/Transfer receipt.png/);
+    const admin=await makeAdmin();assert.equal((await req(path,{cookie:admin})).status,200);
+    const adminPage=await (await req(`/admin/bookings/${saved.id}`,{cookie:admin})).text();assert.match(adminPage,/Proof of payment/);assert.match(adminPage,/Transfer receipt.png/);
+    assert.match(await (await req("/admin/bookings",{cookie:admin})).text(),/Payment proof received/);
+    const unchanged=await prisma.booking.findUniqueOrThrow({where:{id:saved.id}});assert.equal(unchanged.status,"PENDING");assert.equal(unchanged.amountPaidCents,null);
+    const rewards=await (await req("/api/rewards",{cookie:owner})).json();assert.equal(rewards.rewards.points,0);
+    assert.equal((await req(`/uploads/${proof.id}`)).status,404);
+    await prisma.booking.delete({where:{id:saved.id}});assert.equal(await prisma.paymentProof.count(),0);
+  });
+
+  test("payment proof access is limited to the booking owner or admin, even within one company", async () => {
+    const owner=await signup();const other=await signup("other@example.com");
+    await req("/api/bookings",{cookie:owner,json:booking});const saved=await prisma.booking.findFirstOrThrow();
+    await uploadProof(saved.id,owner,receiptFile());const proof=await prisma.paymentProof.findFirstOrThrow();const path=`/account/bookings/${saved.id}/payment-proofs/${proof.id}`;
+    const company=await prisma.company.create({data:{name:"Shared Company",nameKey:"shared",domain:"example.com"}});await prisma.user.updateMany({where:{role:"CUSTOMER"},data:{companyAccountId:company.id,company:company.name}});
+    assert.equal((await req(path)).status,302);assert.equal((await req(path,{cookie:other})).status,404);
+    assert.equal((await uploadProof(saved.id,other,receiptFile())).status,404);
+    assert.equal((await req(`/account/bookings/${saved.id+1}/payment-proofs/${proof.id}`,{cookie:owner})).status,404);
+    assert.equal((await uploadProof(saved.id,owner,receiptFile(),"https://attacker.example")).status,403);
+    await prisma.user.updateMany({where:{email:"kim@example.com"},data:{emailVerifiedAt:null}});
+    assert.equal((await req(path,{cookie:owner})).status,403);
+    assert.match((await uploadProof(saved.id,owner,receiptFile())).headers.get("location")!,/proof-confirm-email/);
+  });
+
+  test("payment proof uploads validate file bytes, enforce size and serialize the five-file limit", async () => {
+    const owner=await signup();await req("/api/bookings",{cookie:owner,json:booking});const saved=await prisma.booking.findFirstOrThrow();
+    for(const file of [null,new File([],"empty.png"),new File(["<script>alert(1)</script>"],"fake.png",{type:"image/png"})]) assert.match((await uploadProof(saved.id,owner,file)).headers.get("location")!,/proof-invalid/);
+    for(const size of [5*1024*1024+1,6*1024*1024])assert.match((await uploadProof(saved.id,owner,new File([new Uint8Array(size)],"large.pdf",{type:"application/pdf"}))).headers.get("location")!,/proof-too-large/);
+    for(let i=0;i<4;i++)assert.match((await uploadProof(saved.id,owner,new File(["%PDF-1.4\nreceipt"],`transfer-${i}.pdf`,{type:"application/pdf"}))).headers.get("location")!,/proof-uploaded/);
+    const parallel=await Promise.all([uploadProof(saved.id,owner,receiptFile()),uploadProof(saved.id,owner,receiptFile())]);
+    assert.equal(parallel.filter(r=>r.headers.get("location")?.includes("proof-uploaded")).length,1);
+    assert.equal(parallel.filter(r=>r.headers.get("location")?.includes("proof-limit")).length,1);
+    assert.equal(await prisma.paymentProof.count({where:{bookingId:saved.id}}),5);
+    const page=await (await req("/account/profile",{cookie:owner})).text();assert.match(page,/reached the 5-file limit/);
+  });
+
   test("account greeting shows live points, tier and next-tier points including the highest tier", async () => {
     const cookie=await signup();
     const user=await prisma.user.findUniqueOrThrow({where:{email:"kim@example.com"}});
