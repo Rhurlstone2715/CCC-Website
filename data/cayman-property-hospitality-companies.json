@@ -1,0 +1,421 @@
+{
+  "researchedOn": "2026-11-13",
+  "scope": "Publicly documented Cayman Islands hotels, condominium and strata operations, property managers, strata managers and property consultants with published business email domains. Not an exhaustive register or a certification of current trade licences. Creates company choices only, not customer accounts or marketing subscriptions.",
+  "companies": [
+    {
+      "name": "Abode Property Management",
+      "domain": "abodecayman.com",
+      "categories": [
+        "property managers"
+      ],
+      "source": "https://abodecayman.com/contact-us/",
+      "publishedEmail": "info@abodecayman.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Aqua Bay Club",
+      "domain": "aquabayclub.com",
+      "categories": [
+        "condos"
+      ],
+      "source": "https://www.aquabayclub.com/wp-content/uploads/2024/08/Aqua-Bay-Club-Welcome-Package.pdf",
+      "publishedEmail": "reservations@aquabayclub.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Avata Property Services Ltd.",
+      "domain": "avatapsl.com",
+      "categories": [
+        "strata managers"
+      ],
+      "source": "https://www.avatapsl.com/contact-us",
+      "publishedEmail": "info@avatapsl.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "BCQS Property Management Ltd.",
+      "domain": "bcqspropertymanagement.com",
+      "categories": [
+        "strata managers"
+      ],
+      "source": "https://www.bcqspropertymanagement.com/contact/",
+      "publishedEmail": "contactus@bcqspropertymanagement.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Caribbean Club",
+      "domain": "caribclub.com",
+      "categories": [
+        "hotels"
+      ],
+      "source": "https://www.caribclub.com/about-us",
+      "publishedEmail": "reservations@caribclub.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Cayman Property Consulting",
+      "domain": "caymanpropertyconsulting.com",
+      "categories": [
+        "property consultants"
+      ],
+      "source": "https://caymanpropertyconsulting.com/contact-us",
+      "publishedEmail": "stewart@caymanpropertyconsulting.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Cayman Villas",
+      "domain": "caymanvillas.com",
+      "categories": [
+        "property managers"
+      ],
+      "source": "https://www.caymanvillas.com/",
+      "publishedEmail": "reservations@caymanvillas.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Charterland Ltd.",
+      "domain": "charterland.ky",
+      "categories": [
+        "property consultants"
+      ],
+      "source": "https://www.charterland.ky/contact/",
+      "publishedEmail": "info@charterland.ky",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Christopher Columbus Condos",
+      "domain": "christophercolumbuscondos.com",
+      "categories": [
+        "condos"
+      ],
+      "source": "https://www.cita.ky/beta/condos-villas/christopher-columbus",
+      "publishedEmail": "info@christophercolumbuscondos.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Coastal Realty Ltd.",
+      "domain": "coastalrealty.ky",
+      "categories": [
+        "strata managers"
+      ],
+      "source": "https://www.coastalrealty.ky/",
+      "publishedEmail": "manager@coastalrealty.ky",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Compass Point Dive Resort",
+      "domain": "compasspoint.ky",
+      "categories": [
+        "hotels"
+      ],
+      "source": "https://www.compasspointdiveresort.com/contact-us",
+      "publishedEmail": "bookings@compasspoint.ky",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Coral Stone Club",
+      "domain": "coralstoneclub.com",
+      "categories": [
+        "condos"
+      ],
+      "source": "https://www.coralstoneclub.com/contact-us/",
+      "publishedEmail": "reservations@coralstoneclub.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Davenport Property Management & Services Ltd.",
+      "domain": "dpms.ky",
+      "categories": [
+        "property managers"
+      ],
+      "source": "https://www.davenportpropertyservices.ky/contact",
+      "publishedEmail": "info@dpms.ky",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Discovery Point Club (Strata 81)",
+      "domain": "discoverypointclub.com",
+      "categories": [
+        "property stratas"
+      ],
+      "source": "https://www.cita.ky/where-to-stay/discovery-point-club",
+      "publishedEmail": "vacation@discoverypointclub.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Grand Cayman Property Services",
+      "domain": "grandcaymanpropertyservices.com",
+      "categories": [
+        "strata managers"
+      ],
+      "source": "https://grandcaymanpropertyservices.com/",
+      "publishedEmail": "info@grandcaymanpropertyservices.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Grand Cayman Villas & Condos",
+      "domain": "grandcaymanvillas.com",
+      "categories": [
+        "property managers"
+      ],
+      "source": "https://www.grandcaymanvillas.com/about-us/",
+      "publishedEmail": "jim@grandcaymanvillas.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Grand Caymanian Resort & Suites / Holiday Inn Resort Grand Cayman",
+      "domain": "grandcaymanian.com",
+      "categories": [
+        "hotels"
+      ],
+      "source": "https://grandcaymanian.com/contact/",
+      "publishedEmail": "reservations@grandcaymanian.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Harbour Heights Condominiums",
+      "domain": "harbourheightscayman.com",
+      "categories": [
+        "condos"
+      ],
+      "source": "https://www.harbourheightscayman.com/contact-us/",
+      "publishedEmail": "frontdesk@harbourheightscayman.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "International Realty Group (IRG)",
+      "domain": "irg.ky",
+      "categories": [
+        "property managers"
+      ],
+      "source": "https://www.irgcayman.com/our-property-management-services",
+      "publishedEmail": "info@irg.ky",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "JEC Property Consultants Ltd.",
+      "domain": "jec.ky",
+      "categories": [
+        "property consultants"
+      ],
+      "source": "https://www.jec.ky/request-a-quote/",
+      "publishedEmail": "contact@jec.ky",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Kimpton Seafire Resort + Spa",
+      "domain": "seafireresortandspa.com",
+      "categories": [
+        "hotels"
+      ],
+      "source": "https://www.seafireresortandspa.com/contact/",
+      "publishedEmail": "info@seafireresortandspa.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Kuavo Cayman",
+      "domain": "kuavo.com",
+      "categories": [
+        "strata managers"
+      ],
+      "source": "https://www.kuavo.ky/strata-management/",
+      "publishedEmail": "info@kuavo.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Le Soleil d’Or",
+      "domain": "lesoleildor.com",
+      "categories": [
+        "hotels"
+      ],
+      "source": "https://www.lesoleildor.com/media/fbqfamtg/lsdo-brochure-nov-2025.pdf",
+      "publishedEmail": "reservations@lesoleildor.com",
+      "location": "Cayman Brac, Cayman Islands"
+    },
+    {
+      "name": "Little Cayman Beach Resort",
+      "domain": "littlecayman.com",
+      "categories": [
+        "hotels"
+      ],
+      "source": "https://littlecayman.com/contact-us/",
+      "publishedEmail": "booking@littlecayman.com",
+      "location": "Little Cayman, Cayman Islands"
+    },
+    {
+      "name": "London House Condominiums",
+      "domain": "londonhouse.ky",
+      "categories": [
+        "condos"
+      ],
+      "source": "https://londonhouse.ky/",
+      "publishedEmail": "reservations@londonhouse.ky",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Nautic Property Consultants Ltd.",
+      "domain": "nautic.ky",
+      "categories": [
+        "property consultants"
+      ],
+      "source": "https://nautic.ky/contact/",
+      "publishedEmail": "contact@nautic.ky",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Ocean Club Strata",
+      "domain": "oceanclubcayman.com",
+      "categories": [
+        "property stratas"
+      ],
+      "source": "https://www.oceanclubcayman.com/maps-and-contact",
+      "publishedEmail": "strata@oceanclubcayman.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Palm Heights",
+      "domain": "palmheights.com",
+      "categories": [
+        "hotels"
+      ],
+      "source": "https://palmheights.com/",
+      "publishedEmail": "welcome@palmheights.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Plantana Condominiums",
+      "domain": "plantanacayman.com",
+      "categories": [
+        "condos"
+      ],
+      "source": "https://www.plantanacayman.com/contact-us/",
+      "publishedEmail": "accounts@plantanacayman.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Property Management Cayman Ltd.",
+      "domain": "propertymanagementcayman.com",
+      "categories": [
+        "property managers"
+      ],
+      "source": "https://www.propertymanagementcayman.com/",
+      "publishedEmail": "info@propertymanagementcayman.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Regal Beach Club",
+      "domain": "regalbeach.ky",
+      "categories": [
+        "condos"
+      ],
+      "source": "https://www.regalbeach.ky/contact-regal-beach-club/",
+      "publishedEmail": "reservations@regalbeach.ky",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Ritch Realty Ltd.",
+      "domain": "ritchrealty.ky",
+      "categories": [
+        "property managers"
+      ],
+      "source": "https://caymanresident.com/housing/rentals/renting-a-property/rental-agents",
+      "publishedEmail": "info@ritchrealty.ky",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "The Avalon Condominiums",
+      "domain": "avaloncayman.com",
+      "categories": [
+        "condos"
+      ],
+      "source": "https://www.avaloncayman.com/contact",
+      "publishedEmail": "info@avaloncayman.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "The Beachcomber Grand Cayman",
+      "domain": "beachcombergrandcayman.com",
+      "categories": [
+        "condos"
+      ],
+      "source": "https://beachcombergrandcayman.com/contact-us/",
+      "publishedEmail": "manager@beachcombergrandcayman.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "The Grandview Condos (Strata 205)",
+      "domain": "grandviewcondos.com",
+      "categories": [
+        "property stratas"
+      ],
+      "source": "https://www.cita.ky/the-grandview-strata",
+      "publishedEmail": "propertymanager@grandviewcondos.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "The Locale Hotel Grand Cayman",
+      "domain": "staylocale.com",
+      "categories": [
+        "hotels"
+      ],
+      "source": "https://staylocale.com/ufaq/who-do-you-call-about-maintenance/",
+      "publishedEmail": "bookings@staylocale.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "The Reef Beach Resort Grand Cayman",
+      "domain": "thereef.com",
+      "categories": [
+        "hotels"
+      ],
+      "source": "https://www.cita.ky/wyndham-reef-resort",
+      "publishedEmail": "info@thereef.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "The Westin Grand Cayman Seven Mile Beach Resort & Spa",
+      "domain": "westin-cayman.com",
+      "categories": [
+        "hotels"
+      ],
+      "source": "https://www.cita.ky/mobile/where-to-stay/westin-casuarina",
+      "publishedEmail": "wstngc.reservations@westin-cayman.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "THPM Real Estate",
+      "domain": "thpm.ky",
+      "categories": [
+        "property managers"
+      ],
+      "source": "https://www.thpm.ky/contact",
+      "publishedEmail": "propertymgt@thpm.ky",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Turtle Nest Inn & Condos",
+      "domain": "turtlenestinn.com",
+      "categories": [
+        "hotels"
+      ],
+      "source": "https://www.turtlenestinn.com/contact/",
+      "publishedEmail": "vacation@turtlenestinn.com",
+      "location": "Grand Cayman, Cayman Islands"
+    },
+    {
+      "name": "Villas of the Galleon",
+      "domain": "villasofthegalleon.com",
+      "categories": [
+        "condos"
+      ],
+      "source": "https://www.villasofthegalleon.com/contact/",
+      "publishedEmail": "reservations@villasofthegalleon.com",
+      "location": "Grand Cayman, Cayman Islands"
+    }
+  ],
+  "exclusions": [
+    "Consumer email domains (including candw.ky), unverified email domains, and global hotel-chain email domains without a Cayman-specific domain were not imported.",
+    "Hotel Indigo uses the same published Seafire email domain; no second company is created against that domain.",
+    "Individual condominium units using an agent’s email domain are represented by the agent, not assigned the agent’s domain as their own."
+  ]
+}

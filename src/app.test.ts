@@ -1050,6 +1050,32 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const duplicate = await req(`/admin/companies/${company.id}/update`, { cookie: adminCookie, form: { name: "Renamed Business", address: "bad email" } });assert.equal(duplicate.headers.get("location"), "/admin/companies?error=invalid");
   });
 
+  test("property and hospitality directory preserves accounts and recommends only verified company domains", async () => {
+    const directory = JSON.parse(readFileSync("data/cayman-property-hospitality-companies.json", "utf8")) as {companies: {name:string;domain:string;publishedEmail:string;categories:string[];source:string}[]};
+    const sql = readFileSync("prisma/migrations/20261113120000_property_hospitality_directory/migration.sql", "utf8");
+    const existing = await prisma.company.create({data:{name:"Existing Strata Manager",nameKey:"existingstratamanager",domain:"dpms.ky",rewardCreditCents:12345}});
+    await prisma.$executeRawUnsafe(sql);
+    assert.equal(await prisma.company.count(), directory.companies.length);
+    await prisma.$executeRawUnsafe(sql);
+    assert.equal(await prisma.company.count(), directory.companies.length);
+    const preserved=await prisma.company.findUniqueOrThrow({where:{id:existing.id}});
+    assert.equal(preserved.name,existing.name);assert.equal(preserved.rewardCreditCents,12345);
+    for(const entry of directory.companies){
+      assert.equal(companyEmailDomain(entry.publishedEmail),entry.domain);
+      assert.ok(entry.source.startsWith("https://"));
+      const suggestion=await (await req(`/account/company-suggestion?email=staff%40${entry.domain}`)).json();
+      assert.equal(suggestion.company,entry.domain===existing.domain?existing.name:entry.name);
+      const spoof=await (await req(`/account/company-suggestion?email=staff%40${entry.domain}.example.com`)).json();
+      assert.equal(spoof.company,null);
+    }
+    for(const domain of ["gmail.com","candw.ky","pyramidglobal.com","ritzcarlton.com","hotelindigo.com"]){
+      const suggestion=await (await req(`/account/company-suggestion?email=staff%40${domain}`)).json();
+      assert.equal(suggestion.company,null);
+    }
+    assert.equal(await prisma.user.count(),0);
+    assert.equal(await prisma.accountEmail.count(),0);
+  });
+
   test("researched Cayman directory imports idempotently and preserves existing companies", async () => {
     const existing = await prisma.company.create({ data: { name: "Existing Climate Account", nameKey: "existingclimateaccount", domain: "ccc.ky", rewardCreditCents: 12345 } });
     const directory = JSON.parse(readFileSync("data/cayman-company-directory.json", "utf8"));
