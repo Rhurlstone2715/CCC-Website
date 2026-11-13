@@ -90,6 +90,11 @@ export function parseBooking(body: unknown): BookingInput | { error: string } {
   if (b.agreement !== true) return { error: "The rental agreement must be accepted." };
   if (b.paymentAck !== true) return { error: "The payment terms must be acknowledged." };
 
+  const requestedTime = b.details && typeof b.details === "object" ? (b.details as Record<string, unknown>).startTime : null;
+  if (requestedTime !== undefined && requestedTime !== null && requestedTime !== "" && (typeof requestedTime !== "string" || !/^(?:[01]\d|2[0-3]):00$/.test(requestedTime))) {
+    return { error: "Choose a scheduled start time on the hour, such as 8:00 AM or 9:00 AM." };
+  }
+
   return {
     customerName,
     customerEmail,

@@ -8,7 +8,7 @@ import { randomUUID } from "node:crypto";
 import { after, before, beforeEach, describe, test } from "node:test";
 import { app } from "./app.js";
 import { hashPassword, safeNext, verifyPassword } from "./auth.js";
-import { parseDetails } from "./bookings.js";
+import { parseBooking, parseDetails } from "./bookings.js";
 import { buildCatalog, ensureCatalogSeeded, setProblem } from "./catalog.js";
 import { prisma } from "./db.js";
 import { deliverAccountEmails, queueWelcomeEmail } from "./account-emails.js";
@@ -67,6 +67,12 @@ describe("passwords and redirects", () => {
     assert.equal(csvCell("+1 345 555 0100"), `"'+1 345 555 0100"`);
     assert.equal(csvCell(12.5), "12.5");
     assert.equal(csvCell(null), "");
+  });
+
+  test("checkout accepts whole-hour start times and rejects minutes or invalid hours", () => {
+    const valid={customerName:"Test",customerEmail:"test@example.com",requestText:"Rental",termsText:"Terms",signature:"Test",initials:"T",agreement:true,paymentAck:true};
+    for(let h=0;h<24;h++) assert.equal("error" in parseBooking({...valid,details:{startTime:`${String(h).padStart(2,"0")}:00`}}),false);
+    for(const startTime of ["08:30","08:01","24:00","99:00","8:00","08:00:00",123]) assert.equal("error" in parseBooking({...valid,details:{startTime}}),true);
   });
 
   test("booking details drop anything malformed", () => {
