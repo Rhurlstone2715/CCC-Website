@@ -71,7 +71,7 @@ describe("passwords and redirects", () => {
 
   test("new checkout requests accept Grand Cayman areas only", () => {
     const valid={customerName:"Test",customerEmail:"test@example.com",requestText:"Rental",termsText:"Terms",signature:"Test",initials:"T",agreement:true,paymentAck:true};
-    for(const area of ["George Town","West Bay","Red Bay","Prospect","Spotts","Savannah","Bodden Town","East End","North Side"])assert.equal("error" in parseBooking({...valid,details:{area}}),false);
+    for(const area of ["George Town","7 Mile Beach","West Bay","Red Bay","Prospect","Spotts","Savannah","Bodden Town","East End","North Side"])assert.equal("error" in parseBooking({...valid,details:{area}}),false);
     for(const area of ["Other","Cayman Brac","Little Cayman","Other / Cayman Brac / Little Cayman"])assert.equal("error" in parseBooking({...valid,details:{area}}),true);
     assert.equal("error" in parseBooking({...valid,details:{rentalCollection:"pickup"}}),false);
   });

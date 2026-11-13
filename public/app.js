@@ -218,7 +218,7 @@ function renderCart(){const ready=signedIn&&emailConfirmed;$("#checkoutButton").
 function setMenu(open){$("#mobileNav").classList.toggle("open",open);const b=$("#menuButton");b.setAttribute("aria-expanded",String(open));b.setAttribute("aria-label",open?"Close menu":"Open menu");const label=b.querySelector(".menu-label");if(label)label.textContent=open?"Close":"Menu"}
 function openCart(){$("#cartDrawer").classList.add("open");$("#drawerBackdrop").classList.add("open");$("#cartDrawer").setAttribute("aria-hidden","false");$("#cartButton").setAttribute("aria-expanded","true");document.body.classList.add("lock")}
 function closeCart(){$("#cartDrawer").classList.remove("open");$("#drawerBackdrop").classList.remove("open");$("#cartDrawer").setAttribute("aria-hidden","true");$("#cartButton").setAttribute("aria-expanded","false");document.body.classList.remove("lock")}
-const deliveryFees={"George Town":150,"West Bay":250,"Red Bay":200,"Prospect":200,"Spotts":200,"Savannah":250,"Bodden Town":300,"East End":350,"North Side":400};
+const deliveryFees={"George Town":150,"7 Mile Beach":200,"West Bay":250,"Red Bay":200,"Prospect":200,"Spotts":200,"Savannah":250,"Bodden Town":300,"East End":350,"North Side":400};
 function collectableRental(p){return !!p?.delivery&&!p.operatorService&&!p.setPart&&["Tools","Power Generation","Attachments","Construction Plant / Equipment","Ground Protection"].includes(p.category)}
 function hasCollectableRentals(){return cart.some(i=>!i.inSet&&collectableRental(products.find(p=>p.id===i.id)))}
 function rentalCollection(){return hasCollectableRentals()&&$("#rentalCollection")?.value==="pickup"?"pickup":"delivery"}

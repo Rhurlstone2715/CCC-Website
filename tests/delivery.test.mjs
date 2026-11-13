@@ -67,3 +67,8 @@ test('cranes and boom trucks are exempt from full-tank returns while other engin
     else assert.match(result, /Return with a full tank/);
   }
 });
+
+test('7 Mile Beach costs CI$200 per delivered item with weekly and monthly waivers', () => {
+  assert.equal(checkout([line('rt40'), line('diesel-mixer-9-cu-ft',2)],'7 Mile Beach').total,600);
+  assert.equal(checkout([line('rt40',1,'weekly'),line('diesel-mixer-9-cu-ft',2,'monthly')],'7 Mile Beach').total,0);
+});

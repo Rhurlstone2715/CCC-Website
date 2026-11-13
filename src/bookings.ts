@@ -91,7 +91,7 @@ export function parseBooking(body: unknown): BookingInput | { error: string } {
   if (b.paymentAck !== true) return { error: "The payment terms must be acknowledged." };
 
   const requestedArea = b.details && typeof b.details === "object" ? (b.details as Record<string, unknown>).area : null;
-  if (requestedArea !== undefined && requestedArea !== null && requestedArea !== "" && !["George Town", "West Bay", "Red Bay", "Prospect", "Spotts", "Savannah", "Bodden Town", "East End", "North Side"].includes(String(requestedArea))) {
+  if (requestedArea !== undefined && requestedArea !== null && requestedArea !== "" && !["George Town", "7 Mile Beach", "West Bay", "Red Bay", "Prospect", "Spotts", "Savannah", "Bodden Town", "East End", "North Side"].includes(String(requestedArea))) {
     return { error: "Rentals and delivery are available on Grand Cayman only. Choose a listed Grand Cayman area." };
   }
 
