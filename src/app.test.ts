@@ -977,6 +977,27 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.deepEqual(responses.map(r => r.status).sort(), [302, 400]);
   });
 
+  test("full trading names register shared work domains without allowing duplicate company names for that domain", async () => {
+    const sent = captureEmails();
+    const response = await req("/account/signup", {form:{name:"First Staff",email:"first@paragon.ky",phone:"345 555 0100",company:"Paragon Builders",password:"longenough1"}});
+    assert.equal(response.status,302);assert.equal(await prisma.company.count(),0);
+    const pending=await req("/account/signup", {form:{name:"Pending Staff",email:"pending@paragon.ky",phone:"345 555 0104",company:"Paragon Civil",password:"longenough1"}});
+    assert.equal(pending.status,302);
+    await req(confirmPath(sent.find(m=>m.to.includes("first@paragon.ky"))!.text));
+    await req(confirmPath(sent.find(m=>m.to.includes("pending@paragon.ky"))!.text));
+    const company=await prisma.company.findUniqueOrThrow({where:{domain:"paragon.ky"}});
+    assert.equal(company.name,"Paragon Builders");assert.equal(company.ownerEmail,null);
+    const second=await req("/account/signup", {form:{name:"Second Staff",email:"second@paragon.ky",phone:"345 555 0101",company:"Paragon Builders",password:"longenough1"}});
+    assert.equal(second.status,302);
+    await req(confirmPath(sent.find(m=>m.to.includes("second@paragon.ky"))!.text));
+    const staff=await prisma.user.findMany({where:{companyAccountId:company.id}});assert.equal(staff.length,3);
+    const duplicate=await req("/account/signup",{form:{name:"Third Staff",email:"third@paragon.ky",phone:"345 555 0102",company:"Duplicate Paragon",password:"longenough1"}});
+    assert.equal(duplicate.status,400);assert.equal(await prisma.company.count(),1);
+    for(const email of ["other@gmail.com","other@unrelated.ky"]){
+      const rejected=await req("/account/signup",{form:{name:"Other Staff",email,phone:"345 555 0103",company:"Paragon Builders",password:"longenough1"}});assert.equal(rejected.status,400);
+    }
+  });
+
   test("a company without a work domain is restricted to one verified email login", async () => {
     const sent = captureEmails();
     const response = await req("/account/signup", { form: { name: "Company Owner", email: "owner@gmail.com", phone: "345 555 0100", company: "Island Repairs", password: "longenough1" } });

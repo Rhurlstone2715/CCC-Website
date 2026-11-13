@@ -42,8 +42,8 @@ export async function validateCompany(email: string, name: string | null, subCom
     : "That company requires its matching work-email domain. Use a company work email.";
   if (subCompanyId) return "Select the registered parent company for this sub-company.";
   const domain = companyEmailDomain(email);
-  const parent = domain ? await prisma.company.findFirst({ where: { archivedAt: null, subCompanies: { some: {} }, OR: [{ domain }, { subCompanies: { some: { domain } } }] }, select: { name: true } }) : null;
-  if (parent) return `Your work email is registered under ${parent.name}. Select that company and your office or department.`;
+  const parent = domain ? await prisma.company.findFirst({ where: { archivedAt: null, OR: [{ domain }, { subCompanies: { some: { domain } } }] }, select: { name: true, subCompanies: { select: { id: true } } } }) : null;
+  if (parent) return `Your work email is registered under ${parent.name}. Select that company${parent.subCompanies.length ? " and your office or department" : ""}.`;
   const owned = await prisma.company.findUnique({ where: { ownerEmail: email.toLowerCase() } });
   if (owned) return `This email is already registered to ${owned.name}. Use that company name.`;
   return null;
@@ -65,9 +65,13 @@ export async function syncCompanyMembership(userId: number): Promise<void> {
       const domainCompany = domain ? await tx.company.findUnique({ where: { domain } }) : null;
       const owned = await tx.company.findUnique({ where: { ownerEmail: user.email } });
       if (owned) return;
-      // Only self-register a shared domain when its name matches. Otherwise register this email alone.
-      const shared = domain && !domainCompany && key === domain.split('.')[0].replace(/[^a-z0-9]/g, '');
-      company = await tx.company.upsert({ where: { nameKey: key }, create: { name: user.company, nameKey: key, domain: shared ? domain : null, ownerEmail: shared ? null : user.email }, update: {}, include: { subCompanies: true } });
+      // Another staff member may have registered this domain while this email awaited verification.
+      if (domainCompany) {
+        company = await tx.company.findUniqueOrThrow({ where: { id: domainCompany.id }, include: { subCompanies: true } });
+      } else {
+        // Verified business emails establish a shared company domain, including full trading names.
+        company = await tx.company.upsert({ where: { nameKey: key }, create: { name: user.company, nameKey: key, domain, ownerEmail: domain ? null : user.email }, update: {}, include: { subCompanies: true } });
+      }
     }
     if (!companyAllowsEmail(company, user.email) || subCompanyIssue(company, user.email, user.subCompanyId)) {
       if (user.companyAccountId) await tx.user.update({ where: { id: user.id }, data: { companyAccountId: null } });

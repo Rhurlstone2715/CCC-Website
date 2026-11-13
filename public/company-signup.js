@@ -49,7 +49,7 @@
         note.textContent='Your email matches this registered company. Select it to share company loyalty points after email verification.';
       } else {
         showTextInput();const option=document.createElement('option');option.value=data.suggestion;list.append(option);
-        note.textContent='Suggested company: '+data.suggestion+'. Enter the company name matching '+data.domain+'; it will be saved after you verify your work email.';
+        note.textContent='Enter your full company name. After you verify your work email, staff using @'+data.domain+' can register their own logins under this company.';
       }
     }catch{if(current===sequence){showTextInput();note.textContent='Company eligibility will be checked when you save.';}}
   }
