@@ -321,7 +321,7 @@ const RewardsCard: FC<{ rewards: Rewards }> = ({ rewards }) => (
           <span style={`width:${rewards.progressPercent}%`}></span>
         </div>
         <p class="progress-label">
-          {money(rewards.amountToNextCents)} more to {rewards.nextTier}
+          {Math.ceil(rewards.amountToNextCents / 100).toLocaleString("en-US")} points until {rewards.nextTier}
         </p>
       </>
     ) : (
@@ -360,11 +360,16 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
     <Layout title="Your account" area="account" user={user}>
       {notice ? <Notice tone={notice.tone}>{notice.text}</Notice> : null}
       {mustConfirmEmail(user) ? <ConfirmReminder email={user.email} next="" /> : null}
-      <div class="page-head">
+      <section class="page-head account-welcome" aria-labelledby="welcome-title">
         <p class="eyebrow">Your account</p>
-        <h1>Hi, {firstName}</h1>
-        <p class="lede">Book while you're logged in so every paid rental counts toward your next tier.</p>
-      </div>
+        <h1 id="welcome-title">Welcome back, {firstName}</h1>
+        <p class="lede">Your rewards at a glance.</p>
+        <dl class="welcome-rewards">
+          <div><dt>Rewards points</dt><dd>{rewards.points.toLocaleString("en-US")}</dd></div>
+          <div><dt>Rewards status</dt><dd>{rewards.tier}</dd></div>
+          <div><dt>{rewards.nextTier ? `Points until ${rewards.nextTier}` : "Tier progress"}</dt><dd>{rewards.nextTier ? Math.ceil(rewards.amountToNextCents / 100).toLocaleString("en-US") : "Highest tier reached"}</dd></div>
+        </dl>
+      </section>
       <div class="grid-2">
         <div class="stack">
           <>{companyId ? <p class="hint">Company loyalty: {user.company}{membership?.subCompany ? ` / ${membership.subCompany.name}` : ""}. {membership?.subCompany ? "Staff in your sub-company share its rewards. Points stay separate from other departments." : "Company rewards are linked to your verified login. Registered work-domain companies can share points across staff."}</p> : null}<RewardsCard rewards={rewards} /></>

@@ -288,6 +288,18 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(crossSite.status, 403);
   });
 
+  test("account greeting shows live points, tier and next-tier points including the highest tier", async () => {
+    const cookie=await signup();
+    const user=await prisma.user.findUniqueOrThrow({where:{email:"kim@example.com"}});
+    await prisma.user.update({where:{id:user.id},data:{name:"Ric Hurlstone",rewardCreditCents:990000}});
+    let page=await (await req("/account/profile",{cookie})).text();
+    let welcome=page.match(/<section[^>]*account-welcome[\s\S]*?<\/section>/)![0];
+    assert.match(welcome,/Welcome back, Ric/);assert.match(welcome,/9,900/);assert.match(welcome,/Silver/);assert.match(welcome,/Points until Gold/);assert.match(welcome,/5,100/);
+    await prisma.user.update({where:{id:user.id},data:{rewardCreditCents:2500000}});
+    page=await (await req("/account/profile",{cookie})).text();welcome=page.match(/<section[^>]*account-welcome[\s\S]*?<\/section>/)![0];
+    assert.match(welcome,/25,000/);assert.match(welcome,/Platinum/);assert.match(welcome,/Highest tier reached/);assert.doesNotMatch(welcome,/Points until/);
+  });
+
   test("profile page needs a session", async () => {
     const res = await req("/account/profile");
     assert.equal(res.status, 302);
