@@ -69,6 +69,13 @@ describe("passwords and redirects", () => {
     assert.equal(csvCell(null), "");
   });
 
+  test("new checkout requests accept Grand Cayman areas only", () => {
+    const valid={customerName:"Test",customerEmail:"test@example.com",requestText:"Rental",termsText:"Terms",signature:"Test",initials:"T",agreement:true,paymentAck:true};
+    for(const area of ["George Town","West Bay","Red Bay","Prospect","Spotts","Savannah","Bodden Town","East End","North Side"])assert.equal("error" in parseBooking({...valid,details:{area}}),false);
+    for(const area of ["Other","Cayman Brac","Little Cayman","Other / Cayman Brac / Little Cayman"])assert.equal("error" in parseBooking({...valid,details:{area}}),true);
+    assert.equal("error" in parseBooking({...valid,details:{rentalCollection:"pickup"}}),false);
+  });
+
   test("checkout accepts whole-hour start times and rejects minutes or invalid hours", () => {
     const valid={customerName:"Test",customerEmail:"test@example.com",requestText:"Rental",termsText:"Terms",signature:"Test",initials:"T",agreement:true,paymentAck:true};
     for(let h=0;h<24;h++) assert.equal("error" in parseBooking({...valid,details:{startTime:`${String(h).padStart(2,"0")}:00`}}),false);

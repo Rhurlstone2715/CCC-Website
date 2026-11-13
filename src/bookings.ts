@@ -90,6 +90,11 @@ export function parseBooking(body: unknown): BookingInput | { error: string } {
   if (b.agreement !== true) return { error: "The rental agreement must be accepted." };
   if (b.paymentAck !== true) return { error: "The payment terms must be acknowledged." };
 
+  const requestedArea = b.details && typeof b.details === "object" ? (b.details as Record<string, unknown>).area : null;
+  if (requestedArea !== undefined && requestedArea !== null && requestedArea !== "" && !["George Town", "West Bay", "Red Bay", "Prospect", "Spotts", "Savannah", "Bodden Town", "East End", "North Side"].includes(String(requestedArea))) {
+    return { error: "Rentals and delivery are available on Grand Cayman only. Choose a listed Grand Cayman area." };
+  }
+
   const requestedTime = b.details && typeof b.details === "object" ? (b.details as Record<string, unknown>).startTime : null;
   if (requestedTime !== undefined && requestedTime !== null && requestedTime !== "" && (typeof requestedTime !== "string" || !/^(?:[01]\d|2[0-3]):00$/.test(requestedTime))) {
     return { error: "Choose a scheduled start time on the hour, such as 8:00 AM or 9:00 AM." };
