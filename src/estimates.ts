@@ -110,7 +110,7 @@ export async function renderEstimatePdf(s:EstimateSnapshot,preview=false):Promis
    const height=Math.max(...row.lines.map(c=>c.length))*11+9;top+=height;
    page.drawLine({start:{x:41,y:792-top+4},end:{x:575,y:792-top+4},thickness:.3,color:rgb(.8,.8,.8)});
   }
-  wrap('PROVISIONAL ESTIMATE\nSubject to availability and acceptance.\nRates and amounts shown in CI$.',font,8,207).forEach((line,i)=>write(line,125,580+i*11,8));
+  wrap('PROVISIONAL ESTIMATE\nSubject to availability and acceptance.',font,8,207).forEach((line,i)=>centered(line,120.6,337.55,591+i*11,8));
   write('TOTAL KYD $',399,638,11,true);write('TOTAL USD $',399,666,11,true);
   if(index===pages.length-1){
    for(const [cents,top]of [[s.totalCents,638],[s.totalCents===null?null:Math.round(s.totalCents/0.80),666]] as const){
