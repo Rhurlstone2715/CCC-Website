@@ -96,7 +96,7 @@ adminCatalog.get("/", async c => {
                       <span class="sub">{p.spec}</span>
                     </td>
                     <td data-label="Rates">{ratesSummary(p) || <span class="muted">None set</span>}</td>
-                    <td data-label="Quantity">{p.availableQuantity ?? <span class="muted">Not shown</span>}</td>
+                    <td data-label="Quantity">{p.availableQuantity ?? <span class="muted">1 (default)</span>}</td>
                     <td data-label="On the site">
                       {isAddOnOnly(p) ? <span class="badge badge-approved">Add-on</span> : p.hidden ? <span class="badge badge-cancelled">Hidden</span> : <span class="badge badge-paid">Listed</span>}
                     </td>
@@ -381,7 +381,7 @@ const ProductForm: FC<FormState & { nextOrder: number }> = ({ product, values, e
             aria-describedby="qty-hint"
           />
           <small id="qty-hint" class="hint">
-            Shown on the card. Blank hides it.
+            Used to prevent overlapping rentals. Blank reserves at most one unit; enter the full stock quantity to allow multiple simultaneous rentals.
           </small>
         </div>
         <div class="field">

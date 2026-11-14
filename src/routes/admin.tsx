@@ -1,3 +1,4 @@
+import { assertAvailability, AvailabilityError, lockInventory } from "../availability.js";
 import { estimateMetadata } from "../estimates.js";
 import { PaymentProofSection, paymentProofMetadata } from "../payment-proofs.js";
 import { Hono, type Context } from "hono";
@@ -32,6 +33,7 @@ const NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string
   linked: { tone: "success", text: "Booking linked to the customer's account." },
   deleted: { tone: "success", text: "Booking deleted." },
   "bad-amount": { tone: "error", text: "Enter the amount paid in CI$, for example 1250 or 1250.50." },
+  "inventory-conflict": { tone: "error", text: "This change would exceed available equipment for the selected rental period. Choose another time or reduce the quantity." },
   "bad-transition": { tone: "error", text: "That action doesn't apply to this booking any more. The page has been refreshed." },
   "credit-saved": { tone: "success", text: "Rewards credit saved." },
   "bad-credit": { tone: "error", text: "Enter the credit in CI$, for example 2500. Use 0 to remove it." },
@@ -620,9 +622,14 @@ admin.post("/bookings/:id{[0-9]+}/:action", async c => {
   if (!booking) return c.notFound();
   const back = (notice: string) => c.redirect(`/admin/bookings/${id}?notice=${notice}`);
   const body = await c.req.parseBody();
-  const update = (data: Parameters<typeof prisma.booking.update>[0]["data"]) => prisma.booking.update({ where: { id }, data });
+  const update = (data: Parameters<typeof prisma.booking.update>[0]["data"]) => prisma.$transaction(async tx=>{
+    await lockInventory(tx);
+    const changed=await tx.booking.update({where:{id},data});
+    if(['PENDING','APPROVED','PAID'].includes(changed.status)&&('status' in data||'scheduleStart' in data||'scheduleEnd' in data))await assertAvailability(tx,Array.isArray(changed.items)?changed.items as unknown as PricedLine[]:[],changed,id);
+    return changed;
+  });
 
-  switch (action) {
+  try { switch (action) {
     case "approve": {
       if (booking.status !== "PENDING") return back("bad-transition");
       const approved = await update({ status: "APPROVED", approvedAt: new Date() });
@@ -689,6 +696,7 @@ admin.post("/bookings/:id{[0-9]+}/:action", async c => {
     default:
       return c.notFound();
   }
+  } catch(error){if(error instanceof AvailabilityError)return back("inventory-conflict");throw error;}
 });
 
 // ---------- Customers ----------

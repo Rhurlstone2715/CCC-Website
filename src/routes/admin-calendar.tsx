@@ -1,3 +1,4 @@
+import { allocations, peak, rentalHours } from "../availability.js";
 import { Hono } from "hono";
 import type { FC } from "hono/jsx";
 import { type AppEnv, currentUser, requireAdmin } from "../auth.js";
@@ -39,10 +40,13 @@ const shortDate = (d: Date) => d.toLocaleString("en-US", { weekday: "short", mon
 
 type Entry = { booking: Booking; confirmed: boolean; clash: string[] };
 
-export function bookingSpan(b: Pick<Booking, "scheduleStart" | "scheduleEnd" | "startDate">): { start: Date; end: Date } | null {
+export function bookingSpan(b: Pick<Booking, "scheduleStart" | "scheduleEnd" | "startDate" | "startTime" | "items">): { start: Date; end: Date } | null {
   const start = b.scheduleStart ?? b.startDate;
   if (!start) return null;
-  const end = b.scheduleStart ? (b.scheduleEnd ?? b.scheduleStart) : start;
+  const lines=Array.isArray(b.items)?b.items as unknown as PricedLine[]:[];
+  const durations=lines.filter(l=>!l.operator).map(l=>rentalHours(l.term,l.qty));
+  const hours=durations.length?Math.max(...durations):24;
+  const end = b.scheduleStart ? (b.scheduleEnd ?? b.scheduleStart) : new Date(start.getTime()+Math.floor((Number((b.startTime??'00:00').slice(0,2))+hours-0.001)/24)*DAY_MS);
   return { start, end: end < start ? start : end };
 }
 
@@ -88,7 +92,7 @@ adminCalendar.get("/", async c => {
         OR: [
           { scheduleStart: { lte: gridEnd }, scheduleEnd: { gte: gridStart } },
           { scheduleStart: { gte: gridStart, lte: gridEnd }, scheduleEnd: null },
-          { scheduleStart: null, startDate: { gte: gridStart, lte: gridEnd } },
+          { scheduleStart: null, startDate: { lte: gridEnd } },
         ],
       },
       orderBy: { createdAt: "asc" },
@@ -113,7 +117,8 @@ adminCalendar.get("/", async c => {
 
   // A clash is more bookings on a day than there are units of a piece of equipment.
   const ids = [...new Set(bookings.flatMap(equipmentIds))];
-  const products = await prisma.product.findMany({ where: { id: { in: ids } }, select: { id: true, name: true, availableQuantity: true } });
+  const products = await prisma.product.findMany({ where: { id: { in: ids } }, select: { id: true, name: true, availableQuantity: true, operatorService:true } });
+  const allocationMap=new Map(products.map(p=>[p.id,p]));
   const units = new Map(products.map(p => [p.id, { name: p.name, qty: p.availableQuantity ?? 1 }]));
   const clashes: { day: string; name: string; count: number; qty: number }[] = [];
   for (const [day, entries] of days) {
@@ -121,10 +126,12 @@ adminCalendar.get("/", async c => {
     for (const entry of entries) for (const id of equipmentIds(entry.booking)) counts.set(id, [...(counts.get(id) ?? []), entry]);
     for (const [id, using] of counts) {
       const unit = units.get(id);
-      if (!unit || using.length <= unit.qty) continue;
-      const label = `${unit.name}: ${using.length} bookings, ${unit.qty} available`;
+      const dayStart=Date.parse(`${day}T00:00:00-05:00`),dayEnd=dayStart+DAY_MS;
+      const count=peak(using.flatMap(e=>allocations((e.booking.items??[]) as unknown as PricedLine[],e.booking,allocationMap)).filter(r=>r.id===id&&r.start<dayEnd&&r.end>dayStart).map(r=>({...r,start:Math.max(dayStart,r.start),end:Math.min(dayEnd,r.end)})));
+      if (!unit || count <= unit.qty) continue;
+      const label = `${unit.name}: ${count} units requested, ${unit.qty} available`;
       for (const entry of using) if (!entry.clash.includes(label)) entry.clash.push(label);
-      if (new Date(`${day}T00:00:00Z`) >= month && new Date(`${day}T00:00:00Z`) <= monthEnd) clashes.push({ day, name: unit.name, count: using.length, qty: unit.qty });
+      if (new Date(`${day}T00:00:00Z`) >= month && new Date(`${day}T00:00:00Z`) <= monthEnd) clashes.push({ day, name: unit.name, count, qty: unit.qty });
     }
   }
 
@@ -163,7 +170,7 @@ adminCalendar.get("/", async c => {
           <ul class="clash-list">
             {clashes.map(cl => (
               <li>
-                {shortDate(new Date(`${cl.day}T00:00:00Z`))}: {cl.name}, {cl.count} bookings for {cl.qty} available
+                {shortDate(new Date(`${cl.day}T00:00:00Z`))}: {cl.name}, {cl.count} units requested for {cl.qty} available
               </li>
             ))}
           </ul>

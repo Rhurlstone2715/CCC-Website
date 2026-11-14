@@ -1,3 +1,4 @@
+import { assertAvailability, AvailabilityError, lockInventory } from "./availability.js";
 import { createBookingEstimate, deliverEstimateEmails, estimates } from "./estimates.js";
 import { paymentProofs } from "./payment-proofs.js";
 import { serveStatic } from "@hono/node-server/serve-static";
@@ -160,7 +161,9 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
   const fuelConditions = priced?.lines.filter(line => line.fuelType).map(line => `${line.name}: Return with a full tank of ${line.fuelType === "diesel" ? "diesel fuel" : "gasoline"}.`) ?? [];
   const membership = await verifiedCompanyMembership(user.id);
   const companyAccountId = membership?.companyAccountId ?? null;
-  const { booking, estimate } = await prisma.$transaction(async tx => {
+  const outcome = await prisma.$transaction(async tx => {
+  await lockInventory(tx);
+  await assertAvailability(tx,details.items,{startDate:details.startDate,startTime:details.startTime,scheduleStart:null,scheduleEnd:null});
   const booking = await tx.booking.create({
     data: {
       ...fields,
@@ -187,7 +190,9 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
   });
   const estimate = await createBookingEstimate(tx, booking);
   return { booking, estimate };
-  }, { timeout: 30_000, maxWait: 15_000 });
+  }, { timeout: 30_000, maxWait: 15_000 }).catch(error=>{if(error instanceof AvailabilityError)return error;throw error;});
+  if(outcome instanceof AvailabilityError)return c.json(outcome.result,outcome.status);
+  const {booking,estimate}=outcome;
   const ref = bookingRef(booking.id);
   const estimateInfo = { estimateNumber: estimate.number, estimateUrl: `/account/bookings/${booking.id}/estimate.pdf` };
   await deliverEstimateEmails(estimate.number);

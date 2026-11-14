@@ -146,6 +146,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   });
 
   // Each call gets its own IP unless one is given, so rate limits don't leak between tests.
+  let fixtureDay=0;
   async function req(path: string, opts: { method?: string; form?: Record<string, string>; json?: unknown; cookie?: string; ip?: string; origin?: string } = {}) {
     const headers: Record<string, string> = { "x-real-ip": opts.ip ?? randomUUID() };
     let body: string | undefined;
@@ -154,7 +155,12 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
       body = new URLSearchParams(opts.form).toString();
     } else if (opts.json !== undefined) {
       headers["content-type"] = "application/json";
-      body = JSON.stringify(opts.json);
+      let payload=opts.json;
+      if(path==='/api/bookings'&&payload&&typeof payload==='object'){
+        const b=payload as Record<string,unknown>,d=(b.details??{}) as Record<string,unknown>;
+        payload={...b,details:{startDate:new Date(Date.UTC(2035,0,1+(fixtureDay++)*40)).toISOString().slice(0,10),startTime:'08:00',...d}};
+      }
+      body = JSON.stringify(payload);
     }
     if (opts.cookie) headers.cookie = opts.cookie;
     if (opts.origin) headers.origin = opts.origin;
@@ -291,6 +297,43 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(crossSite.status, 403);
   });
 
+  test("inventory prevents simultaneous boom truck bookings and offers the next whole-hour start",async()=>{
+    const a=await signup(),b=await signup('second@example.com');
+    const payload={...booking,details:{startDate:'2030-06-01',startTime:'08:00',items:[{id:'national1400',term:'hourly',qty:4}]}};
+    const responses=await Promise.all([req('/api/bookings',{cookie:a,json:payload}),req('/api/bookings',{cookie:b,json:payload})]);
+    assert.deepEqual(responses.map(r=>r.status).sort(),[409,503]);
+    const blocked=await responses.find(r=>r.status===409)!.json();assert.equal(blocked.nextAvailable.time,'12:00');assert.equal(blocked.nextAvailable.date,'2030-06-01');
+    assert.equal(await prisma.booking.count(),1);
+    assert.equal((await req('/api/bookings',{cookie:b,json:{...payload,details:{...payload.details,startTime:'12:00'}}})).status,503);
+  });
+  test("pooled inventory allows three hundred ICF braces but rejects excess and duplicate cart lines",async()=>{
+    const cookie=await signup();
+    const payload=(qty:number)=>({...booking,details:{startDate:'2030-07-01',startTime:'08:00',items:[{id:'plumwall',term:'daily',qty}]}});
+    assert.equal((await req('/api/bookings',{cookie,json:payload(100)})).status,503);
+    assert.equal((await req('/api/bookings',{cookie,json:payload(100)})).status,503);
+    assert.equal((await req('/api/bookings',{cookie,json:payload(101)})).status,409);
+    assert.equal((await req('/api/bookings',{cookie,json:payload(100)})).status,503);
+    const full=await req('/api/bookings',{cookie,json:payload(1)});assert.equal(full.status,409);assert.equal((await full.json()).nextAvailable.date,'2030-07-02');
+    const excessive=await req('/api/bookings',{cookie,json:payload(301)});assert.equal(excessive.status,409);assert.equal((await excessive.json()).nextAvailable,null);
+    const duplicate=payload(200);duplicate.details.startDate='2030-07-10';duplicate.details.items.push({id:'plumwall',term:'daily',qty:101});
+    assert.equal((await req('/api/bookings',{cookie,json:duplicate})).status,409);
+    await prisma.booking.updateMany({data:{status:'CANCELLED'}});
+    assert.equal((await req('/api/bookings',{cookie,json:payload(300)})).status,503);
+  });
+  test("weekly and monthly rentals, unknown stock, unavailable items and missing dates are guarded",async()=>{
+    const cookie=await signup();const payload={...booking,details:{startDate:'2030-08-01',startTime:'08:00',items:[{id:'altec2595',term:'weekly',qty:1}]}};
+    assert.equal((await req('/api/bookings',{cookie,json:payload})).status,503);
+    const blocked=await req('/api/bookings',{cookie,json:{...payload,details:{...payload.details,startDate:'2030-08-03'}}});assert.equal(blocked.status,409);assert.equal((await blocked.json()).nextAvailable.date,'2030-08-08');
+    assert.equal((await req('/api/bookings',{cookie,json:{...payload,details:{...payload.details,startDate:null}}})).status,400);
+    assert.equal((await req('/api/bookings',{cookie,json:{...payload,details:{...payload.details,items:[{id:'missing-item',term:'daily',qty:1}]}}})).status,400);
+    const monthly={...payload,details:{...payload.details,startDate:'2030-09-01',items:[{id:'g25',term:'monthly',qty:1}]}};
+    assert.equal((await req('/api/bookings',{cookie,json:monthly})).status,503);
+    const monthBlocked=await req('/api/bookings',{cookie,json:{...monthly,details:{...monthly.details,startDate:'2030-09-29'}}});assert.equal(monthBlocked.status,409);assert.equal((await monthBlocked.json()).nextAvailable.date,'2030-10-01');
+    const unknown={...payload,details:{...payload.details,items:[{id:'lowboy',term:'daily',qty:2}]}};assert.equal((await req('/api/bookings',{cookie,json:unknown})).status,409);
+    await prisma.product.update({where:{id:'altec2595'},data:{availableQuantity:0}});
+    assert.equal((await req('/api/bookings',{cookie,json:{...payload,details:{...payload.details,startDate:'2030-10-01'}}})).status,409);
+  });
+
   test("checkout saves a numbered private PDF with customer details, delivery and the rounded discount", async () => {
     const customer=await signup();await prisma.user.update({where:{email:"kim@example.com"},data:{rewardCreditCents:500000}});
     await prisma.estimateCounter.upsert({where:{id:1},create:{id:1,lastNumber:523},update:{lastNumber:523}});
@@ -338,7 +381,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
       await req("/api/bookings",{cookie:customer,json:{...booking,details:{rentalCollection,area:"George Town",items:[{id:"rt40",term,qty:1},{id:"diesel-mixer-9-cu-ft",term,qty:2}]}}});
       const estimate=await prisma.estimate.findFirstOrThrow({orderBy:{number:"desc"}});assert.equal((estimate.snapshot as unknown as EstimateSnapshot).deliveryCents,expected);
     }
-    await req("/api/bookings",{cookie:customer,json:{...booking,details:{area:"George Town",items:[{id:"unknown-quote",term:"quote",qty:1}]}}});
+    await req("/api/bookings",{cookie:customer,json:{...booking,details:{area:"George Town",items:[{id:"lifting-30",term:"quote",qty:1}]}}});
     const quote=await prisma.estimate.findFirstOrThrow({orderBy:{number:"desc"}});assert.equal(quote.totalCents,null);
     const saved=await prisma.booking.findFirstOrThrow();await prisma.booking.update({where:{id:saved.id},data:{createdAt:new Date("2026-11-15T00:30:00Z")}});
     const snapshot=await prisma.$transaction(tx=>estimateSnapshot(tx,{...saved,createdAt:new Date("2026-11-15T00:30:00Z")},999));assert.equal(snapshot.date,"14 Nov 2026");
@@ -783,9 +826,10 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
       { id: "rt40", term: "hourly", qty: 4 }, // 145 × 4 = 580
       { id: "telehandler-operator", term: "hourly", qty: 4 }, // operator, 35 × 4 = 140, no discount
       { id: "lifting-10", term: "daily", qty: 1 }, // size option, 50
-      { id: "retired-thing", term: "daily", qty: 1 }, // unknown, unpriced
+      { id: "spreaderbar-9", term: "quote", qty: 1 }, // known inventory, unpriced
     ];
-    await req("/api/bookings", { json: { ...booking, details: { phone: "345 555 0100", startDate: "2030-05-15", startTime: "08:00", area: "George Town", siteAddress: "1 Test Rd", items } }, cookie: customer });
+    const pricedResponse=await req("/api/bookings", { json: { ...booking, details: { phone: "345 555 0100", startDate: "2030-05-15", startTime: "08:00", area: "George Town", siteAddress: "1 Test Rd", items } }, cookie: customer });
+    assert.equal(pricedResponse.status,503,await pricedResponse.clone().text());
     const saved = await prisma.booking.findFirstOrThrow({ where: { userId: 1 } });
     const lines = saved.items as { id: string; amount: number | null; operator: boolean; name: string }[];
     assert.deepEqual(lines.map(l => l.amount), [580, 140, 50, null]);
@@ -961,13 +1005,14 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.match(page, /00001/);
     assert.doesNotMatch(page, /Possible clashes/);
 
-    // Confirm booking 2 for the 14th to the 16th: it now overlaps booking 1 on the 15th.
+    // Admin schedule changes must also respect inventory.
     const bad = await req("/admin/bookings/2/schedule", { form: { scheduleStart: "2030-05-16", scheduleEnd: "2030-05-14" }, cookie: admin });
     assert.equal(bad.headers.get("location"), "/admin/bookings/2?notice=bad-schedule");
-    await req("/admin/bookings/2/schedule", { form: { scheduleStart: "2030-05-14", scheduleEnd: "2030-05-16" }, cookie: admin });
+    const conflict=await req("/admin/bookings/2/schedule", { form: { scheduleStart: "2030-05-14", scheduleEnd: "2030-05-16" }, cookie: admin });
+    assert.match(conflict.headers.get('location')!,/inventory-conflict/);
+    assert.equal((await prisma.booking.findUniqueOrThrow({where:{id:2}})).scheduleStart,null);
     page = await (await req("/admin/calendar?month=2030-05", { cookie: admin })).text();
-    assert.match(page, /Possible clashes/);
-    assert.match(page, /Grove RT890E, 2 bookings for 1 available/);
+    assert.doesNotMatch(page, /Possible clashes/);
 
     // Declined bookings drop off the calendar.
     await req("/admin/bookings/1/decline", { form: {}, cookie: admin });
