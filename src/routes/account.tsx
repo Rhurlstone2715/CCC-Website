@@ -369,12 +369,6 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
       <section class="page-head account-welcome" aria-labelledby="welcome-title">
         <p class="eyebrow">Your account</p>
         <h1 id="welcome-title">Welcome back, {firstName}</h1>
-        <p class="lede">Your rewards at a glance.</p>
-        <dl class="welcome-rewards">
-          <div><dt>Rewards points</dt><dd>{rewards.points.toLocaleString("en-US")}</dd></div>
-          <div><dt>Rewards status</dt><dd>{rewards.tier}</dd></div>
-          <div><dt>{rewards.nextTier ? `Points until ${rewards.nextTier}` : "Tier progress"}</dt><dd>{rewards.nextTier ? Math.ceil(rewards.amountToNextCents / 100).toLocaleString("en-US") : "Highest tier reached"}</dd></div>
-        </dl>
       </section>
       <div class="grid-2">
         <div class="stack">

@@ -337,16 +337,18 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const page=await (await req("/account/profile",{cookie:owner})).text();assert.match(page,/reached the 5-file limit/);
   });
 
-  test("account greeting shows live points, tier and next-tier points including the highest tier", async () => {
+  test("account keeps the greeting and shows rewards once in the tier card", async () => {
     const cookie=await signup();
     const user=await prisma.user.findUniqueOrThrow({where:{email:"kim@example.com"}});
     await prisma.user.update({where:{id:user.id},data:{name:"Ric Hurlstone",rewardCreditCents:990000}});
     let page=await (await req("/account/profile",{cookie})).text();
     let welcome=page.match(/<section[^>]*account-welcome[\s\S]*?<\/section>/)![0];
-    assert.match(welcome,/Welcome back, Ric/);assert.match(welcome,/9,900/);assert.match(welcome,/Silver/);assert.match(welcome,/Points until Gold/);assert.match(welcome,/5,100/);
+    assert.match(welcome,/Welcome back, Ric/);assert.doesNotMatch(welcome,/at a glance|welcome-rewards|9,900/);
+    assert.equal((page.match(/class="card rewards-card"/g)||[]).length,1);assert.match(page,/9,900/);assert.match(page,/Silver/);assert.match(page,/5,100 points until Gold/);
     await prisma.user.update({where:{id:user.id},data:{rewardCreditCents:2500000}});
     page=await (await req("/account/profile",{cookie})).text();welcome=page.match(/<section[^>]*account-welcome[\s\S]*?<\/section>/)![0];
-    assert.match(welcome,/25,000/);assert.match(welcome,/Platinum/);assert.match(welcome,/Highest tier reached/);assert.doesNotMatch(welcome,/Points until/);
+    assert.match(welcome,/Welcome back, Ric/);assert.doesNotMatch(welcome,/at a glance|welcome-rewards|25,000/);
+    assert.match(page,/25,000/);assert.match(page,/Platinum/);assert.match(page,/highest tier/);
   });
 
   test("profile page needs a session", async () => {

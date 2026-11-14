@@ -1262,12 +1262,7 @@ hr.divider {
 /* Conditional company and department fields must stay hidden until eligible. */
 [hidden]{display:none!important}
 
-/* Customer greeting and live loyalty summary. */
+/* Personalized customer greeting. */
 .account-welcome h1{text-transform:none}
-.welcome-rewards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:24px 0 0}
-.welcome-rewards>div{background:var(--white);border:1px solid var(--line);border-top:3px solid var(--red);border-radius:var(--radius);padding:20px;min-width:0}
-.welcome-rewards dt{color:var(--muted);font-size:14px;margin-bottom:8px}
-.welcome-rewards dd{margin:0;font-size:clamp(22px,3vw,32px);font-weight:700;line-height:1.25;overflow-wrap:anywhere}
-@media(max-width:600px){.welcome-rewards{grid-template-columns:1fr;gap:12px}.welcome-rewards>div{padding:16px}.welcome-rewards dd{font-size:26px}}
 
 .payment-proof-details{margin-top:16px}.payment-proofs{padding-top:8px}.proof-list{padding-left:20px}.proof-list li{margin-bottom:12px;overflow-wrap:anywhere}.proof-upload input[type=file]{width:100%;max-width:100%;min-width:0}.payment-proof-details summary{color:var(--red);font-weight:600}
