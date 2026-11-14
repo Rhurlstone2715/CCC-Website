@@ -13,7 +13,7 @@ export const estimateMetadata = { number: true, totalCents: true, emailSentAt: t
 export const DELIVERY_FEES: Record<string,number> = {'George Town':150,'7 Mile Beach':200,'West Bay':250,'Red Bay':200,'Prospect':200,'Spotts':200,'Savannah':250,'Bodden Town':300,'East End':350,'North Side':400};
 type Row = { item:string; description:string; qty:string; rate:string; total:string };
 export type EstimateSnapshot = { number:number; bookingRef:string; date:string; customerName:string; company:string|null; billingAddress:string|null; email:string; phone:string|null; location:string; requestedStart:string; jobDetails:string|null; rows:Row[]; discountCents:number; deliveryCents:number|null; pricedSubtotalCents:number; totalCents:number|null };
-const currency=(cents:number)=> (cents/100).toLocaleString('en-US',{minimumFractionDigits:cents%100?2:0,maximumFractionDigits:2});
+const currency=(cents:number)=> (cents/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const asDate=(d:Date)=>d.toLocaleDateString('en-GB',{timeZone:'UTC',day:'numeric',month:'short',year:'numeric'});
 const term=(t:string)=>TERM_LABELS[t]||t;
 
@@ -70,6 +70,10 @@ function wrap(text:string,font:PDFFont,size:number,width:number):string[]{
   }result.push(line);
  }return result;
 }
+function columnMoney(value:string):string{
+ const numeric=Number(value.replace(/,/g,''));
+ return value.trim()!==''&&Number.isFinite(numeric)?`${numeric<0?'-':''}$${currency(Math.round(Math.abs(numeric)*100))}`:value;
+}
 export async function renderEstimatePdf(s:EstimateSnapshot,preview=false):Promise<Uint8Array>{
  const [template,regularBytes,boldBytes]=await files();const doc=await PDFDocument.create();doc.registerFontkit(fontkit);
  const font=await doc.embedFont(regularBytes,{subset:true}),bold=await doc.embedFont(boldBytes,{subset:true});
@@ -79,7 +83,7 @@ export async function renderEstimatePdf(s:EstimateSnapshot,preview=false):Promis
  const rawRows:Row[]=[{item:'Booking',description:intro,qty:'',rate:'',total:''},...(clientLines.length>7?[{item:'Customer',description:client,qty:'',rate:'',total:''}]:[]),...s.rows];
  const pages:{lines:string[][];first:boolean}[][]=[[]];let used=0;
  for(const row of rawRows){
-  const cells=[row.item,row.description,row.qty,row.rate,row.total].map((t,i)=>wrap(t,font,9,columns[i].w));let offset=0;const length=Math.max(...cells.map(c=>c.length));
+  const cells=[row.item,row.description,row.qty,columnMoney(row.rate),columnMoney(row.total)].map((t,i)=>wrap(t,font,9,columns[i].w));let offset=0;const length=Math.max(...cells.map(c=>c.length));
   while(offset<length){
    if(270-used<22){pages.push([]);used=0;}
    const room=Math.floor((270-used-9)/11);const remaining=length-offset;
@@ -106,7 +110,13 @@ export async function renderEstimatePdf(s:EstimateSnapshot,preview=false):Promis
    const height=Math.max(...row.lines.map(c=>c.length))*11+9;top+=height;
    page.drawLine({start:{x:41,y:792-top+4},end:{x:575,y:792-top+4},thickness:.3,color:rgb(.8,.8,.8)});
   }
-  if(index===pages.length-1){const text=s.totalCents===null?'TO BE CONFIRMED':currency(s.totalCents);const size=s.totalCents===null?8:15.93;write(text,571-bold.widthOfTextAtSize(text,size),653,size,true);}else write('Continued',508,653,9,true);
+  write('TOTAL KYD $',399,638,11,true);write('TOTAL USD $',399,666,11,true);
+  if(index===pages.length-1){
+   for(const [cents,top]of [[s.totalCents,638],[s.totalCents===null?null:Math.round(s.totalCents/0.80),666]] as const){
+    const text=cents===null?'TBC':currency(cents);const size=Math.min(12,75/bold.widthOfTextAtSize(text,1));
+    write(text,569-bold.widthOfTextAtSize(text,size),top,size,true);
+   }
+  }else {write('Continued',516,638,9);write('Continued',516,666,9);}
   if(preview)write('SAMPLE ONLY — NOT A CUSTOMER ESTIMATE',317,150,8,true);
  }
  doc.setTitle(`Cayman Crane Estimate ${s.number}`);doc.setSubject(`Booking ${s.bookingRef}`);doc.setAuthor('Cayman Crane Company');return doc.save();
