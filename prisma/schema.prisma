@@ -25,6 +25,8 @@ enum Role {
 // Customer and admin accounts. Email is stored lowercased.
 // rewardCreditCents lets an admin credit spend made outside the site.
 model User {
+  adminPushSubscriptions AdminPushSubscription[]
+  adminBookingNotices AdminBookingNotice[]
   id                 Int                 @id @default(autoincrement())
   email              String              @unique
   passwordHash       String
@@ -96,6 +98,10 @@ model EmailVerification {
 }
 
 model Booking {
+  adminEditedAt DateTime?
+  revisions BookingRevision[]
+  estimateArchives EstimateArchive[]
+  adminBookingNotices AdminBookingNotice[]
   paymentProofs PaymentProof[]
   estimate Estimate?
   id              Int           @id @default(autoincrement())
@@ -313,4 +319,64 @@ model CompanyLogo {
   nextAttemptAt DateTime @default(now())
   manual Boolean @default(false)
   lastError String?
+}
+
+model AdminPushSubscription {
+  id String @id @default(cuid())
+  adminId Int
+  admin User @relation(fields:[adminId],references:[id],onDelete:Cascade)
+  endpoint String @unique
+  p256dh String
+  auth String
+  createdAt DateTime @default(now())
+  deliveries AdminPushDelivery[]
+  @@index([adminId])
+}
+model AdminBookingNotice {
+  id Int @id @default(autoincrement())
+  adminId Int
+  admin User @relation(fields:[adminId],references:[id],onDelete:Cascade)
+  bookingId Int
+  booking Booking @relation(fields:[bookingId],references:[id],onDelete:Cascade)
+  readAt DateTime?
+  createdAt DateTime @default(now())
+  deliveries AdminPushDelivery[]
+  @@unique([adminId,bookingId])
+  @@index([adminId,readAt])
+}
+model AdminPushDelivery {
+  noticeId Int
+  notice AdminBookingNotice @relation(fields:[noticeId],references:[id],onDelete:Cascade)
+  subscriptionId String
+  subscription AdminPushSubscription @relation(fields:[subscriptionId],references:[id],onDelete:Cascade)
+  attempts Int @default(0)
+  nextAttemptAt DateTime @default(now())
+  sentAt DateTime?
+  @@id([noticeId,subscriptionId])
+  @@index([sentAt,nextAttemptAt])
+}
+
+model BookingRevision {
+ id Int @id @default(autoincrement())
+ bookingId Int
+ booking Booking @relation(fields:[bookingId],references:[id],onDelete:Cascade)
+ actorId Int
+ actorName String
+ reason String
+ before Json
+ after Json
+ createdAt DateTime @default(now())
+ @@index([bookingId,createdAt])
+}
+model EstimateArchive {
+ number Int @id
+ bookingId Int
+ booking Booking @relation(fields:[bookingId],references:[id],onDelete:Cascade)
+ snapshot Json
+ totalCents Int?
+ pdf Bytes
+ emailRecipient String
+ originalCreatedAt DateTime
+ archivedAt DateTime @default(now())
+ @@index([bookingId])
 }

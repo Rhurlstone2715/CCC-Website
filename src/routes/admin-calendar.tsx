@@ -44,7 +44,7 @@ export function bookingSpan(b: Pick<Booking, "scheduleStart" | "scheduleEnd" | "
   const start = b.scheduleStart ?? b.startDate;
   if (!start) return null;
   const lines=Array.isArray(b.items)?b.items as unknown as PricedLine[]:[];
-  const durations=lines.filter(l=>!l.operator).map(l=>rentalHours(l.term,l.qty));
+  const durations=lines.filter(l=>!l.operator).map(l=>rentalHours(l.term,l.qty)*(l.periods??1));
   const hours=durations.length?Math.max(...durations):24;
   const end = b.scheduleStart ? (b.scheduleEnd ?? b.scheduleStart) : new Date(start.getTime()+Math.floor((Number((b.startTime??'00:00').slice(0,2))+hours-0.001)/24)*DAY_MS);
   return { start, end: end < start ? start : end };

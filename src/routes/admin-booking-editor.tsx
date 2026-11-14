@@ -1,0 +1,101 @@
+import {Hono,type Context} from 'hono';
+import {raw} from 'hono/html';
+import {bodyLimit} from 'hono/body-limit';
+import {type AppEnv,currentUser,requireAdmin,EMAIL_PATTERN} from '../auth.js';
+import {prisma} from '../db.js';
+import type {Booking,Prisma} from '../generated/prisma/client.js';
+import {type CartItem,type PricedLine,priceItems,checkSets,TERM_LABELS} from '../catalog.js';
+import {assertAvailability,AvailabilityError,lockInventory,rentalHours} from '../availability.js';
+import {createBookingEstimate,deliverEstimateEmails,DELIVERY_FEES} from '../estimates.js';
+import {queueAdminBookingNotices,deliverAdminPushNotifications} from '../admin-push.js';
+import {verifiedCompanyMembership} from '../companies.js';
+import {rewardsForUser} from '../rewards.js';
+import {parseDate,bookingRef} from '../bookings.js';
+import {AdminPage,pendingCount,parseAmount} from '../views/admin-page.js';
+import {LIFTING_CATEGORIES} from '../delivery-policy.js';
+
+export const adminBookingEditor=new Hono<AppEnv>();adminBookingEditor.use('*',requireAdmin);
+adminBookingEditor.use('*',bodyLimit({maxSize:100000,onError:c=>c.text('Booking edit is too large.',413)}));
+const text=(v:unknown,max=3000)=>typeof v==='string'?v.trim().slice(0,max):'';
+const audit=(b:Booking)=>JSON.parse(JSON.stringify(b)) as Prisma.InputJsonValue;
+async function editor(c:Context<AppEnv>,booking:Booking|null,values:Record<string,unknown>={},error='',status:200|400|409|500=200){
+ const [users,products,options,archives,revisions]=await Promise.all([
+  prisma.user.findMany({orderBy:{name:'asc'},select:{id:true,name:true,email:true,phone:true,company:true}}),
+  prisma.product.findMany({orderBy:{sortOrder:'asc'}}),prisma.riggingOption.findMany(),
+  booking?prisma.estimateArchive.findMany({where:{bookingId:booking.id},orderBy:{number:'desc'},select:{number:true,archivedAt:true}}):[],
+  booking?prisma.bookingRevision.findMany({where:{bookingId:booking.id},orderBy:{createdAt:'desc'},take:15,select:{actorName:true,reason:true,createdAt:true}}):[]
+ ]);
+ const initial={userId:booking?.userId??'',customerName:booking?.customerName??'',customerEmail:booking?.customerEmail??'',phone:booking?.phone??'',company:booking?.company??'',billingAddress:booking?.billingAddress??'',siteAddress:booking?.siteAddress??'',area:booking?.area??'',startDate:(booking?.scheduleStart??booking?.startDate)?.toISOString().slice(0,10)??'',startTime:booking?.startTime??'08:00',rentalCollection:booking?.rentalCollection??'delivery',jobDetails:booking?.jobDetails??'',adminNote:booking?.adminNote??'',paidAmount:booking?.amountPaidCents===null||booking?.amountPaidCents===undefined?'':String(booking.amountPaidCents/100),reason:'',items:JSON.stringify(Array.isArray(booking?.items)?booking.items.map(x=>{const l=x as unknown as PricedLine;return {...l,periods:l.periods??1};}):[]),...values};
+ const catalog=products.filter(p=>!p.hidden||p.operatorService||p.setPart||Boolean((p.extra as {compatibleWith?:unknown}|null)?.compatibleWith)).map(p=>({id:p.id,name:p.name,category:p.category,rates:p.rates,operator:p.operatorService}));
+ for(const o of options){const p=products.find(p=>p.id===o.productId);if(p)catalog.push({id:o.id,name:`${p.name} — ${o.size}`,category:p.category,rates:{daily:o.price},operator:false});}
+ let editorItems:unknown=[];try{const parsed=JSON.parse(String(initial.items||'[]'));if(Array.isArray(parsed))editorItems=parsed;}catch{}
+ const data=JSON.stringify({users,catalog,items:editorItems}).replaceAll('<',String.fromCharCode(92)+'u003c');
+ const field=(name:keyof typeof initial,label:string,type='text',required=false)=><label>{label}<input name={name} type={type} value={String(initial[name]??'')} required={required} /></label>;
+ return c.html(<AdminPage title={booking?`Edit ${bookingRef(booking.id)}`:'Add customer booking'} user={(await currentUser(c))!} pending={await pendingCount()} active="bookings">
+  <p><a href={booking?`/admin/bookings/${booking.id}`:'/admin/bookings'}>← Back to bookings</a></p><h1>{booking?`Edit ${bookingRef(booking.id)}`:'Add customer booking'}</h1>
+  <p class="lede">Admin-only booking entry. Stock and totals are checked when you save. The customer receives a PDF estimate.</p>{error?<p class="notice notice-error" role="alert">{error}</p>:null}
+  <form id="adminBookingEditor" method="post" action={booking?`/admin/bookings/${booking.id}/edit`:'/admin/bookings/new'} class="form">
+   {booking?<input type="hidden" name="version" value={String(values.version??booking.updatedAt.toISOString())} />:null}
+   <section class="card"><h2>Customer & location</h2><div class="form-grid">
+    <label>Customer account<select name="userId" id="editorCustomer"><option value="">Guest / unregistered customer</option>{users.map(u=><option value={u.id} selected={String(initial.userId)===String(u.id)}>{u.name} — {u.email}</option>)}</select></label>
+    {field('customerName','Customer name','text',true)}{field('customerEmail','Estimate email','email',true)}{field('phone','Phone')}{field('company','Company')}{field('billingAddress','Billing address')}
+    {field('startDate','Scheduled start date','date',true)}<label>Scheduled start time (Cayman)<select name="startTime">{Array.from({length:24},(_,i)=>`${String(i).padStart(2,'0')}:00`).map(t=><option value={t} selected={initial.startTime===t}>{t}</option>)}</select></label>
+    <label>Delivery area<select name="area"><option value="">Choose area</option>{Object.keys(DELIVERY_FEES).map(a=><option selected={initial.area===a}>{a}</option>)}</select></label>{field('siteAddress','Site address')}
+    <label>Collection<select name="rentalCollection" id="editorCollection"><option value="delivery" selected={initial.rentalCollection==='delivery'}>Delivery</option><option value="pickup" selected={initial.rentalCollection==='pickup'}>Customer pickup (tools only)</option></select></label>
+   </div><p id="editorDeliveryNote" class="hint" hidden>Cranes, boom trucks and telehandlers are delivery only. Their attachments share that delivery at no extra charge.</p><label>Job details<textarea name="jobDetails" rows={3}>{String(initial.jobDetails)}</textarea></label>
+   {booking?.scheduleStart?<p class="hint">Saving replaces the previous all-day schedule with this start time and the rental durations entered below. Check each duration before saving.</p>:null}</section>
+   <section class="card"><h2>Equipment, hours & rental periods</h2><p class="hint">Hourly: Qty / Hours is hours worked (one machine). Other terms: Qty is physical units; Periods is days, weeks or months. A blank rate stays to be confirmed. Rates are KYD before rewards and delivery.</p><div id="adminEquipmentRows" class="stack"></div><button type="button" id="addAdminEquipment" class="button secondary">Add equipment / attachment</button><input name="items" id="adminBookingItems" type="hidden" value={String(initial.items)} /><p id="adminEditorTotal" class="hint" role="status"></p></section>
+   <section class="card"><h2>Admin record</h2><label>Admin note<textarea name="adminNote" rows={3}>{String(initial.adminNote)}</textarea></label>{booking?field('reason','Reason for change','text',true):<p class="hint">This is an admin-entered booking, not a customer-signed online agreement. Arrange acceptance with the customer.</p>}
+   {booking?.status==='PAID'?<><label>Confirmed amount paid (KYD)<input name="paidAmount" type="number" min="0" step="0.01" value={String(initial.paidAmount)} required /></label><p class="hint">Enter the actual payment retained after any extra charge or refund. Rewards use this confirmed payment, not the estimate.</p></>:null}
+   <button type="submit" class="button primary">{booking?'Save changes & email revised estimate':'Create booking & email estimate'}</button></section>
+  </form><script id="adminBookingData" type="application/json">{raw(data)}</script><script src="/admin-booking-editor.js" defer></script>
+  {archives.length?<section class="card"><h2>Previous estimates</h2>{archives.map(e=><p><a href={`/admin/bookings/${booking!.id}/estimates/${e.number}.pdf`}>Download estimate #{e.number} (replaced)</a></p>)}</section>:null}
+  {revisions.length?<section class="card"><h2>Change history</h2>{revisions.map(r=><p><b>{r.actorName}</b> · {r.createdAt.toLocaleString('en-US',{timeZone:'America/Cayman'})}<br/>{r.reason}</p>)}</section>:null}
+ </AdminPage>,status);
+}
+adminBookingEditor.get('/new',c=>editor(c,null));
+adminBookingEditor.get('/:id{[0-9]+}/edit',async c=>{const b=await prisma.booking.findUnique({where:{id:Number(c.req.param('id'))}});return b?editor(c,b):c.notFound();});
+async function save(c:Context<AppEnv>,existing:Booking|null){
+ const body=await c.req.parseBody();const fail=(message:string,status:400|409|500=400)=>editor(c,existing,body,message,status);
+ const name=text(body.customerName,200),email=text(body.customerEmail,254).toLowerCase(),startDate=parseDate(body.startDate),startTime=text(body.startTime,5),reason=text(body.reason,1000);
+ if(String(body.customerName??'').length>200||String(body.customerEmail??'').length>254||!name||!EMAIL_PATTERN.test(email)||!startDate||!/^(?:[01]\d|2[0-3]):00$/.test(startTime))return fail('Enter the customer name, valid email and scheduled date/time.');
+ if(existing&&!reason)return fail('Enter a reason for this change.');
+ if(existing&&body.version!==existing.updatedAt.toISOString())return fail('Another admin changed this booking. Reload it before editing.',409);
+ let input:{id:string;term:string;qty:number;periods:number;rate?:number|null}[];
+ try{input=JSON.parse(String(body.items));if(!Array.isArray(input)||!input.length||input.length>100)throw Error();for(const l of input){if(typeof l.id!=='string'||l.id.length>80||!/^(hourly|fourhour|daily|weekly|monthly|quote)$/.test(l.term)||!Number.isInteger(l.qty)||l.qty<1||l.qty>10000||!Number.isInteger(l.periods)||l.periods<1||l.periods>366||(l.term==='hourly'&&l.periods!==1)||rentalHours(l.term,l.qty)*l.periods>8784||(l.rate!==null&&l.rate!==undefined&&(!Number.isFinite(l.rate)||l.rate<0||l.rate>10000000)))throw Error();}}catch{return fail('Add valid equipment quantities, terms, rates and rental periods (up to one year).');}
+ const userId=text(body.userId)?Number(body.userId):null;if(userId!==null&&(!Number.isInteger(userId)||userId<1||userId>2147483647))return fail('Choose a valid customer account.');const customer=userId?await prisma.user.findUnique({where:{id:userId}}):null;if(userId&&!customer)return fail('Choose an existing customer account or Guest.');
+ const membership=customer?await verifiedCompanyMembership(customer.id):null;
+ const rewards=customer?await rewardsForUser(customer.id):null;
+ const discountPercent=existing&&existing.userId===userId?existing.discountPercent:rewards?.discountPercent??0;
+ const rewardTier=existing&&existing.userId===userId?existing.rewardTier:rewards?.tier??'Member';
+ const setIssue=await checkSets(input);if(setIssue)return fail(setIssue);
+ const priced=await priceItems(input,discountPercent);
+ const lines=priced.lines.map((l,i)=>{const override=input[i].rate;if(override===undefined)return l;if(override===null)return {...l,rate:null,amount:null};return {...l,rate:override,amount:Math.round(override*l.qty*(l.periods??1)*100)/100};});
+ const equipment=lines.filter(l=>!l.operator).reduce((sum,l)=>sum+Math.round((l.amount??0)*100),0),operators=lines.filter(l=>l.operator).reduce((sum,l)=>sum+Math.round((l.amount??0)*100),0);
+ const estimateCents=lines.some(l=>l.amount!==null)?equipment+operators-Math.round(equipment*discountPercent/10000)*100:null;if(estimateCents!==null&&estimateCents>2000000000)return fail('The booking total exceeds the supported limit.');
+ const machine=await prisma.product.count({where:{id:{in:input.map(l=>l.id)},category:{in:LIFTING_CATEGORIES}}})>0;
+ const rentalCollection=machine?'delivery':body.rentalCollection==='pickup'?'pickup':'delivery',area=text(body.area,60)||null,siteAddress=text(body.siteAddress,300)||null;
+ if(area&&!Object.hasOwn(DELIVERY_FEES,area))return fail('Choose a Grand Cayman delivery area.');if(rentalCollection==='delivery'&&(!area||!siteAddress))return fail('Enter the delivery area and site address.');
+ const paid=existing?.status==='PAID'?parseAmount(body.paidAmount):null;if(existing?.status==='PAID'&&(paid===null||paid>2000000000))return fail('Enter the actual confirmed amount paid.');
+ const actor=(await currentUser(c))!;
+ const fields={customerName:name,customerEmail:email,userId,companyAccountId:membership?.companyAccountId??null,subCompanyId:membership?.subCompanyId??null,company:membership?.companyDisplayName??(text(body.company,120)||null),phone:text(body.phone,40)||null,billingAddress:text(body.billingAddress,500)||null,siteAddress,area,startDate,startTime,scheduleStart:null,scheduleEnd:null,rentalCollection,jobDetails:text(body.jobDetails)||null,adminNote:text(body.adminNote,5000)||null,rewardTier,discountPercent,estimateCents,items:lines as unknown as Prisma.InputJsonValue,requestText:[`ADMIN ${existing?'UPDATED':'ENTERED'} BOOKING`, `Customer: ${name} <${email}>`,`Start: ${startDate.toISOString().slice(0,10)} ${startTime} (Cayman time)`,`Location: ${siteAddress??'Customer pickup'}${area?`, ${area}`:''}`,text(body.jobDetails),...lines.map(l=>`${l.name} — ${TERM_LABELS[l.term]??l.term}; quantity/hours ${l.qty}; periods ${l.periods??1}; rate ${l.rate===null?'TBC':`KYD $${l.rate.toFixed(2)}`}`)].filter(Boolean).join('\n')};
+ try{
+  const result=await prisma.$transaction(async tx=>{
+   await lockInventory(tx);
+   if(existing){const fresh=await tx.booking.findUniqueOrThrow({where:{id:existing.id}});if(fresh.updatedAt.getTime()!==existing.updatedAt.getTime())throw Error('changed');}
+   if(!existing||['PENDING','APPROVED','PAID'].includes(existing.status))await assertAvailability(tx,input,{startDate,startTime,scheduleStart:null,scheduleEnd:null},existing?.id);
+   const b=existing?await tx.booking.update({where:{id:existing.id},data:{...fields,adminEditedAt:new Date(),...(existing.status==='PAID'?{amountPaidCents:paid}:{})}}):await tx.booking.create({data:{...fields,adminEditedAt:new Date(),termsText:'Booking entered by an administrator. Customer has not signed an online rental agreement for this booking.',signature:'Not signed online — admin entry',initials:'—',agreedToTerms:false,paymentAck:false}});
+   const old=await tx.estimate.findUnique({where:{bookingId:b.id}});
+   if(old){await tx.estimateArchive.create({data:{number:old.number,bookingId:b.id,snapshot:old.snapshot as Prisma.InputJsonValue,totalCents:old.totalCents,pdf:old.pdf,emailRecipient:old.emailRecipient,originalCreatedAt:old.createdAt}});await tx.estimate.delete({where:{number:old.number}});}
+   const estimate=await createBookingEstimate(tx,b,old?.number);
+   await tx.bookingRevision.create({data:{bookingId:b.id,actorId:actor.id,actorName:actor.name,reason:existing?reason:'Created by administrator',before:existing?audit(existing):{},after:audit(b)}});
+   if(!existing)await queueAdminBookingNotices(tx,b.id);
+   return {b,estimate};
+  },{timeout:30000,maxWait:15000});
+  void deliverAdminPushNotifications();await deliverEstimateEmails(result.estimate.number);
+  return c.redirect(`/admin/bookings/${result.b.id}?notice=${existing?'booking-edited':'booking-created'}`);
+ }catch(error){if(error instanceof AvailabilityError)return fail(error.message,error.status===409?409:400);if(error instanceof Error&&error.message==='changed')return fail('Another admin changed this booking. Reload it before editing.',409);console.error('Admin booking change failed; the original booking was retained.');return fail('The booking could not be saved. Please try again.',500);}
+}
+adminBookingEditor.post('/new',c=>save(c,null));
+adminBookingEditor.post('/:id{[0-9]+}/edit',async c=>{const b=await prisma.booking.findUnique({where:{id:Number(c.req.param('id'))}});return b?save(c,b):c.notFound();});
+adminBookingEditor.get('/:id{[0-9]+}/estimates/:file',async c=>{const match=c.req.param('file').match(/^(\d+)\.pdf$/);if(!match)return c.notFound();const e=await prisma.estimateArchive.findFirst({where:{bookingId:Number(c.req.param('id')),number:Number(match[1])}});if(!e)return c.notFound();c.header('Content-Type','application/pdf');c.header('Content-Disposition',`attachment; filename="Cayman-Crane-Estimate-${e.number}-REPLACED.pdf"`);return c.body(new Uint8Array(e.pdf));});

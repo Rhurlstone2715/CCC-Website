@@ -19,6 +19,8 @@ export const admin = new Hono<AppEnv>();
 
 
 const NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string }> = {
+  "booking-created": { tone: "success", text: "Booking created. Its PDF estimate is saved and queued for email to the customer." },
+  "booking-edited": { tone: "success", text: "Booking updated. A revised PDF estimate is saved and queued for email; the previous estimate is kept in change history." },
   "approved-sent": { tone: "success", text: "Booking approved. The customer has been emailed their confirmation and contract." },
   "approved-manual": { tone: "info", text: "Booking approved. Customer emails aren't set up yet, so send the contract below from your own inbox." },
   "approved-failed": { tone: "error", text: "Booking approved, but the contract email didn't send. Send it below from your own inbox." },
@@ -96,10 +98,11 @@ admin.get("/bookings", async c => {
 
   return c.html(
     <AdminPage title="Bookings" user={user} pending={counts.PENDING ?? 0} active="bookings">
+      <span hidden data-read-bookings={bookings.map(b=>b.id).join(",")} />
       {notice ? <Notice tone={notice.tone}>{notice.text}</Notice> : null}
       <div class="page-head">
         <p class="eyebrow">Admin</p>
-        <h1>Bookings</h1>
+        <h1>Bookings</h1><a class="button primary" href="/admin/bookings/new">Add customer booking</a>
       </div>
       <nav class="tabs" aria-label="Filter bookings by status">
         {STATUSES.map(s => (
@@ -469,6 +472,7 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
 
   return c.html(
     <AdminPage title={ref} user={user} pending={pending} active="bookings">
+      <span hidden data-read-bookings={String(booking.id)} />
       {notice ? <Notice tone={notice.tone}>{notice.text}</Notice> : null}
       <p class="back-link">
         <a class="text-link" href="/admin/bookings">
@@ -477,7 +481,7 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
       </p>
       <div class="page-head">
         <p class="eyebrow">Booking</p>
-        <h1>{ref}</h1>
+        <h1>{ref}</h1><a class="button primary" href={`/admin/bookings/${booking.id}/edit`}>Edit booking</a>
         <p class="lede">
           <StatusBadge status={booking.status} audience="admin" /> Received {caymanDate(booking.createdAt)}
         </p>

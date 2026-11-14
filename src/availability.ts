@@ -20,7 +20,7 @@ export function rentalHours(term:string,qty:number){return term==='hourly'?Math.
 export function allocations(items:CartItem[],s:Schedule,map:Map<string,{id:string;operatorService:boolean}>,overrideStart?:number):Allocation[]{
  const start=overrideStart??startTime(s);if(start===null)return [];
  const scheduledEnd=s.scheduleStart?Date.parse(`${(s.scheduleEnd??s.scheduleStart).toISOString().slice(0,10)}T00:00:00-05:00`)+DAY:null;
- return items.flatMap(i=>{const p=map.get(i.id);return !p||p.operatorService?[]:[{id:p.id,start,end:overrideStart===undefined&&scheduledEnd!==null?Math.max(start+DAY,scheduledEnd):start+rentalHours(i.term,i.qty)*HOUR,qty:i.term==='hourly'?1:i.qty}];});
+ return items.flatMap(i=>{const p=map.get(i.id);return !p||p.operatorService?[]:[{id:p.id,start,end:overrideStart===undefined&&scheduledEnd!==null?Math.max(start+DAY,scheduledEnd):start+rentalHours(i.term,i.qty)*(i.periods??1)*HOUR,qty:i.term==='hourly'?1:i.qty}];});
 }
 export function peak(rows:Allocation[]){
  const events=rows.flatMap(r=>[{time:r.start,qty:r.qty},{time:r.end,qty:-r.qty}]).sort((a,b)=>a.time-b.time||a.qty-b.qty);

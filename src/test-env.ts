@@ -9,5 +9,7 @@ process.env.DATABASE_URL = testDb || "postgresql://no-test-database@127.0.0.1:1/
 // Never send real email from tests.
 delete process.env.RESEND_API_KEY;
 delete process.env.EMAIL_FROM;
+delete process.env.WEB_PUSH_PUBLIC_KEY;
+delete process.env.WEB_PUSH_PRIVATE_KEY;
 
 export {};

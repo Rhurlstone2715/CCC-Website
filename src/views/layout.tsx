@@ -101,6 +101,7 @@ export const Layout: FC<LayoutProps> = ({ title, area, user, pendingCount, activ
         <link rel="icon" type="image/png" sizes="32x32" href="/assets/ccc-icon-32.png?v=hook-2" />
         <link rel="icon" type="image/png" sizes="192x192" href="/assets/ccc-icon-192.png?v=hook-2" />
         <link rel="apple-touch-icon" sizes="180x180" href="/assets/ccc-icon-180.png?v=hook-2" />
+        {area==='admin'?<><link rel="manifest" href="/admin.webmanifest" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-title" content="CCC Admin" /><script src="/admin-push.js" defer></script></>:null}
         <link rel="stylesheet" href="/portal.css" />
         <script src="/portal.js" defer></script>
       </head>
@@ -161,6 +162,7 @@ export const Layout: FC<LayoutProps> = ({ title, area, user, pendingCount, activ
           </div>
         </header>
         <main id="main" class="wrap portal-main">
+          {area==='admin'?<section class="admin-push-panel" aria-label="Booking notifications"><div><strong>Booking alerts on this device</strong><p id="adminPushStatus" role="status">Checking notification support…</p></div><div class="admin-push-actions"><button type="button" id="enableAdminPush" class="button secondary small" disabled>Enable booking alerts</button><button type="button" id="disableAdminPush" class="button secondary small" hidden>Disable alerts</button></div><p id="adminPushInstall" class="hint" hidden>On iPhone (iOS 16.4 or later), open this admin page in Safari, tap Share → Add to Home Screen, then open the home-screen icon and enable alerts. If your old icon opens a Safari tab, replace it with this home-screen web app. Allow Notifications and Badges when prompted.</p></section>:null}
           {children}
         </main>
         <footer class="portal-footer">

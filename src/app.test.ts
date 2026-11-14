@@ -2,6 +2,8 @@
 // Run with `npm test`; needs TEST_DATABASE_URL (see .env.example).
 // test-env must stay the first import: it points Prisma at the test database.
 import "./test-env.js";
+import * as webPush from "web-push";
+import { deliverAdminPushNotifications } from "./admin-push.js";
 import { inventoryNow } from "./availability.js";
 import { deliverEstimateEmails, renderEstimatePdf, estimateSnapshot, type EstimateSnapshot } from "./estimates.js";
 import { PDFDocument } from "pdf-lib";
@@ -140,6 +142,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     globalThis.fetch = realFetch;
     delete process.env.RESEND_API_KEY;
     delete process.env.EMAIL_FROM;
+    delete process.env.WEB_PUSH_PUBLIC_KEY;delete process.env.WEB_PUSH_PRIVATE_KEY;
   });
 
   after(() => {
@@ -296,6 +299,65 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
       body: "email=a%40b.co&password=xxxxxxxx",
     });
     assert.equal(crossSite.status, 403);
+  });
+
+  test("only admins can create, edit or read archived booking estimates",async()=>{
+    const customer=await signup();
+    for(const path of ['/admin/bookings/new','/admin/bookings/1/edit','/admin/bookings/1/estimates/524.pdf'])assert.equal((await req(path,{cookie:customer})).status,302);
+    assert.equal((await req('/admin/bookings/new',{cookie:customer,form:{customerName:'Wrong'}})).status,302);
+    assert.equal((await req('/admin/bookings/1/edit',{cookie:customer,form:{customerName:'Wrong'}})).status,302);
+    assert.equal(await prisma.booking.count(),0);
+  });
+  test("admin-created bookings price duration, reserve stock and do not forge a customer signature",async()=>{
+    const customer=await signup(),admin=await makeAdmin();const user=await prisma.user.findUniqueOrThrow({where:{email:'kim@example.com'}});
+    const form={userId:String(user.id),customerName:'Kim Ebanks',customerEmail:user.email,startDate:'2030-08-01',startTime:'08:00',area:'7 Mile Beach',siteAddress:'20 Work Road',rentalCollection:'pickup',jobDetails:'Extended crane service',items:JSON.stringify([{id:'rt40',term:'hourly',qty:6,periods:1,rate:145}])};
+    const response=await req('/admin/bookings/new',{cookie:admin,form});assert.match(response.headers.get('location')!,/booking-created/);
+    const b=await prisma.booking.findFirstOrThrow();assert.equal(b.userId,user.id);assert.equal(b.estimateCents,87000);assert.equal(b.rentalCollection,'delivery');assert.equal(b.agreedToTerms,false);assert.equal(b.paymentAck,false);assert.match(b.signature,/Not signed/);assert.equal(await prisma.bookingRevision.count(),1);assert.equal(await prisma.adminBookingNotice.count(),1);
+    assert.match(await (await req('/account/profile',{cookie:customer})).text(),/Download estimate/);
+    const blocked=await req('/api/bookings',{cookie:customer,json:{...booking,details:{startDate:'2030-08-01',startTime:'12:00',area:'7 Mile Beach',siteAddress:'Other job',items:[{id:'rt40',term:'hourly',qty:4},{id:'rt40',term:'hourly',qty:4}]}}});assert.equal(blocked.status,409);
+  });
+  test("admin edits reprice actual hours and confirmed payment, archive the original PDF and reject stale edits",async()=>{
+    const customer=await signup(),admin=await makeAdmin();await req('/api/bookings',{cookie:customer,json:{...booking,details:{startDate:'2030-09-01',startTime:'08:00',area:'George Town',siteAddress:'Old address',items:[{id:'rt40',term:'daily',qty:1}]}}});
+    let b=await prisma.booking.findFirstOrThrow();await prisma.booking.update({where:{id:b.id},data:{status:'PAID',amountPaidCents:150000,paidAt:new Date()}});b=await prisma.booking.findUniqueOrThrow({where:{id:b.id}});
+    const old=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}});
+    const form={version:b.updatedAt.toISOString(),userId:String(b.userId),customerName:b.customerName,customerEmail:b.customerEmail,startDate:'2030-09-01',startTime:'08:00',area:'George Town',siteAddress:'Corrected job site',rentalCollection:'delivery',paidAmount:'1020',reason:'Six actual hours worked, not a full day',items:JSON.stringify([{id:'rt40',term:'hourly',qty:6,periods:1,rate:145}])};
+    const edited=await req(`/admin/bookings/${b.id}/edit`,{cookie:admin,form});assert.match(edited.headers.get('location')!,/booking-edited/);
+    const changed=await prisma.booking.findUniqueOrThrow({where:{id:b.id}});assert.equal(changed.estimateCents,87000);assert.equal(changed.amountPaidCents,102000);assert.equal(changed.siteAddress,'Corrected job site');assert.equal(changed.signature,b.signature);assert.equal(changed.agreedToTerms,true);
+    const archived=await prisma.estimateArchive.findUniqueOrThrow({where:{number:old.number}});assert.deepEqual(Buffer.from(archived.pdf),Buffer.from(old.pdf));const revised=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}});assert.equal(revised.number,old.number+1);assert.equal((revised.snapshot as unknown as EstimateSnapshot).revisionOf,old.number);assert.equal(await prisma.bookingRevision.count(),1);
+    assert.equal((await req(`/admin/bookings/${b.id}/edit`,{cookie:admin,form})).status,409);assert.equal(await prisma.estimateArchive.count(),1);
+    assert.equal((await req(`/admin/bookings/${b.id}/estimates/${old.number}.pdf`,{cookie:admin})).status,200);assert.equal((await req(`/admin/bookings/${b.id}/estimates/${old.number}.pdf`,{cookie:customer})).status,302);
+    assert.match(await (await req('/account/profile',{cookie:customer})).text(),/1,020/);
+  });
+  test("admin multi-day quantities use stock units rather than days and conflicts roll back revisions",async()=>{
+    const admin=await makeAdmin();const form={customerName:'Manual customer',customerEmail:'manual@example.com',startDate:'2030-10-01',startTime:'08:00',area:'George Town',siteAddress:'Brace job',items:JSON.stringify([{id:'plumwall',term:'daily',qty:100,periods:3,rate:2}])};
+    assert.match((await req('/admin/bookings/new',{cookie:admin,form})).headers.get('location')!,/booking-created/);const b=await prisma.booking.findFirstOrThrow();assert.equal(b.estimateCents,60000);
+    const second={...form,items:JSON.stringify([{id:'plumwall',term:'daily',qty:200,periods:1,rate:2}])};assert.match((await req('/admin/bookings/new',{cookie:admin,form:second})).headers.get('location')!,/booking-created/);
+    const blocked=await req(`/admin/bookings/${b.id}/edit`,{cookie:admin,form:{...form,version:b.updatedAt.toISOString(),reason:'More braces',items:JSON.stringify([{id:'plumwall',term:'daily',qty:101,periods:3,rate:2}])}});assert.equal(blocked.status,409);assert.equal(await prisma.estimateArchive.count(),0);assert.equal((await prisma.booking.findUniqueOrThrow({where:{id:b.id}})).estimateCents,60000);
+    const later={...form,startDate:'2030-10-04',items:JSON.stringify([{id:'plumwall',term:'daily',qty:300,periods:1,rate:2}])};assert.match((await req('/admin/bookings/new',{cookie:admin,form:later})).headers.get('location')!,/booking-created/);
+  });
+  test("admin push subscriptions are admin-only, endpoint-validated and private keys never leave the server",async()=>{
+    const customer=await signup(),admin=await makeAdmin();assert.equal((await req('/admin/push/state',{cookie:customer})).status,403);assert.equal((await req('/admin/push/state')).status,401);
+    const keys=webPush.generateVAPIDKeys();process.env.WEB_PUSH_PUBLIC_KEY=keys.publicKey;process.env.WEB_PUSH_PRIVATE_KEY=keys.privateKey;
+    const state=await (await req('/admin/push/state',{cookie:admin})).text();assert.match(state,/configured/);assert.ok(!state.includes(keys.privateKey));
+    const sub={endpoint:'https://web.push.apple.com/test-ccc-admin',keys:{p256dh:keys.publicKey,auth:Buffer.alloc(16,1).toString('base64url')}};
+    assert.equal((await req('/admin/push/subscribe',{cookie:admin,json:{...sub,endpoint:'https://127.0.0.1/private'}})).status,400);
+    assert.equal((await req('/admin/push/subscribe',{cookie:admin,json:sub})).status,200);assert.equal(await prisma.adminPushSubscription.count(),1);
+    assert.equal((await req('/admin/push/unsubscribe',{cookie:customer,json:{endpoint:sub.endpoint}})).status,403);assert.equal(await prisma.adminPushSubscription.count(),1);
+    await req('/admin/push/unsubscribe',{cookie:admin,json:{endpoint:sub.endpoint}});assert.equal(await prisma.adminPushSubscription.count(),0);
+  });
+  test("new bookings queue durable admin push, retry without duplicate jobs, and viewing clears only that admin's unread badge",async()=>{
+    const customer=await signup(),admin=await makeAdmin();const a=await prisma.user.findFirstOrThrow({where:{role:'ADMIN'}}),keys=webPush.generateVAPIDKeys();
+    await prisma.adminPushSubscription.create({data:{adminId:a.id,endpoint:'https://web.push.apple.com/test-device',p256dh:keys.publicKey,auth:Buffer.alloc(16).toString('base64url')}});
+    await req('/api/bookings',{cookie:customer,json:booking});assert.equal(await prisma.adminBookingNotice.count(),1);assert.equal(await prisma.adminPushDelivery.count(),1);
+    process.env.WEB_PUSH_PUBLIC_KEY=keys.publicKey;process.env.WEB_PUSH_PRIVATE_KEY=keys.privateKey;
+    const bodies:string[]=[];const failSender=(async(_sub:unknown,body:unknown)=>{bodies.push(String(body));throw {statusCode:503};}) as unknown as typeof webPush.sendNotification;
+    await deliverAdminPushNotifications(failSender);assert.equal((await prisma.adminPushDelivery.findFirstOrThrow()).attempts,1);
+    await prisma.adminPushDelivery.updateMany({data:{nextAttemptAt:new Date(0)}});
+    const sender=(async(_sub:unknown,body:unknown)=>{bodies.push(String(body));return {statusCode:201,body:'',headers:{}};}) as unknown as typeof webPush.sendNotification;
+    await deliverAdminPushNotifications(sender);assert.ok((await prisma.adminPushDelivery.findFirstOrThrow()).sentAt);assert.equal(JSON.parse(bodies[1]).unreadCount,1);assert.ok(!bodies[1].includes('kim@example.com'));
+    await deliverAdminPushNotifications(sender);assert.equal(bodies.length,2);
+    assert.equal((await (await req('/admin/push/state',{cookie:admin})).json()).unreadCount,1);
+    await req('/admin/push/seen',{cookie:admin,json:{bookingIds:[1]}});assert.equal((await (await req('/admin/push/state',{cookie:admin})).json()).unreadCount,0);
   });
 
   test("verified staff see their own company logo on the rewards badge without changing points",async()=>{

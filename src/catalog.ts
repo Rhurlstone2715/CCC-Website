@@ -146,8 +146,8 @@ export async function catalogScript(): Promise<string> {
 
 // ---- Pricing booking lines on the server ----
 
-export type CartItem = { id: string; term: string; qty: number };
-export type PricedLine = { id: string; name: string; term: string; qty: number; rate: number | null; amount: number | null; operator: boolean; fuelType?: string };
+export type CartItem = { id: string; term: string; qty: number; periods?:number };
+export type PricedLine = { id: string; name: string; term: string; qty: number; rate: number | null; amount: number | null; operator: boolean; periods?:number; fuelType?: string };
 
 const toCents = (dollars: number) => Math.round(dollars * 100);
 
@@ -180,13 +180,14 @@ export async function priceItems(items: CartItem[], discountPercent: number): Pr
       operator = product.operatorService;
       rate = orderedRates(product.rates)[item.term as Term] ?? null;
     }
-    const amount = rate === null ? null : toCents(rate * item.qty) / 100;
+    const periods=item.term==="hourly"?1:Math.max(1,item.periods??1);
+    const amount = rate === null ? null : toCents(rate * item.qty * periods) / 100;
     if (amount !== null) {
       anyPriced = true;
       if (operator) operatorCents += toCents(amount);
       else equipmentCents += toCents(amount);
     }
-    return { id: item.id, name, term: item.term, qty: item.qty, rate, amount, operator, ...(product?.fuelType && !/crane|boom.?truck/i.test(product.category) ? { fuelType: product.fuelType } : {}) };
+    return { id: item.id, name, term: item.term, qty: item.qty, rate, amount, operator, ...(periods>1?{periods}:{}), ...(product?.fuelType && !/crane|boom.?truck/i.test(product.category) ? { fuelType: product.fuelType } : {}) };
   });
 
   // Round the combined equipment discount once to a whole CI dollar.
@@ -222,8 +223,8 @@ export function setProblem(items: CartItem[], products: SetProduct[]): string | 
     const product = byId.get(item.id);
     if (!product) continue;
     const parent = parents.find(p => p.id === product.id);
-    if (parent) for (const group of setGroups(parent, byId)) add(required, `${group}|${item.term}`, item.qty);
-    if (product.setPart && parents.some(p => p.addOns.includes(product.id))) add(supplied, `${product.setPart}|${item.term}`, item.qty);
+    if (parent) for (const group of setGroups(parent, byId)) add(required, `${group}|${item.term}|${item.periods??1}`, item.qty);
+    if (product.setPart && parents.some(p => p.addOns.includes(product.id))) add(supplied, `${product.setPart}|${item.term}|${item.periods??1}`, item.qty);
   }
   for (const key of new Set([...required.keys(), ...supplied.keys()])) {
     if ((required.get(key) ?? 0) === (supplied.get(key) ?? 0)) continue;

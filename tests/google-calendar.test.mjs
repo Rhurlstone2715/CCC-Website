@@ -81,3 +81,8 @@ test('calendar details have readable client, location, time, job description and
  const missing=bookingGoogleEvent({...booking,requestText:'No details',startTime:null,siteAddress:null,area:null,items:null},base);
  assert.match(missing.description,/Time: To be confirmed/);assert.match(missing.description,/Location: To be confirmed/);assert.match(missing.description,/Description: Not provided/);
 });
+
+test('admin-updated work hours and multi-period rentals update the actual Google Calendar window',()=>{
+ const actual=bookingGoogleEvent({...booking,adminEditedAt:new Date(),items:[{name:'RT40',term:'hourly',qty:6}]},base);assert.equal(actual.start.dateTime,'2026-11-09T13:00:00.000Z');assert.equal(actual.end.dateTime,'2026-11-09T19:00:00.000Z');
+ const longer=bookingGoogleEvent({...booking,adminEditedAt:new Date(),items:[{name:'Telehandler',term:'weekly',qty:1,periods:2}]},base);assert.equal(longer.end.dateTime,'2026-11-23T13:00:00.000Z');assert.match(longer.description,/2 periods/);
+});

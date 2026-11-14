@@ -1,3 +1,4 @@
+import { startAdminPushDelivery } from "./admin-push.js";
 import { startCompanyLogoRefresh } from "./company-logos.js";
 import { startEstimateEmailDelivery } from "./estimates.js";
 import { serve } from "@hono/node-server";
@@ -12,6 +13,7 @@ const googleCalendarTimer = startGoogleCalendarSync();
 const accountEmailTimer = startAccountEmailDelivery();
 const estimateEmailTimer = startEstimateEmailDelivery();
 const companyLogoTimer=startCompanyLogoRefresh();
+const adminPushTimer=startAdminPushDelivery();
 
 const port = Number(process.env.PORT) || 3000;
 const server = serve({ fetch: app.fetch, port }, info => console.log(`Listening on port ${info.port}`));
@@ -21,6 +23,7 @@ function shutdown() {
   clearInterval(accountEmailTimer);
   clearInterval(estimateEmailTimer);
   clearInterval(companyLogoTimer);
+  clearInterval(adminPushTimer);
   server.close(() => {
     prisma.$disconnect().finally(() => process.exit(0));
   });

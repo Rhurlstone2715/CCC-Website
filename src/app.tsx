@@ -1,3 +1,5 @@
+import { adminBookingEditor } from "./routes/admin-booking-editor.js";
+import { adminPush, queueAdminBookingNotices, deliverAdminPushNotifications } from "./admin-push.js";
 import { LIFTING_CATEGORIES } from "./delivery-policy.js";
 import { companyLogos } from "./company-logos.js";
 import { assertAvailability, AvailabilityError, lockInventory, inventoryNow } from "./availability.js";
@@ -107,6 +109,8 @@ app.get("/uploads/:id{[a-z0-9]+}", async c => {
   return c.body(new Uint8Array(upload.data));
 });
 
+app.route("/admin/push",adminPush);
+app.route("/admin/bookings",adminBookingEditor);
 app.route("/company-logos",companyLogos);
 app.route("/account/bookings", estimates);
 app.route("/account/bookings", paymentProofs);
@@ -195,10 +199,12 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
     },
   });
   const estimate = await createBookingEstimate(tx, booking);
+  await queueAdminBookingNotices(tx,booking.id);
   return { booking, estimate };
   }, { timeout: 30_000, maxWait: 15_000 }).catch(error=>{if(error instanceof AvailabilityError)return error;throw error;});
   if(outcome instanceof AvailabilityError)return c.json(outcome.result,outcome.status);
   const {booking,estimate}=outcome;
+  void deliverAdminPushNotifications();
   const ref = bookingRef(booking.id);
   const estimateInfo = { estimateNumber: estimate.number, estimateUrl: `/account/bookings/${booking.id}/estimate.pdf` };
   await deliverEstimateEmails(estimate.number);

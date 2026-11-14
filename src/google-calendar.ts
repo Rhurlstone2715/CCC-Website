@@ -1,3 +1,4 @@
+import { rentalHours } from "./availability.js";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { prisma } from "./db.js";
 import { bookingRef } from "./bookings.js";
@@ -60,6 +61,10 @@ export function bookingGoogleEvent(b: Booking, baseUrl: string) {
   const last = b.scheduleStart ? (b.scheduleEnd ?? start) : start;
   const end = new Date(Math.max(start.getTime(), last.getTime()) + 86400000);
   const items = Array.isArray(b.items) ? b.items as unknown as PricedLine[] : [];
+  const exact=Boolean(b.adminEditedAt)&&!b.scheduleStart&&Boolean(b.startTime);
+  const exactStart=exact?new Date(`${date(start)}T${b.startTime}:00-05:00`):null;
+  const hours=items.filter(i=>!i.operator).map(i=>rentalHours(i.term,i.qty)*(i.periods??1));
+  const exactEnd=exactStart?new Date(exactStart.getTime()+Math.max(1,...(hours.length?hours:[24]))*3600000):null;
   return {
     summary: `${bookingRef(b.id)} | ${b.customerName}${b.status === "PENDING" ? " | Pending" : ""}`,
     description: [
@@ -70,15 +75,15 @@ export function bookingGoogleEvent(b: Booking, baseUrl: string) {
       `Date: ${readableDate(start)}${last > start ? ` – ${readableDate(last)}` : ""}${b.scheduleStart ? " (confirmed)" : " (requested; dates not confirmed)"}`,
       `Time: ${serviceTime(b.startTime)}`,
       ...(b.rentalCollection ? [`Tools / rental-item collection: ${b.rentalCollection === "pickup" ? "Customer pickup" : "Delivery"}`] : []),
-      `Description: ${serviceDescription(b.requestText)}`,
+      `Description: ${b.jobDetails||serviceDescription(b.requestText)}`,
       "", "EQUIPMENT REQUESTED",
-      ...(items.length ? items.map(i => `• ${i.name}${i.operator ? " (operator service)" : ""} — ${TERM_LABELS[i.term] || i.term} × ${i.qty}`) : ["See booking for equipment details."]),
+      ...(items.length ? items.map(i => `• ${i.name}${i.operator ? " (operator service)" : ""} — ${TERM_LABELS[i.term] || i.term} × ${i.qty}${(i.periods??1)>1?` × ${i.periods} periods`:""}`) : ["See booking for equipment details."]),
       ...(items.some(i => i.fuelType) ? ["", "FUEL RETURN", ...items.filter(i => i.fuelType).map(i => `${i.name}: Return with a full tank of ${i.fuelType === "diesel" ? "diesel fuel" : "gasoline"}.`)] : []),
       "", "CLIENT CONTACT", `Email: ${b.customerEmail}`, ...(b.phone ? [`Phone: ${b.phone}`] : []),
       "", "VIEW BOOKING", `${baseUrl.replace(/\/$/, "")}/admin/bookings/${b.id}`,
     ].join("\n"),
     location: [b.siteAddress, b.area].filter(Boolean).join(", "),
-    start: { date: date(start) }, end: { date: date(end) },
+    start: exactStart?{dateTime:exactStart.toISOString(),timeZone:"America/Cayman"}:{ date: date(start) }, end: exactEnd?{dateTime:exactEnd.toISOString(),timeZone:"America/Cayman"}:{ date: date(end) },
     status: b.status === "PENDING" ? "tentative" : "confirmed",
     extendedProperties: { private: { cccBookingId: String(b.id), cccSource: baseUrl } },
   };
