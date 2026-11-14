@@ -1,4 +1,4 @@
-import { assertAvailability, AvailabilityError, lockInventory } from "./availability.js";
+import { assertAvailability, AvailabilityError, lockInventory, inventoryNow } from "./availability.js";
 import { createBookingEstimate, deliverEstimateEmails, estimates } from "./estimates.js";
 import { paymentProofs } from "./payment-proofs.js";
 import { serveStatic } from "@hono/node-server/serve-static";
@@ -89,6 +89,8 @@ app.get("/rentals", serveStatic({ root: publicDir, path: "rentals.html" }));
 app.get("/privacy", async c => c.html(<PrivacyPage user={await currentUser(c)} />));
 
 // The rentals page loads this before app.js to get the current catalog.
+app.get('/api/inventory',async c=>{c.header('Cache-Control','no-store');return c.json({inventory:await inventoryNow(prisma)});});
+
 app.get("/catalog.js", async c => {
   c.header("Content-Type", "text/javascript; charset=utf-8");
   return c.body(await catalogScript());

@@ -42,3 +42,29 @@ checkouts, pooled brace stock, excessive and duplicated cart quantities, boundar
 handover, cancellation, weekly/monthly periods, zero/unrecorded stock and admin
 rescheduling. Desktop and mobile browser checks exercise the actual 409 response,
 cart retention, next-start button and successful retry.
+
+## Available alternatives and automatic expiry
+
+Conflict responses include up to three alternatives per unavailable product. The
+same complete cart is checked for its original requested period after replacing
+that product, including existing lines for the suggested equipment. Recommendations
+must offer every requested rental term. Known compatible alternatives are other
+boom trucks, rough-terrain cranes, telehandlers, the two mobile generators, the two
+extension-cord lengths, and the two cutter/bender machines. Other tools are not
+assumed interchangeable just because they share a category. Crane/telehandler
+capacity is used to prefer the nearest larger model. Specs and rates remain
+visible for customer review; suggestions are not a guarantee of job suitability.
+Incompatible dedicated attachments prevent a recommendation. Set components are
+not automatically substituted.
+
+Customers explicitly choose a replacement. Checkout updates the equipment,
+recalculates prices/discounts/delivery and preserves the requested date and time.
+Availability is checked again on submission, so an alternative is not reserved
+merely because it was suggested.
+
+`GET /api/inventory` calculates available-now counts from active reservation
+windows. At the end instant the reservation no longer consumes stock; no timer,
+manual stock increment, booking status change or payment-history rewrite is
+required. Catalog labels refresh once per minute and read “Available now: X of Y”.
+The physical stock total stays unchanged. Future reservations still reserve their
+own time windows, even while equipment is available now.

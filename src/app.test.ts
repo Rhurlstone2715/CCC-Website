@@ -2,6 +2,7 @@
 // Run with `npm test`; needs TEST_DATABASE_URL (see .env.example).
 // test-env must stay the first import: it points Prisma at the test database.
 import "./test-env.js";
+import { inventoryNow } from "./availability.js";
 import { deliverEstimateEmails, renderEstimatePdf, estimateSnapshot, type EstimateSnapshot } from "./estimates.js";
 import { PDFDocument } from "pdf-lib";
 
@@ -295,6 +296,42 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
       body: "email=a%40b.co&password=xxxxxxxx",
     });
     assert.equal(crossSite.status, 403);
+  });
+
+  test("unavailable boom trucks recommend the other truck only when the full requested window fits",async()=>{
+    const cookie=await signup();const payload=(id:string)=>({...booking,details:{startDate:'2030-06-10',startTime:'08:00',items:[{id,term:'hourly',qty:4}]}});
+    assert.equal((await req('/api/bookings',{cookie,json:payload('altec2595')})).status,503);
+    const conflict=await req('/api/bookings',{cookie,json:payload('altec2595')});assert.equal(conflict.status,409);
+    const result=await conflict.json();assert.match(result.error,/Already booked/);assert.equal(result.alternatives.length,1);assert.equal(result.alternatives[0].id,'national1400');assert.equal(result.alternatives[0].replaceId,'altec2595');assert.match(result.alternatives[0].spec,/33 ton/);
+    assert.equal((await req('/api/bookings',{cookie,json:payload('national1400')})).status,503);
+    const both=await (await req('/api/bookings',{cookie,json:payload('altec2595')})).json();assert.deepEqual(both.alternatives,[]);assert.equal(both.nextAvailable.time,'12:00');
+  });
+  test("recommendations exclude equipment busy later in the period, unsupported terms and incompatible attachments",async()=>{
+    const cookie=await signup();const payload=(id:string,time:string)=>({...booking,details:{startDate:'2030-06-20',startTime:time,items:[{id,term:'hourly',qty:4}]}});
+    await req('/api/bookings',{cookie,json:payload('altec2595','08:00')});await req('/api/bookings',{cookie,json:payload('national1400','10:00')});
+    assert.deepEqual((await (await req('/api/bookings',{cookie,json:payload('altec2595','08:00')})).json()).alternatives,[]);
+    await prisma.booking.updateMany({data:{status:'CANCELLED'}});
+    await req('/api/bookings',{cookie,json:payload('national1400','08:00')});
+    const basket=payload('national1400','08:00');basket.details.items.push({id:'national-manbasket',term:'daily',qty:1});
+    assert.deepEqual((await (await req('/api/bookings',{cookie,json:basket})).json()).alternatives,[]);
+    await prisma.product.update({where:{id:'altec2595'},data:{rates:{daily:100}}});
+    assert.deepEqual((await (await req('/api/bookings',{cookie,json:payload('national1400','08:00')})).json()).alternatives,[]);
+  });
+  test("tool recommendations stay within the same equipment function",async()=>{
+    const cookie=await signup();const payload=(id:string,qty:number)=>({...booking,details:{startDate:'2030-06-22',startTime:'08:00',items:[{id,term:'daily',qty}]}});
+    await req('/api/bookings',{cookie,json:payload('fs600',3)});
+    const choices=(await (await req('/api/bookings',{cookie,json:payload('fs600',1)})).json()).alternatives;assert.deepEqual(choices.map((a:{id:string})=>a.id),['fr800c']);
+    await req('/api/bookings',{cookie,json:payload('palletjacks',2)});
+    assert.deepEqual((await (await req('/api/bookings',{cookie,json:payload('palletjacks',1)})).json()).alternatives,[]);
+  });
+  test("inventory restores automatically exactly at rental end without changing stock, payment or loyalty history",async()=>{
+    const cookie=await signup();const payload={...booking,details:{startDate:'2030-06-25',startTime:'08:00',items:[{id:'national1400',term:'hourly',qty:4}]}};
+    await req('/api/bookings',{cookie,json:payload});await prisma.booking.updateMany({data:{status:'PAID',amountPaidCents:10000,paidAt:new Date('2030-06-25T12:00:00Z')}});
+    const before=await inventoryNow(prisma,Date.parse('2030-06-25T16:59:59Z'));assert.deepEqual(before.national1400,{total:1,available:0});
+    const after=await inventoryNow(prisma,Date.parse('2030-06-25T17:00:00Z'));assert.deepEqual(after.national1400,{total:1,available:1});
+    assert.equal((await prisma.booking.findFirstOrThrow()).status,'PAID');assert.equal((await prisma.booking.findFirstOrThrow()).amountPaidCents,10000);
+    assert.equal((await prisma.product.findUniqueOrThrow({where:{id:'national1400'}})).availableQuantity,1);
+    const inventory=await req('/api/inventory');assert.equal(inventory.status,200);assert.match(inventory.headers.get('cache-control')!,/no-store/);assert.equal((await inventory.json()).inventory.plumwall.total,300);
   });
 
   test("inventory prevents simultaneous boom truck bookings and offers the next whole-hour start",async()=>{
