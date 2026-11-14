@@ -298,7 +298,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const response=await req("/api/bookings",{cookie:customer,json:{...booking,customerEmail:"wrong@example.com",details:{billingAddress:"123 Customer Road, George Town",jobDetails:"Lift roof materials",phone:"345 555 0100",company:"Customer Company",startDate:"2030-05-15",startTime:"08:00",area:"7 Mile Beach",siteAddress:"50 Job Site Road",items:[{id:"rt40",term:"daily",qty:1}]}}});
     const body=await response.json();assert.equal(body.estimateNumber,524);assert.equal(body.estimateUrl,"/account/bookings/1/estimate.pdf");
     const estimate=await prisma.estimate.findUniqueOrThrow({where:{number:524}});const snapshot=estimate.snapshot as unknown as EstimateSnapshot;
-    assert.equal(estimate.emailRecipient,"kim@example.com");assert.equal(snapshot.discountCents,4900);assert.equal(snapshot.deliveryCents,20000);assert.equal(estimate.totalCents,113600);
+    assert.equal(estimate.emailRecipient,"kim@example.com");assert.equal(snapshot.rows.at(-1)?.item,"Loyalty");assert.equal(snapshot.discountCents,4900);assert.equal(snapshot.deliveryCents,20000);assert.equal(estimate.totalCents,113600);
     assert.equal(snapshot.billingAddress,"123 Customer Road, George Town");assert.equal(snapshot.requestedStart,"15 May 2030 at 08:00 (Cayman time)");assert.equal(snapshot.location,"50 Job Site Road, 7 Mile Beach");assert.equal(snapshot.jobDetails,"Lift roof materials");
     assert.equal(snapshot.date,estimate.createdAt.toLocaleDateString("en-GB",{timeZone:"America/Cayman",day:"numeric",month:"short",year:"numeric"}));
     const pdf=await PDFDocument.load(estimate.pdf);assert.equal(pdf.getTitle(),"Cayman Crane Estimate 524");assert.ok(pdf.getPageCount()>=1);

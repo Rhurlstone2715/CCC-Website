@@ -52,13 +52,13 @@ export async function estimateSnapshot(tx:Prisma.TransactionClient,b:Booking,num
   rows.push({item:line.id,description:`${name}\n${term(line.term)}${line.fuelType?`\nReturn with a full tank of ${line.fuelType==='diesel'?'diesel fuel':'gasoline'}.`:''}`,qty:String(line.qty),rate:amount===null?'TBC':currency(Math.round(amount/line.qty)),total:amount===null?'TBC':currency(amount)});
  }
  if(!rows.length)rows.push({item:'Rental',description:'Equipment and rental pricing to be confirmed. Refer to the booking request.',qty:'',rate:'TBC',total:'TBC'});
- if(discountCents)rows.push({item:'Loyalty',description:`${b.rewardTier||'Loyalty'} discount (${b.discountPercent}%) — equipment only; rounded to whole CI dollars`,qty:'',rate:'',total:'-'+currency(discountCents)});
  rows.push(...deliveryRows);
  if(!complete)rows.push({item:'Pricing',description:`Priced subtotal: CI$${currency(pricedSubtotalCents+(deliveryCents||0))}. Items marked TBC require manual pricing; this is not the final total.`,qty:'',rate:'',total:''});
+ if(discountCents)rows.push({item:'Loyalty',description:`${b.rewardTier||'Loyalty'} discount (${b.discountPercent}%) — equipment only; rounded to whole CI dollars`,qty:'',rate:'',total:'-'+currency(discountCents)});
  return {number,bookingRef:bookingRef(b.id),date:b.createdAt.toLocaleDateString('en-GB',{timeZone:'America/Cayman',day:'numeric',month:'short',year:'numeric'}),customerName:b.customerName,company:b.company,billingAddress:b.billingAddress,email:b.customerEmail,phone:b.phone,location:[b.siteAddress,b.area].filter(Boolean).join(', ')|| (b.rentalCollection==='pickup'?'Customer pickup':'To be confirmed'),requestedStart,jobDetails,rows,discountCents,deliveryCents,pricedSubtotalCents,totalCents};
 }
 let templateFiles:Promise<Buffer[]>|undefined;
-function files(){return templateFiles??=Promise.all(['template-clean.pdf','DejaVuSans.ttf','DejaVuSans-Bold.ttf'].map(name=>readFile(new URL(`../assets/estimates/${name}`,import.meta.url))));}
+function files(){return templateFiles??=Promise.all([readFile(new URL('../assets/estimates/template-clean.pdf',import.meta.url)),Promise.all([readFile(new URL('../assets/estimates/Arial.ttf',import.meta.url)),readFile(new URL('../assets/estimates/Arial-Bold.ttf',import.meta.url))])]).then(([template,fonts])=>[template,fonts[0],fonts[1]]);}
 function clean(s:string){return s.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'').replace(/\t/g,' ');}
 function wrap(text:string,font:PDFFont,size:number,width:number):string[]{
  const result:string[]=[];
@@ -74,12 +74,12 @@ export async function renderEstimatePdf(s:EstimateSnapshot,preview=false):Promis
  const [template,regularBytes,boldBytes]=await files();const doc=await PDFDocument.create();doc.registerFontkit(fontkit);
  const font=await doc.embedFont(regularBytes,{subset:true}),bold=await doc.embedFont(boldBytes,{subset:true});
  const columns=[{x:45,w:70},{x:125,w:207},{x:342,w:68},{x:420,w:55},{x:485,w:84}];
- const client=[s.customerName,s.company,s.billingAddress,s.email,s.phone].filter(Boolean).join('\n');const clientLines=wrap(client,font,8.5,234);
+ const client=[s.customerName,s.company,s.billingAddress,s.email,s.phone].filter(Boolean).join('\n');const clientLines=wrap(client,font,9,234);
  const intro=[`Booking ${s.bookingRef}`,`Requested rental: ${s.requestedStart}`,`Location: ${s.location}`,s.jobDetails?`Job details: ${s.jobDetails}`:''].filter(Boolean).join('\n');
  const rawRows:Row[]=[{item:'Booking',description:intro,qty:'',rate:'',total:''},...(clientLines.length>7?[{item:'Customer',description:client,qty:'',rate:'',total:''}]:[]),...s.rows];
  const pages:{lines:string[][];first:boolean}[][]=[[]];let used=0;
  for(const row of rawRows){
-  const cells=[row.item,row.description,row.qty,row.rate,row.total].map((t,i)=>wrap(t,font,8.5,columns[i].w));let offset=0;const length=Math.max(...cells.map(c=>c.length));
+  const cells=[row.item,row.description,row.qty,row.rate,row.total].map((t,i)=>wrap(t,font,9,columns[i].w));let offset=0;const length=Math.max(...cells.map(c=>c.length));
   while(offset<length){
    if(270-used<22){pages.push([]);used=0;}
    const room=Math.floor((270-used-9)/11);const remaining=length-offset;
@@ -90,23 +90,23 @@ export async function renderEstimatePdf(s:EstimateSnapshot,preview=false):Promis
  const base=await PDFDocument.load(template);
  for(let index=0;index<pages.length;index++){
   const [page]=await doc.copyPages(base,[0]);doc.addPage(page);
-  const write=(text:string,x:number,top:number,size=8.5,strong=false)=>page.drawText(clean(text),{x,y:792-top-size,font:strong?bold:font,size,color:rgb(0,0,0)});
-  write(s.date,448,96,8);write(String(s.number),527,96,9,true);
-  for(const [i,line]of clientLines.slice(0,7).entries())write(line,61,213+i*10,8.5);
+  const write=(text:string,x:number,top:number,size=9,strong=false)=>page.drawText(clean(text),{x,y:792-top-size,font:strong?bold:font,size,color:rgb(0,0,0)});
+  write(s.date,448,96,9);write(String(s.number),539.5-font.widthOfTextAtSize(String(s.number),9)/2,96,9);
+  for(const [i,line]of clientLines.slice(0,7).entries())write(line,61,213+i*10,9);
   if(clientLines.length>7)write('Full details continue in the item table.',61,284,7);
-  write(s.bookingRef,343,299,8.5);
+  write(s.bookingRef,343,299,9);
   const requestedBy=wrap(s.customerName,font,8,88);requestedBy.slice(0,2).forEach((line,i)=>write(line,484,294+i*9,8));
   write(`Page ${index+1} of ${pages.length}`,485,122,8);
   wrap('PROVISIONAL ESTIMATE\nSubject to availability and acceptance.\nRates and amounts shown in CI$.',font,8,232).forEach((line,i)=>write(line,338,211+i*11,8));
   let top=342;
   for(const row of pages[index]){
    for(let col=0;col<5;col++)for(const [n,line]of row.lines[col].entries()){
-    const numeric=col>=2;const x=numeric?columns[col].x+columns[col].w-font.widthOfTextAtSize(line,8.5):columns[col].x;write(line,x,top+n*11,8.5);
+    const numeric=col>=2;const x=numeric?columns[col].x+columns[col].w-font.widthOfTextAtSize(line,9):columns[col].x;write(line,x,top+n*11,9);
    }
    const height=Math.max(...row.lines.map(c=>c.length))*11+9;top+=height;
    page.drawLine({start:{x:41,y:792-top+4},end:{x:575,y:792-top+4},thickness:.3,color:rgb(.8,.8,.8)});
   }
-  if(index===pages.length-1){const text=s.totalCents===null?'TO BE CONFIRMED':currency(s.totalCents);const size=s.totalCents===null?8:12;write(text,571-bold.widthOfTextAtSize(text,size),653,size,true);}else write('Continued',508,653,9,true);
+  if(index===pages.length-1){const text=s.totalCents===null?'TO BE CONFIRMED':currency(s.totalCents);const size=s.totalCents===null?8:15.93;write(text,571-bold.widthOfTextAtSize(text,size),653,size,true);}else write('Continued',508,653,9,true);
   if(preview)write('SAMPLE ONLY — NOT A CUSTOMER ESTIMATE',317,150,8,true);
  }
  doc.setTitle(`Cayman Crane Estimate ${s.number}`);doc.setSubject(`Booking ${s.bookingRef}`);doc.setAuthor('Cayman Crane Company');return doc.save();
