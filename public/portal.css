@@ -1279,3 +1279,5 @@ hr.divider {
 .admin-equipment-row{display:grid;grid-template-columns:minmax(200px,2fr) repeat(4,minmax(85px,1fr)) auto;gap:10px;align-items:end;border-bottom:1px solid #d9dce1;padding-bottom:16px}
 .admin-equipment-row label{display:flex;flex-direction:column;gap:6px;font-size:13px;min-width:0}.admin-equipment-row input,.admin-equipment-row select{width:100%;min-width:0}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 @media(max-width:850px){.admin-equipment-row{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-equipment-row>label:first-child{grid-column:1/-1}.form-grid{grid-template-columns:1fr}}
+
+.rewards-card .booking-meta{color:#d1d5db}
