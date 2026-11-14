@@ -321,14 +321,14 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   test("estimate email attaches the saved PDF and failed delivery retries without changing its number", async () => {
     const customer=await signup();const response=await (await req("/api/bookings",{cookie:customer,json:booking})).json();
     process.env.RESEND_API_KEY="re_test";process.env.EMAIL_FROM="Cayman Crane <bookings@example.com>";
-    const sent: {to:string[];subject:string;attachments:{filename:string;content:string}[]}[]=[];
+    const sent: {to:string[];subject:string;text:string;attachments:{filename:string;content:string}[]}[]=[];
     globalThis.fetch=(async(_url:string,init:RequestInit)=>{sent.push(JSON.parse(String(init.body)));return new Response("unavailable",{status:503})}) as typeof fetch;
     await deliverEstimateEmails(response.estimateNumber);
     let estimate=await prisma.estimate.findUniqueOrThrow({where:{number:response.estimateNumber}});assert.equal(estimate.emailSentAt,null);assert.equal(estimate.emailAttempts,1);
     await prisma.estimate.update({where:{number:estimate.number},data:{nextEmailAttemptAt:new Date(0)}});
     globalThis.fetch=(async(_url:string,init:RequestInit)=>{sent.push(JSON.parse(String(init.body)));return new Response("{}",{status:200})}) as typeof fetch;
     await deliverEstimateEmails(estimate.number);estimate=await prisma.estimate.findUniqueOrThrow({where:{number:estimate.number}});assert.ok(estimate.emailSentAt);assert.equal(estimate.emailAttempts,2);
-    assert.equal(sent.at(-1)!.to[0],"kim@example.com");assert.deepEqual(Buffer.from(sent.at(-1)!.attachments[0].content,"base64"),Buffer.from(estimate.pdf));assert.match(sent.at(-1)!.attachments[0].filename,new RegExp(String(estimate.number)));
+    assert.equal(sent.at(-1)!.to[0],"kim@example.com");assert.match(sent.at(-1)!.text,/proof of payment is required to confirm your booking/);assert.match(sent.at(-1)!.text,/loyalty points will be credited once your payment has been received and confirmed/);assert.match(sent.at(-1)!.text,/https:\/\/www\.caymancrane\.com\/account\/profile/);assert.deepEqual(Buffer.from(sent.at(-1)!.attachments[0].content,"base64"),Buffer.from(estimate.pdf));assert.match(sent.at(-1)!.attachments[0].filename,new RegExp(String(estimate.number)));
     await deliverEstimateEmails(estimate.number);assert.equal(sent.length,2);assert.equal(await prisma.estimate.count(),1);
   });
 
