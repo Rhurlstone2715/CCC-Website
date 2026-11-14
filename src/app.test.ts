@@ -441,9 +441,27 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     await deliverEstimateEmails(estimate.number);assert.equal(sent.length,2);assert.equal(await prisma.estimate.count(),1);
   });
 
+  test("machine delivery includes attachments, preserves rental prices and forces delivery even if pickup is posted",async()=>{
+    const cookie=await signup();
+    for(const machine of ['rt40','altec2595','gth636']){
+      const response=await (await req('/api/bookings',{cookie,json:{...booking,details:{area:'7 Mile Beach',rentalCollection:'pickup',items:[{id:machine,term:'daily',qty:1},{id:'bucket',term:'daily',qty:1},{id:'concrete-bottom',term:'daily',qty:1}]}}})).json();
+      const estimate=await prisma.estimate.findUniqueOrThrow({where:{number:response.estimateNumber},include:{booking:true}});const snapshot=estimate.snapshot as unknown as EstimateSnapshot;
+      assert.equal(estimate.booking.rentalCollection,'delivery');assert.equal(snapshot.deliveryCents,20000);assert.equal(snapshot.rows.filter(r=>r.description.includes('no additional delivery fee')).length,2);
+      assert.ok((estimate.booking.items as unknown as {id:string;amount:number}[]).find(l=>l.id==='bucket')!.amount>0);
+    }
+    const standalone=await (await req('/api/bookings',{cookie,json:{...booking,details:{area:'7 Mile Beach',rentalCollection:'delivery',items:[{id:'bucket',term:'daily',qty:1}]}}})).json();
+    assert.equal((await prisma.estimate.findUniqueOrThrow({where:{number:standalone.estimateNumber}})).totalCents!==null,true);
+    const s=(await prisma.estimate.findUniqueOrThrow({where:{number:standalone.estimateNumber}})).snapshot as unknown as EstimateSnapshot;assert.equal(s.deliveryCents,20000);
+  });
+  test("rigging size add-ons share machine delivery and two main machines keep two delivery fees",async()=>{
+    const cookie=await signup();
+    const response=await (await req('/api/bookings',{cookie,json:{...booking,details:{area:'George Town',items:[{id:'rt40',term:'hourly',qty:4},{id:'national1400',term:'hourly',qty:4},{id:'lifting-10',term:'daily',qty:1}]}}})).json();
+    const estimate=await prisma.estimate.findUniqueOrThrow({where:{number:response.estimateNumber}});const s=estimate.snapshot as unknown as EstimateSnapshot;assert.equal(s.deliveryCents,30000);assert.ok(s.rows.some(r=>r.description.includes('Lifting Beams')&&r.description.includes('no additional delivery fee')));
+  });
+
   test("estimate delivery handles per-item fees, pickup and waivers, and uncertain pricing stays unconfirmed", async () => {
     const customer=await signup();
-    for(const [rentalCollection,term,expected] of [["delivery","daily",45000],["pickup","daily",15000],["delivery","weekly",0]] as const){
+    for(const [rentalCollection,term,expected] of [["delivery","daily",45000],["pickup","daily",45000],["delivery","weekly",0]] as const){
       await req("/api/bookings",{cookie:customer,json:{...booking,details:{rentalCollection,area:"George Town",items:[{id:"rt40",term,qty:1},{id:"diesel-mixer-9-cu-ft",term,qty:2}]}}});
       const estimate=await prisma.estimate.findFirstOrThrow({orderBy:{number:"desc"}});assert.equal((estimate.snapshot as unknown as EstimateSnapshot).deliveryCents,expected);
     }
@@ -911,7 +929,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   test("fuel-return conditions come from catalog engines and remain in the signed booking", async () => {
     const cookie=await signup();
     await req("/api/bookings",{cookie,json:{...booking,details:{rentalCollection:"pickup",items:[{id:"compressor",term:"daily",qty:1,fuelType:"diesel"},{id:"diesel-mixer-9-cu-ft",term:"daily",qty:2},{id:"g25",term:"weekly",qty:1},{id:"palletjacks",term:"daily",qty:1},{id:"rt40",term:"daily",qty:1},{id:"national1400",term:"daily",qty:1}]}}});
-    const saved=await prisma.booking.findFirstOrThrow();assert.equal(saved.rentalCollection,"pickup");
+    const saved=await prisma.booking.findFirstOrThrow();assert.equal(saved.rentalCollection,"delivery");
     assert.match(saved.termsText,/40 Gal Gas Air Compressor: Return with a full tank of gasoline/);
     assert.match(saved.termsText,/9 cu ft Towable Cement Mixer.*Return with a full tank of diesel fuel/);
     assert.match(saved.termsText,/Wacker Neuson G25: Return with a full tank of diesel fuel/);

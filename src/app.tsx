@@ -1,3 +1,4 @@
+import { LIFTING_CATEGORIES } from "./delivery-policy.js";
 import { companyLogos } from "./company-logos.js";
 import { assertAvailability, AvailabilityError, lockInventory, inventoryNow } from "./availability.js";
 import { createBookingEstimate, deliverEstimateEmails, estimates } from "./estimates.js";
@@ -165,6 +166,7 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
   const fuelConditions = priced?.lines.filter(line => line.fuelType).map(line => `${line.name}: Return with a full tank of ${line.fuelType === "diesel" ? "diesel fuel" : "gasoline"}.`) ?? [];
   const membership = await verifiedCompanyMembership(user.id);
   const companyAccountId = membership?.companyAccountId ?? null;
+  const deliveryOnly=await prisma.product.count({where:{id:{in:details.items.map(i=>i.id)},category:{in:LIFTING_CATEGORIES}}})>0;
   const outcome = await prisma.$transaction(async tx => {
   await lockInventory(tx);
   await assertAvailability(tx,details.items,{startDate:details.startDate,startTime:details.startTime,scheduleStart:null,scheduleEnd:null});
@@ -172,7 +174,7 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
     data: {
       ...fields,
       termsText: fields.termsText + (fuelConditions.length ? `\n\nFUEL RETURN REQUIREMENTS\n${fuelConditions.join("\n")}` : ""),
-      rentalCollection: details.rentalCollection,
+      rentalCollection: deliveryOnly?"delivery":details.rentalCollection,
       // The booking goes to the account's email, whatever the form says.
       customerEmail: user.email,
       companyAccountId,

@@ -223,10 +223,11 @@ function openCart(){$("#cartDrawer").classList.add("open");$("#drawerBackdrop").
 function closeCart(){$("#cartDrawer").classList.remove("open");$("#drawerBackdrop").classList.remove("open");$("#cartDrawer").setAttribute("aria-hidden","true");$("#cartButton").setAttribute("aria-expanded","false");document.body.classList.remove("lock")}
 const deliveryFees={"George Town":150,"7 Mile Beach":200,"West Bay":250,"Red Bay":200,"Prospect":200,"Spotts":200,"Savannah":250,"Bodden Town":300,"East End":350,"North Side":400};
 function collectableRental(p){return !!p?.delivery&&!p.operatorService&&!p.setPart&&["Tools","Power Generation","Attachments","Construction Plant / Equipment","Ground Protection"].includes(p.category)}
-function hasCollectableRentals(){return cart.some(i=>!i.inSet&&collectableRental(products.find(p=>p.id===i.id)))}
-function rentalCollection(){return hasCollectableRentals()&&$("#rentalCollection")?.value==="pickup"?"pickup":"delivery"}
+function hasCollectableRentals(){return !hasLiftingService()&&cart.some(i=>!i.inSet&&collectableRental(products.find(p=>p.id===i.id)))}
+function rentalCollection(){if(hasLiftingService())return "delivery";return hasCollectableRentals()&&$("#rentalCollection")?.value==="pickup"?"pickup":"delivery"}
 function deliveryAvailable(i){const p=products.find(p=>p.id===i.id);return !!p?.delivery&&!p.operatorService&&!p.setPart&&!i.inSet}
-function deliveryEligible(i){const p=products.find(p=>p.id===i.id);return deliveryAvailable(i)&&!(collectableRental(p)&&rentalCollection()==="pickup")&&!["weekly","monthly"].includes(i.term)}
+function bundledAccessoryDelivery(i){const p=products.find(p=>p.id===i.id);if(!p||["Rough Terrain Cranes","Boom Trucks","Telehandlers"].includes(p.category))return false;const id=p.rigging?.family||p.id;return cart.some(line=>{const machine=products.find(p=>p.id===line.id);return ["Rough Terrain Cranes","Boom Trucks","Telehandlers"].includes(machine?.category)&&(p.category==="Attachments"||(machine.addOns||[]).includes(id));})}
+function deliveryEligible(i){const p=products.find(p=>p.id===i.id);return deliveryAvailable(i)&&!bundledAccessoryDelivery(i)&&!(collectableRental(p)&&rentalCollection()==="pickup")&&!["weekly","monthly"].includes(i.term)}
 const hourlyBillingNote="*Additional hours worked outside of the 4 hour minimum will be billed at the current hourly rate*";
 function hasHourlyEquipmentService(){return cart.some(i=>i.term==="hourly"&&["Rough Terrain Cranes","Boom Trucks","Telehandlers","Heavy Hauling"].includes(products.find(p=>p.id===i.id)?.category))}
 function checkoutTermsText(){const terms=$(".contract").innerText;return hasHourlyEquipmentService()?terms:terms.replace(hourlyBillingNote, "")}
@@ -237,7 +238,7 @@ function needsJobDetails(){return visibleCart().length>0}
 function deliveryQuantity(i){return i.term==="hourly"?1:i.qty}
 function itemDeliveryEstimate(i){if(!deliveryEligible(i))return 0;const area=$("#areaSelect").value;if(Object.hasOwn(deliveryFees,area))return deliveryFees[area]*deliveryQuantity(i);return null}
 function deliveryEstimate(){let total=0;for(const i of cart){const fee=itemDeliveryEstimate(i);if(fee===null)return null;total+=fee}return total}
-function deliveryLine(i){if(!deliveryAvailable(i))return "";const p=products.find(p=>p.id===i.id);if(collectableRental(p)&&rentalCollection()==="pickup")return "Customer pickup · No delivery fee";if(["weekly","monthly"].includes(i.term))return "Delivery fee waived for weekly/monthly rental";const fee=itemDeliveryEstimate(i),quantity=deliveryQuantity(i);return `Delivery (${quantity} ${quantity===1?"item":"items"}): ${fee===null?"To be confirmed":money(deliveryFees[$("#areaSelect").value])+" × "+quantity+" = "+money(fee)}`}
+function deliveryLine(i){if(!deliveryAvailable(i))return "";if(bundledAccessoryDelivery(i))return "Included with equipment delivery · No additional delivery fee";const p=products.find(p=>p.id===i.id);if(collectableRental(p)&&rentalCollection()==="pickup")return "Customer pickup · No delivery fee";if(["weekly","monthly"].includes(i.term))return "Delivery fee waived for weekly/monthly rental";const fee=itemDeliveryEstimate(i),quantity=deliveryQuantity(i);return `Delivery (${quantity} ${quantity===1?"item":"items"}): ${fee===null?"To be confirmed":money(deliveryFees[$("#areaSelect").value])+" × "+quantity+" = "+money(fee)}`}
 function renderPowerAddons(){
  // Generators are only suggested when the cart has electric equipment (needsPower in the catalog).
  const show=cart.some(i=>products.find(p=>p.id===i.id)?.needsPower);
@@ -256,6 +257,7 @@ $("#checkoutPowerAddons").addEventListener("click",e=>{
  $("#checkoutPowerStatus").textContent=`${item.name} added to your booking. The request summary and total have been updated.`;
 });
 function renderCheckout(){
+ $("#deliveryOnlyNote").hidden=!hasLiftingService();if(hasLiftingService())$("#rentalCollection").value="delivery";
  $("#rentalCollectionFields").hidden=!hasCollectableRentals();$("#rentalCollection").disabled=!hasCollectableRentals();
  const addressRequired=needsDeliveryAddress();for(const[name,id]of[["area","deliveryAreaField"],["site_address","deliveryAddressField"]]){const field=document.querySelector(`[name="${name}"]`);$("#"+id).hidden=!addressRequired;field.disabled=!addressRequired;field.required=addressRequired}
  const job=document.querySelector('[name="job_details"]');job.required=hasLiftingService();$("#jobDetailsLabel").textContent=hasLiftingService()?"What are we lifting or moving?*":"Delivery / rental instructions (optional)";job.placeholder=hasLiftingService()?"Load description, weight, access restrictions and placement details…":"Delivery directions, access details or collection instructions…";

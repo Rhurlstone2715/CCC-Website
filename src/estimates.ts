@@ -1,3 +1,4 @@
+import { bundledAccessory, LIFTING_CATEGORIES } from "./delivery-policy.js";
 import { readFile } from 'node:fs/promises';
 import { Hono } from 'hono';
 import { PDFDocument, rgb, type PDFFont } from 'pdf-lib';
@@ -19,13 +20,17 @@ const term=(t:string)=>TERM_LABELS[t]||t;
 
 export async function estimateSnapshot(tx:Prisma.TransactionClient,b:Booking,number:number):Promise<EstimateSnapshot>{
  const lines=Array.isArray(b.items)?b.items as unknown as PricedLine[]:[];
- const products=await tx.product.findMany({where:{id:{in:lines.map(l=>l.id)}},select:{id:true,category:true,delivery:true,operatorService:true,setPart:true,addOns:true}});
- const byId=new Map(products.map(p=>[p.id,p]));
+ const options=await tx.riggingOption.findMany({where:{id:{in:lines.map(l=>l.id)}}});
+ const products=await tx.product.findMany({where:{id:{in:[...lines.map(l=>l.id),...options.map(o=>o.productId)]}},select:{id:true,category:true,delivery:true,operatorService:true,setPart:true,addOns:true,extra:true}});
+ const byId=new Map(products.map(p=>[p.id,p]));for(const option of options){const parent=byId.get(option.productId);if(parent)byId.set(option.id,parent);}
+ const machines=products.filter(p=>LIFTING_CATEGORIES.includes(p.category));
+ const collection=machines.length?'delivery':b.rentalCollection;
  let deliveryCents:number|null=0;const deliveryRows:Row[]=[];
  for(const line of lines){
   const p=byId.get(line.id);if(!p?.delivery||p.operatorService||p.setPart)continue;
   const portable=['Tools','Power Generation','Attachments','Construction Plant / Equipment','Ground Protection'].includes(p.category);
-  if(portable&&b.rentalCollection==='pickup')continue;
+  if(bundledAccessory(p,machines)){deliveryRows.push({item:'Delivery',description:`${line.name} — included with equipment delivery (no additional delivery fee)`,qty:'',rate:'',total:'0.00'});continue;}
+  if(portable&&collection==='pickup')continue;
   if(['weekly','monthly'].includes(line.term)){deliveryRows.push({item:'Delivery',description:`${line.name} — delivery fee waived (${term(line.term)})`,qty:'',rate:'',total:'0'});continue;}
   const qty=line.term==='hourly'?1:line.qty;const rate=b.area?DELIVERY_FEES[b.area]:undefined;
   if(rate===undefined){deliveryCents=null;deliveryRows.push({item:'Delivery',description:`${line.name} — location / charge to be confirmed`,qty:String(qty),rate:'TBC',total:'TBC'});}

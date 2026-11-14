@@ -68,3 +68,24 @@ manual stock increment, booking status change or payment-history rewrite is
 required. Catalog labels refresh once per minute and read “Available now: X of Y”.
 The physical stock total stays unchanged. Future reservations still reserve their
 own time windows, even while equipment is available now.
+
+## Machine and attachment delivery
+
+Cranes, boom trucks and telehandlers are delivery-only. Checkout hides the pickup
+selector whenever one is present and resets any previously selected pickup value.
+The server also stores these bookings as delivery, regardless of a submitted
+pickup value. The single collection setting applies to the whole booking, so
+mixed bookings containing these machines are delivered.
+
+Attachments and catalog-listed add-ons travel with a booked lifting machine at no
+additional delivery fee. This includes rigging size options, which share their
+parent attachment's delivery policy. Each main machine/unit retains its own area
+fee and the existing weekly/monthly delivery waiver. Attachment rental prices,
+stock reservations and loyalty calculations are unchanged. Standalone attachments
+retain normal delivery/pickup pricing.
+
+The customer checkout and stored PDF estimate both explain included attachment
+delivery. Already issued PDFs remain immutable. Coverage includes cranes, boom
+trucks, telehandlers, multiple main machines, rigging options, standalone
+attachments, attempted pickup submissions, tools-only pickup and desktop/mobile
+checkout/PDF checks.
