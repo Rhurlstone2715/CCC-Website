@@ -302,3 +302,15 @@ model Estimate {
   createdAt DateTime @default(now())
   @@index([emailSentAt, nextEmailAttemptAt])
 }
+
+// Public brand artwork only; customer identities and rewards remain on their own models.
+model CompanyLogo {
+  key String @id
+  data Bytes?
+  sourceUrl String?
+  imageUrl String?
+  checkedAt DateTime @default(now())
+  nextAttemptAt DateTime @default(now())
+  manual Boolean @default(false)
+  lastError String?
+}

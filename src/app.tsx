@@ -1,3 +1,4 @@
+import { companyLogos } from "./company-logos.js";
 import { assertAvailability, AvailabilityError, lockInventory, inventoryNow } from "./availability.js";
 import { createBookingEstimate, deliverEstimateEmails, estimates } from "./estimates.js";
 import { paymentProofs } from "./payment-proofs.js";
@@ -105,6 +106,7 @@ app.get("/uploads/:id{[a-z0-9]+}", async c => {
   return c.body(new Uint8Array(upload.data));
 });
 
+app.route("/company-logos",companyLogos);
 app.route("/account/bookings", estimates);
 app.route("/account/bookings", paymentProofs);
 app.route("/account", account);

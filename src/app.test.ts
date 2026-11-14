@@ -135,7 +135,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   });
 
   beforeEach(async () => {
-    await prisma.$executeRawUnsafe('TRUNCATE "AccountEmail", "Booking", "Session", "PasswordReset", "EmailVerification", "User", "Company", "Product", "RiggingOption", "Upload" RESTART IDENTITY CASCADE');
+    await prisma.$executeRawUnsafe('TRUNCATE "CompanyLogo", "AccountEmail", "Booking", "Session", "PasswordReset", "EmailVerification", "User", "Company", "Product", "RiggingOption", "Upload" RESTART IDENTITY CASCADE');
     await ensureCatalogSeeded();
     globalThis.fetch = realFetch;
     delete process.env.RESEND_API_KEY;
@@ -296,6 +296,35 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
       body: "email=a%40b.co&password=xxxxxxxx",
     });
     assert.equal(crossSite.status, 403);
+  });
+
+  test("verified staff see their own company logo on the rewards badge without changing points",async()=>{
+    const cookie=await signup('kim@brand-example.ky');
+    const co=await prisma.company.create({data:{name:'Brand Example Ltd',nameKey:'brandexample',domain:'brand-example.ky',rewardCreditCents:500000}});
+    await prisma.user.update({where:{email:'kim@brand-example.ky'},data:{company:co.name,companyAccountId:co.id}});
+    await prisma.companyLogo.create({data:{key:`company:${co.id}`,data:new Uint8Array([1,2,3]),manual:true}});
+    const profile=await (await req('/account/profile',{cookie})).text();assert.match(profile,/Brand Example Ltd logo/);assert.match(profile,/company-rewards-brand/);assert.match(profile,/company%3A/);assert.equal((await prisma.company.findUniqueOrThrow({where:{id:co.id}})).rewardCreditCents,500000);
+    const other=await signup('staff@brand-example.ky');await prisma.user.update({where:{email:'staff@brand-example.ky'},data:{company:co.name,companyAccountId:co.id}});assert.match(await (await req('/account/profile',{cookie:other})).text(),/Brand Example Ltd logo/);
+    const outsider=await signup('wrong@other-domain.ky');await prisma.user.update({where:{email:'wrong@other-domain.ky'},data:{company:co.name,companyAccountId:co.id}});assert.doesNotMatch(await (await req('/account/profile',{cookie:outsider})).text(),/class="company-rewards-brand"/);
+    await prisma.user.update({where:{email:'kim@brand-example.ky'},data:{emailVerifiedAt:null}});assert.doesNotMatch(await (await req('/account/profile',{cookie})).text(),/class="company-rewards-brand"/);
+  });
+  test("missing logos show company initials and department logo overrides leave separate rewards unchanged",async()=>{
+    const cookie=await signup('kim@brand-example.ky');const co=await prisma.company.create({data:{name:'Brand Example',nameKey:'brandexample',domain:'brand-example.ky',poolSubcompanyRewards:false}});
+    const sub=await prisma.subCompany.create({data:{companyId:co.id,name:'Engineering Department',nameKey:'engineeringdepartment',group:'Departments',rewardCreditCents:80000}});
+    await prisma.user.update({where:{email:'kim@brand-example.ky'},data:{company:co.name,companyAccountId:co.id,subCompanyId:sub.id}});
+    let page=await (await req('/account/profile',{cookie})).text();assert.match(page,/company-rewards-initials/);assert.match(page,/Engineering Department/);assert.doesNotMatch(page,/Engineering Department logo/);
+    await prisma.companyLogo.create({data:{key:`subcompany:${sub.id}`,data:new Uint8Array([1,2,3]),manual:true}});
+    page=await (await req('/account/profile',{cookie})).text();assert.match(page,/Engineering Department logo/);assert.match(page,/subcompany%3A/);assert.equal((await prisma.subCompany.findUniqueOrThrow({where:{id:sub.id}})).rewardCreditCents,80000);
+  });
+  test("only admins can upload company logo artwork and uploads are rasterized before being served",async()=>{
+    const customer=await signup();const admin=await makeAdmin();const co=await prisma.company.create({data:{name:'Private Brand',nameKey:'privatebrand',ownerEmail:'owner@example.com'}});
+    const upload=async(cookie:string,data:string)=>{const form=new FormData();form.set('logo',new File([data],'logo.svg',{type:'image/svg+xml'}));return app.request(`/admin/companies/${co.id}/logo`,{method:'POST',headers:{cookie},body:form});};
+    const svg='<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100"><rect width="200" height="100" fill="red"/></svg>';
+    const denied=await upload(customer,svg);assert.equal(denied.status,302);assert.match(denied.headers.get('location')!,/not-admin/);assert.equal(await prisma.companyLogo.count(),0);
+    assert.match((await upload(admin,'not an image')).headers.get('location')!,/logo=invalid/);
+    assert.match((await upload(admin,svg)).headers.get('location')!,/logo=saved/);
+    const image=await req(`/company-logos/${encodeURIComponent(`company:${co.id}`)}`);assert.equal(image.status,200);assert.equal(image.headers.get('content-type'),'image/webp');const bytes=Buffer.from(await image.arrayBuffer());assert.equal(bytes.subarray(8,12).toString(),'WEBP');assert.doesNotMatch(bytes.toString(),/<svg/);
+    const logo=await prisma.companyLogo.findUniqueOrThrow({where:{key:`company:${co.id}`}});assert.equal(logo.manual,true);
   });
 
   test("unavailable boom trucks recommend the other truck only when the full requested window fits",async()=>{

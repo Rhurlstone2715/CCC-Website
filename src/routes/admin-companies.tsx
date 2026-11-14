@@ -1,3 +1,5 @@
+import { bodyLimit } from "hono/body-limit";
+import { normalizeCompanyLogo } from "../logo-discovery.js";
 import { Hono } from "hono";
 import { type AppEnv, currentUser, requireAdmin, EMAIL_PATTERN } from "../auth.js";
 import { companyAllowsEmail, companyEmailDomain, companyNameKey, subCompanyIssue } from "../companies.js";
@@ -10,6 +12,7 @@ adminCompanies.get("/", async c => {
   const companies = await prisma.company.findMany({ where: { archivedAt: null }, orderBy: { name: "asc" }, include: { subCompanies: { orderBy: [{ group: "asc" }, { name: "asc" }], include: { _count: { select: { users: true } } } }, _count: { select: { users: true } } } });
   return c.html(<AdminPage title="Company loyalty accounts" user={(await currentUser(c))!} pending={await pendingCount()} active="customers">
     <div class="page-head"><h1>Company loyalty accounts</h1><p class="lede">Work-domain companies can share staff rewards. Companies without a work domain are restricted to one registered email login.</p></div>
+    {c.req.query("logo") ? <p role="status">{c.req.query("logo")==="saved"?"Company logo saved. Verified staff will see it on their rewards badge.":"Choose a valid image no larger than 1 MB."}</p> : null}
     {c.req.query("updated") ? <p role="status">Company updated. Staff accounts were checked against its current email rule.{Number(c.req.query("detached")) > 0 ? ` ${Number(c.req.query("detached"))} account(s) no longer match and were unlinked. Customer logins and historical bookings are retained.` : ""}</p> : null}
     {c.req.query("saved") ? <p role="status">Company registered successfully. It is listed below and will be recommended to staff signing up with its work-email domain.</p> : null}
     {c.req.query("error") ? <p role="alert">{c.req.query("error") === "duplicate" ? "This company name or domain is already registered. Check the registered companies below." : "Enter a company name and valid work-email domain (for example @paragon.ky), or a valid registered login email for a single-email company."}</p> : null}
@@ -24,7 +27,8 @@ adminCompanies.get("/", async c => {
         <p class="hint">Changing the domain or email unlinks staff who no longer match. Their logins and historical bookings are retained.</p>
         <button class="button secondary" type="submit">Save company changes</button>
       </form>
-      {co.subCompanies.length ? <details class="company-sublist"><summary>{co.subCompanies.length} sub-companies · {co.poolSubcompanyRewards ? "Shared parent rewards" : "Separate loyalty points for each sub-company"}</summary>{co.subCompanies.map(sub => <section class="card" style="margin:12px 0 12px 16px"><p class="eyebrow">{sub.group}</p><h4>{sub.name}</h4><p>{sub.domain ? `@${co.domain} or @${sub.domain}` : `@${co.domain} (parent company domain)`} · {sub._count.users} staff account(s)</p><form class="form" method="post" action={`/admin/companies/${co.id}/sub-companies/${sub.id}/update`}><label for={`sub-name-${sub.id}`}>Sub-company name</label><input id={`sub-name-${sub.id}`} name="name" value={sub.name} required maxlength={120} /><label for={`sub-domain-${sub.id}`}>Additional work-email domain (optional)</label><input id={`sub-domain-${sub.id}`} name="domain" value={sub.domain ? `@${sub.domain}` : ""} maxlength={253} /><p class="hint">Leave blank to use the parent company’s work-email domain. Historical bookings and rewards stay with this sub-company.</p><button type="submit" class="button secondary">Save sub-company</button></form></section>)}</details> : null}
+      <form method="post" action={`/admin/companies/${co.id}/logo`} enctype="multipart/form-data" class="form"><label for={`company-logo-${co.id}`}>Rewards badge logo</label><input id={`company-logo-${co.id}`} name="logo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" required /><small class="hint">Official company logo, up to 1 MB. Overrides automatic website matching.</small><button class="button secondary" type="submit">Save company logo</button></form>
+      {co.subCompanies.length ? <details class="company-sublist"><summary>{co.subCompanies.length} sub-companies · {co.poolSubcompanyRewards ? "Shared parent rewards" : "Separate loyalty points for each sub-company"}</summary>{co.subCompanies.map(sub => <section class="card" style="margin:12px 0 12px 16px"><p class="eyebrow">{sub.group}</p><h4>{sub.name}</h4><p>{sub.domain ? `@${co.domain} or @${sub.domain}` : `@${co.domain} (parent company domain)`} · {sub._count.users} staff account(s)</p><form class="form" method="post" action={`/admin/companies/${co.id}/sub-companies/${sub.id}/update`}><label for={`sub-name-${sub.id}`}>Sub-company name</label><input id={`sub-name-${sub.id}`} name="name" value={sub.name} required maxlength={120} /><label for={`sub-domain-${sub.id}`}>Additional work-email domain (optional)</label><input id={`sub-domain-${sub.id}`} name="domain" value={sub.domain ? `@${sub.domain}` : ""} maxlength={253} /><p class="hint">Leave blank to use the parent company’s work-email domain. Historical bookings and rewards stay with this sub-company.</p><button type="submit" class="button secondary">Save sub-company</button></form><form method="post" action={`/admin/companies/${co.id}/sub-companies/${sub.id}/logo`} enctype="multipart/form-data" class="form"><label for={`sub-logo-${sub.id}`}>Department rewards badge logo</label><input id={`sub-logo-${sub.id}`} name="logo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" required /><button class="button secondary" type="submit">Save department logo</button></form></section>)}</details> : null}
     </article>) : <p>No active companies yet. A company is saved after its customer verifies their email.</p>}</section>
     <a href="/admin/customers">Back to customers</a>
   </AdminPage>);
@@ -83,4 +87,18 @@ adminCompanies.post("/:companyId{[0-9]+}/sub-companies/:id{[0-9]+}/update", asyn
    return detached;
   });return c.redirect(`/admin/companies?updated=1&detached=${detached}`);
  }catch(error){if((error as{code?:string}).code==="P2002")return c.redirect("/admin/companies?error=duplicate");throw error}
+});
+
+const logoLimit=bodyLimit({maxSize:1100000,onError:c=>c.redirect('/admin/companies?logo=invalid')});
+async function storeUploadedLogo(key:string,logo:unknown){
+ if(!(logo instanceof File)||logo.size===0||logo.size>1000000)return false;
+ try{const data=new Uint8Array(await normalizeCompanyLogo(Buffer.from(await logo.arrayBuffer())));const values={data,manual:true,sourceUrl:null,imageUrl:null,checkedAt:new Date(),nextAttemptAt:new Date('2099-01-01')};await prisma.companyLogo.upsert({where:{key},create:{key,...values},update:values});return true;}catch{return false;}
+}
+adminCompanies.post('/:id{[0-9]+}/logo',logoLimit,async c=>{
+ const id=Number(c.req.param('id'));if(!await prisma.company.findFirst({where:{id,archivedAt:null}}))return c.notFound();
+ const body=await c.req.parseBody();return c.redirect(`/admin/companies?logo=${await storeUploadedLogo(`company:${id}`,body.logo)?'saved':'invalid'}`);
+});
+adminCompanies.post('/:id{[0-9]+}/sub-companies/:subId{[0-9]+}/logo',logoLimit,async c=>{
+ const id=Number(c.req.param('id')),subId=Number(c.req.param('subId'));if(!await prisma.subCompany.findFirst({where:{id:subId,companyId:id,company:{archivedAt:null}}}))return c.notFound();
+ const body=await c.req.parseBody();return c.redirect(`/admin/companies?logo=${await storeUploadedLogo(`subcompany:${subId}`,body.logo)?'saved':'invalid'}`);
 });

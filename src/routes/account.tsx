@@ -1,3 +1,4 @@
+import { rewardsBrand, type RewardsBrand } from "../company-logos.js";
 import { estimateMetadata } from "../estimates.js";
 import { PaymentProofSection, paymentProofMetadata } from "../payment-proofs.js";
 import { Hono, type Context } from "hono";
@@ -303,8 +304,9 @@ account.post("/logout", async c => {
 
 // ---------- Profile ----------
 
-const RewardsCard: FC<{ rewards: Rewards }> = ({ rewards }) => (
+const RewardsCard: FC<{ rewards: Rewards; brand: RewardsBrand|null }> = ({ rewards,brand }) => (
   <section class="card rewards-card" aria-labelledby="rewards-title">
+    {brand ? <div class="company-rewards-brand"><span class="company-rewards-logo">{brand.logoUrl?<img src={brand.logoUrl} alt={`${brand.name} logo`} width="220" height="100" />:<span class="company-rewards-initials" aria-hidden="true">{brand.initials}</span>}</span><div><p class="company-rewards-name">{brand.name}</p>{brand.parentName?<small>{brand.parentName}</small>:null}<small>Company rewards membership</small></div></div>:null}
     <p class="eyebrow" id="rewards-title">
       Rewards tier
     </p>
@@ -353,9 +355,10 @@ type ProfileState = {
 };
 
 async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: ProfileState, status: 200 | 400 | 401 | 409 = 200) {
-  const [rewards, bookings] = await Promise.all([
+  const [rewards, bookings,brand] = await Promise.all([
     rewardsForUser(user.id),
     prisma.booking.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 50, include: { estimate: { select: estimateMetadata }, paymentProofs: { select: paymentProofMetadata, orderBy: { createdAt: "desc" } } } }),
+    rewardsBrand(user.id),
   ]);
   const notice = state.notice ? NOTICES[state.notice] : undefined;
   const membership = await prisma.user.findUnique({ where: { id: user.id }, select: { subCompanyId: true, subCompany: { select: { name: true } } } });
@@ -373,7 +376,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
       </section>
       <div class="grid-2">
         <div class="stack">
-          <>{companyId ? <p class="hint">Company loyalty: {user.company}{membership?.subCompany ? ` / ${membership.subCompany.name}` : ""}. {membership?.subCompany ? "Staff in your sub-company share its rewards. Points stay separate from other departments." : "Company rewards are linked to your verified login. Registered work-domain companies can share points across staff."}</p> : null}<RewardsCard rewards={rewards} /></>
+          <>{companyId ? <p class="hint">Company loyalty: {user.company}{membership?.subCompany ? ` / ${membership.subCompany.name}` : ""}. {membership?.subCompany ? "Staff in your sub-company share its rewards. Points stay separate from other departments." : "Company rewards are linked to your verified login. Registered work-domain companies can share points across staff."}</p> : null}<RewardsCard rewards={rewards} brand={brand} /></>
           <a class="button primary" href="/rentals#catalog">
             Browse equipment
           </a>
