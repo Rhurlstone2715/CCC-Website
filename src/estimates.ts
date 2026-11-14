@@ -81,13 +81,13 @@ export async function renderEstimatePdf(s:EstimateSnapshot,preview=false):Promis
  const client=[s.customerName,s.company,s.billingAddress,s.email,s.phone].filter(Boolean).join('\n');const clientLines=wrap(client,font,9,234);
  const intro=[`Booking ${s.bookingRef}`,`Requested rental: ${s.requestedStart}`,`Location: ${s.location}`,s.jobDetails?`Job details: ${s.jobDetails}`:''].filter(Boolean).join('\n');
  const rawRows:Row[]=[{item:'Booking',description:intro,qty:'',rate:'',total:''},...(clientLines.length>7?[{item:'Customer',description:client,qty:'',rate:'',total:''}]:[]),...s.rows];
- const pages:{lines:string[][];first:boolean}[][]=[[]];let used=0;
+ const pages:{lines:string[][];first:boolean}[][]=[[]];let used=0;const tableHeight=232;
  for(const row of rawRows){
   const cells=[row.item,row.description,row.qty,columnMoney(row.rate),columnMoney(row.total)].map((t,i)=>wrap(t,font,9,columns[i].w));let offset=0;const length=Math.max(...cells.map(c=>c.length));
   while(offset<length){
-   if(270-used<22){pages.push([]);used=0;}
-   const room=Math.floor((270-used-9)/11);const remaining=length-offset;
-   if(offset===0&&remaining*11+9<=270&&remaining>room){pages.push([]);used=0;continue;}
+   if(tableHeight-used<22){pages.push([]);used=0;}
+   const room=Math.floor((tableHeight-used-9)/11);const remaining=length-offset;
+   if(offset===0&&remaining*11+9<=tableHeight&&remaining>room){pages.push([]);used=0;continue;}
    const take=Math.min(remaining,Math.max(1,room));pages.at(-1)!.push({lines:cells.map(c=>c.slice(offset,offset+take)),first:offset===0});used+=take*11+9;offset+=take;
   }
  }
@@ -95,13 +95,13 @@ export async function renderEstimatePdf(s:EstimateSnapshot,preview=false):Promis
  for(let index=0;index<pages.length;index++){
   const [page]=await doc.copyPages(base,[0]);doc.addPage(page);
   const write=(text:string,x:number,top:number,size=9,strong=false)=>page.drawText(clean(text),{x,y:792-top-size,font:strong?bold:font,size,color:rgb(0,0,0)});
-  write(s.date,448,96,9);write(String(s.number),539.5-font.widthOfTextAtSize(String(s.number),9)/2,96,9);
+  const centered=(text:string,left:number,right:number,top:number,size=9)=>write(text,(left+right-font.widthOfTextAtSize(text,size))/2,top,size);
+  centered(s.date,441,504,96);write(String(s.number),539.5-font.widthOfTextAtSize(String(s.number),9)/2,96,9);
   for(const [i,line]of clientLines.slice(0,7).entries())write(line,61,213+i*10,9);
   if(clientLines.length>7)write('Full details continue in the item table.',61,284,7);
-  write(s.bookingRef,343,299,9);
-  const requestedBy=wrap(s.customerName,font,8,88);requestedBy.slice(0,2).forEach((line,i)=>write(line,484,294+i*9,8));
+  centered(s.bookingRef,337.55,481.55,299);
+  const requestedBy=wrap(s.customerName,font,8,88);requestedBy.slice(0,2).forEach((line,i)=>centered(line,481.55,576,299-(requestedBy.slice(0,2).length-1)*4.5+i*9,8));
   write(`Page ${index+1} of ${pages.length}`,485,122,8);
-  wrap('PROVISIONAL ESTIMATE\nSubject to availability and acceptance.\nRates and amounts shown in CI$.',font,8,232).forEach((line,i)=>write(line,338,211+i*11,8));
   let top=342;
   for(const row of pages[index]){
    for(let col=0;col<5;col++)for(const [n,line]of row.lines[col].entries()){
@@ -110,6 +110,7 @@ export async function renderEstimatePdf(s:EstimateSnapshot,preview=false):Promis
    const height=Math.max(...row.lines.map(c=>c.length))*11+9;top+=height;
    page.drawLine({start:{x:41,y:792-top+4},end:{x:575,y:792-top+4},thickness:.3,color:rgb(.8,.8,.8)});
   }
+  wrap('PROVISIONAL ESTIMATE\nSubject to availability and acceptance.\nRates and amounts shown in CI$.',font,8,207).forEach((line,i)=>write(line,125,580+i*11,8));
   write('TOTAL KYD $',399,638,11,true);write('TOTAL USD $',399,666,11,true);
   if(index===pages.length-1){
    for(const [cents,top]of [[s.totalCents,638],[s.totalCents===null?null:Math.round(s.totalCents/0.80),666]] as const){
