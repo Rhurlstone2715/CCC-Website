@@ -1,3 +1,4 @@
+import { startEstimateEmailDelivery } from "./estimates.js";
 import { serve } from "@hono/node-server";
 import { app } from "./app.js";
 import { ensureCatalogSeeded } from "./catalog.js";
@@ -8,6 +9,7 @@ import { prisma } from "./db.js";
 await ensureCatalogSeeded();
 const googleCalendarTimer = startGoogleCalendarSync();
 const accountEmailTimer = startAccountEmailDelivery();
+const estimateEmailTimer = startEstimateEmailDelivery();
 
 const port = Number(process.env.PORT) || 3000;
 const server = serve({ fetch: app.fetch, port }, info => console.log(`Listening on port ${info.port}`));
@@ -15,6 +17,7 @@ const server = serve({ fetch: app.fetch, port }, info => console.log(`Listening 
 function shutdown() {
   clearInterval(googleCalendarTimer);
   clearInterval(accountEmailTimer);
+  clearInterval(estimateEmailTimer);
   server.close(() => {
     prisma.$disconnect().finally(() => process.exit(0));
   });

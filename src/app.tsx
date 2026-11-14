@@ -1,3 +1,4 @@
+import { createBookingEstimate, deliverEstimateEmails, estimates } from "./estimates.js";
 import { paymentProofs } from "./payment-proofs.js";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
@@ -101,6 +102,7 @@ app.get("/uploads/:id{[a-z0-9]+}", async c => {
   return c.body(new Uint8Array(upload.data));
 });
 
+app.route("/account/bookings", estimates);
 app.route("/account/bookings", paymentProofs);
 app.route("/account", account);
 app.route("/admin/catalog", adminCatalog);
@@ -158,7 +160,8 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
   const fuelConditions = priced?.lines.filter(line => line.fuelType).map(line => `${line.name}: Return with a full tank of ${line.fuelType === "diesel" ? "diesel fuel" : "gasoline"}.`) ?? [];
   const membership = await verifiedCompanyMembership(user.id);
   const companyAccountId = membership?.companyAccountId ?? null;
-  const booking = await prisma.booking.create({
+  const { booking, estimate } = await prisma.$transaction(async tx => {
+  const booking = await tx.booking.create({
     data: {
       ...fields,
       termsText: fields.termsText + (fuelConditions.length ? `\n\nFUEL RETURN REQUIREMENTS\n${fuelConditions.join("\n")}` : ""),
@@ -171,6 +174,8 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
       rewardTier: rewards.tier,
       discountPercent,
       phone: details.phone,
+      billingAddress: details.billingAddress,
+      jobDetails: details.jobDetails,
       company: membership?.companyDisplayName ?? details.company,
       startDate: details.startDate,
       startTime: details.startTime,
@@ -180,7 +185,12 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
       estimateCents: priced?.estimateCents ?? null,
     },
   });
+  const estimate = await createBookingEstimate(tx, booking);
+  return { booking, estimate };
+  }, { timeout: 30_000, maxWait: 15_000 });
   const ref = bookingRef(booking.id);
+  const estimateInfo = { estimateNumber: estimate.number, estimateUrl: `/account/bookings/${booking.id}/estimate.pdf` };
+  await deliverEstimateEmails(estimate.number);
 
   // Accounts made before a phone number was required pick theirs up from checkout.
   const missing = !user.phone && details.phone ? { phone: details.phone } : {};
@@ -189,10 +199,10 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
   // The page only shows "booking sent" on a 2xx. If Cayman Crane can't be
   // alerted, answer 503 so the customer is offered the prepared email instead.
   if (!(await sendBookingAlert(booking, user))) {
-    return c.json({ saved: true, bookingId: ref, error: "Booking saved, but the alert email could not be sent." }, 503);
+    return c.json({ saved: true, bookingId: ref, ...estimateInfo, error: "Booking saved, but the alert email could not be sent." }, 503);
   }
   await prisma.booking.update({ where: { id: booking.id }, data: { alertSentAt: new Date() } });
-  return c.json({ ok: true, bookingId: ref }, 201);
+  return c.json({ ok: true, bookingId: ref, ...estimateInfo }, 201);
 });
 
 app.use("/*", serveStatic({ root: publicDir }));

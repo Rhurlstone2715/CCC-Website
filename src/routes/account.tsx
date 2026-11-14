@@ -1,3 +1,4 @@
+import { estimateMetadata } from "../estimates.js";
 import { PaymentProofSection, paymentProofMetadata } from "../payment-proofs.js";
 import { Hono, type Context } from "hono";
 import type { FC } from "hono/jsx";
@@ -354,7 +355,7 @@ type ProfileState = {
 async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: ProfileState, status: 200 | 400 | 401 | 409 = 200) {
   const [rewards, bookings] = await Promise.all([
     rewardsForUser(user.id),
-    prisma.booking.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 50, include: { paymentProofs: { select: paymentProofMetadata, orderBy: { createdAt: "desc" } } } }),
+    prisma.booking.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 50, include: { estimate: { select: estimateMetadata }, paymentProofs: { select: paymentProofMetadata, orderBy: { createdAt: "desc" } } } }),
   ]);
   const notice = state.notice ? NOTICES[state.notice] : undefined;
   const membership = await prisma.user.findUnique({ where: { id: user.id }, select: { subCompanyId: true, subCompany: { select: { name: true } } } });
@@ -399,6 +400,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
                       {b.amountPaidCents ? `Paid ${money(b.amountPaidCents)}` : null}
                     </p>
                   ) : null}
+                  {b.estimate ? <p class="booking-meta"><a class="text-link" href={`/account/bookings/${b.id}/estimate.pdf`}>Download estimate #{b.estimate.number} (PDF)</a></p> : null}
                   <details>
                     <summary>View request</summary>
                     <pre class="request">{b.requestText}</pre>

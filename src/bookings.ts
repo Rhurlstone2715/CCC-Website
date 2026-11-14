@@ -19,6 +19,8 @@ export type BookingInput = {
 // malformed is dropped rather than failing the booking.
 export type BookingDetails = {
   phone: string | null;
+  billingAddress: string | null;
+  jobDetails: string | null;
   company: string | null;
   startDate: Date | null;
   startTime: string | null;
@@ -61,6 +63,8 @@ export function parseDetails(value: unknown): BookingDetails {
     : [];
   return {
     phone: text(d.phone, 40),
+    billingAddress: text(d.billingAddress, 500),
+    jobDetails: text(d.jobDetails, 3000),
     company: text(d.company, 120),
     startDate: parseDate(d.startDate),
     startTime,

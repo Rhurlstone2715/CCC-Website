@@ -13,9 +13,9 @@ export function customerEmailsEnabled(): boolean {
   return Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
 }
 
-type Email = { to: string; subject: string; text: string; html?: string; idempotencyKey?: string; replyTo?: string };
+type Email = { attachments?: { filename: string; content: string }[]; to: string; subject: string; text: string; html?: string; idempotencyKey?: string; replyTo?: string };
 
-export async function sendEmail({ to, subject, text, html, idempotencyKey, replyTo }: Email): Promise<boolean> {
+export async function sendEmail({ to, subject, text, html, idempotencyKey, replyTo, attachments }: Email): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return false;
 
@@ -29,6 +29,7 @@ export async function sendEmail({ to, subject, text, html, idempotencyKey, reply
         reply_to: replyTo,
         subject: subject.replace(/[\r\n]+/g, " "),
         text,
+        ...(attachments ? { attachments } : {}),
         ...(html ? { html } : {}),
       }),
       signal: AbortSignal.timeout(10_000),

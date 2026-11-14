@@ -97,6 +97,7 @@ model EmailVerification {
 
 model Booking {
   paymentProofs PaymentProof[]
+  estimate Estimate?
   id              Int           @id @default(autoincrement())
   status          BookingStatus @default(PENDING)
   customerName    String
@@ -129,6 +130,8 @@ model Booking {
   area            String?
   rentalCollection  String?
   siteAddress     String?
+  billingAddress String?
+  jobDetails String?
   // Lines priced by the server from the catalog at booking time:
   // [{ id, name, term, qty, rate, amount, operator }] with rate/amount in CI$ (null = quoted manually).
   items           Json?
@@ -279,4 +282,23 @@ model PaymentProof {
   data Bytes
   createdAt DateTime @default(now())
   @@index([bookingId, createdAt])
+}
+
+model EstimateCounter {
+  id Int @id @default(1)
+  lastNumber Int @default(523)
+}
+model Estimate {
+  number Int @id
+  bookingId Int @unique
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  snapshot Json
+  totalCents Int?
+  pdf Bytes
+  emailRecipient String
+  emailSentAt DateTime?
+  emailAttempts Int @default(0)
+  nextEmailAttemptAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  @@index([emailSentAt, nextEmailAttemptAt])
 }

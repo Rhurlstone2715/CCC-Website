@@ -1,3 +1,4 @@
+import { estimateMetadata } from "../estimates.js";
 import { PaymentProofSection, paymentProofMetadata } from "../payment-proofs.js";
 import { Hono, type Context } from "hono";
 import type { FC } from "hono/jsx";
@@ -455,7 +456,7 @@ const BookingActions: FC<{ booking: Booking }> = ({ booking }) => {
 
 admin.get("/bookings/:id{[0-9]+}", async c => {
   const user = (await currentUser(c))!;
-  const booking = await prisma.booking.findUnique({ where: { id: Number(c.req.param("id")) }, include: { user: true, paymentProofs: { select: paymentProofMetadata, orderBy: { createdAt: "desc" } } } });
+  const booking = await prisma.booking.findUnique({ where: { id: Number(c.req.param("id")) }, include: { user: true, estimate: { select: estimateMetadata }, paymentProofs: { select: paymentProofMetadata, orderBy: { createdAt: "desc" } } } });
   if (!booking) return c.notFound();
   const [pending, matchingAccount] = await Promise.all([
     pendingCount(),
@@ -567,6 +568,7 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
               </form>
             ) : null}
           </section>
+          {booking.estimate ? <section class="card"><h2>Customer estimate #{booking.estimate.number}</h2><p>{booking.estimate.totalCents === null ? "Total awaits manual pricing confirmation." : `Estimated total including delivery: ${money(booking.estimate.totalCents)}`}</p><a class="button secondary small" href={`/account/bookings/${booking.id}/estimate.pdf`}>Download estimate PDF</a><p class="hint">{booking.estimate.emailSentAt ? `Emailed ${caymanDate(booking.estimate.emailSentAt)}.` : "Email copy queued. The PDF is available to download now."}</p></section> : null}
           <section class="card" id="payment-proofs">
             <h2>Proof of payment</h2>
             <PaymentProofSection bookingId={booking.id} proofs={booking.paymentProofs} />

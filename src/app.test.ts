@@ -2,6 +2,9 @@
 // Run with `npm test`; needs TEST_DATABASE_URL (see .env.example).
 // test-env must stay the first import: it points Prisma at the test database.
 import "./test-env.js";
+import { deliverEstimateEmails, renderEstimatePdf, estimateSnapshot, type EstimateSnapshot } from "./estimates.js";
+import { PDFDocument } from "pdf-lib";
+
 import assert from "node:assert/strict";
 import { execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -286,6 +289,64 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
       body: "email=a%40b.co&password=xxxxxxxx",
     });
     assert.equal(crossSite.status, 403);
+  });
+
+  test("checkout saves a numbered private PDF with customer details, delivery and the rounded discount", async () => {
+    const customer=await signup();await prisma.user.update({where:{email:"kim@example.com"},data:{rewardCreditCents:500000}});
+    await prisma.estimateCounter.upsert({where:{id:1},create:{id:1,lastNumber:523},update:{lastNumber:523}});
+    await prisma.product.update({where:{id:"rt40"},data:{rates:{daily:985}}});
+    const response=await req("/api/bookings",{cookie:customer,json:{...booking,customerEmail:"wrong@example.com",details:{billingAddress:"123 Customer Road, George Town",jobDetails:"Lift roof materials",phone:"345 555 0100",company:"Customer Company",startDate:"2030-05-15",startTime:"08:00",area:"7 Mile Beach",siteAddress:"50 Job Site Road",items:[{id:"rt40",term:"daily",qty:1}]}}});
+    const body=await response.json();assert.equal(body.estimateNumber,524);assert.equal(body.estimateUrl,"/account/bookings/1/estimate.pdf");
+    const estimate=await prisma.estimate.findUniqueOrThrow({where:{number:524}});const snapshot=estimate.snapshot as unknown as EstimateSnapshot;
+    assert.equal(estimate.emailRecipient,"kim@example.com");assert.equal(snapshot.discountCents,4900);assert.equal(snapshot.deliveryCents,20000);assert.equal(estimate.totalCents,113600);
+    assert.equal(snapshot.billingAddress,"123 Customer Road, George Town");assert.equal(snapshot.requestedStart,"15 May 2030 at 08:00 (Cayman time)");assert.equal(snapshot.location,"50 Job Site Road, 7 Mile Beach");assert.equal(snapshot.jobDetails,"Lift roof materials");
+    assert.equal(snapshot.date,estimate.createdAt.toLocaleDateString("en-GB",{timeZone:"America/Cayman",day:"numeric",month:"short",year:"numeric"}));
+    const pdf=await PDFDocument.load(estimate.pdf);assert.equal(pdf.getTitle(),"Cayman Crane Estimate 524");assert.ok(pdf.getPageCount()>=1);
+    const download=await req(body.estimateUrl,{cookie:customer});assert.equal(download.status,200);assert.equal(download.headers.get("content-type"),"application/pdf");assert.match(download.headers.get("cache-control")!,/private, no-store/);assert.deepEqual(Buffer.from(await download.arrayBuffer()),Buffer.from(estimate.pdf));
+    await prisma.product.update({where:{id:"rt40"},data:{rates:{daily:9999}}});assert.deepEqual(Buffer.from(await (await req(body.estimateUrl,{cookie:customer})).arrayBuffer()),Buffer.from(estimate.pdf));
+    const other=await signup("other@example.com");assert.equal((await req(body.estimateUrl,{cookie:other})).status,404);assert.equal((await req(body.estimateUrl)).status,302);
+    const admin=await makeAdmin();assert.equal((await req(body.estimateUrl,{cookie:admin})).status,200);
+    assert.match(await (await req("/account/profile",{cookie:customer})).text(),/Download estimate #524/);
+  });
+
+  test("concurrent checkouts allocate consecutive estimate numbers and never reuse deleted numbers", async () => {
+    const customer=await signup();await prisma.estimateCounter.upsert({where:{id:1},create:{id:1,lastNumber:523},update:{lastNumber:523}});
+    const responses=await Promise.all([req("/api/bookings",{cookie:customer,json:booking}),req("/api/bookings",{cookie:customer,json:booking})]);
+    const numbers=await Promise.all(responses.map(async r=>(await r.json()).estimateNumber));assert.deepEqual(numbers.sort(),[524,525]);
+    const first=await prisma.estimate.findUniqueOrThrow({where:{number:524}});await prisma.booking.delete({where:{id:first.bookingId}});
+    const next=await (await req("/api/bookings",{cookie:customer,json:booking})).json();assert.equal(next.estimateNumber,526);
+    assert.equal((await prisma.estimateCounter.findUniqueOrThrow({where:{id:1}})).lastNumber,526);
+  });
+
+  test("estimate email attaches the saved PDF and failed delivery retries without changing its number", async () => {
+    const customer=await signup();const response=await (await req("/api/bookings",{cookie:customer,json:booking})).json();
+    process.env.RESEND_API_KEY="re_test";process.env.EMAIL_FROM="Cayman Crane <bookings@example.com>";
+    const sent: {to:string[];subject:string;attachments:{filename:string;content:string}[]}[]=[];
+    globalThis.fetch=(async(_url:string,init:RequestInit)=>{sent.push(JSON.parse(String(init.body)));return new Response("unavailable",{status:503})}) as typeof fetch;
+    await deliverEstimateEmails(response.estimateNumber);
+    let estimate=await prisma.estimate.findUniqueOrThrow({where:{number:response.estimateNumber}});assert.equal(estimate.emailSentAt,null);assert.equal(estimate.emailAttempts,1);
+    await prisma.estimate.update({where:{number:estimate.number},data:{nextEmailAttemptAt:new Date(0)}});
+    globalThis.fetch=(async(_url:string,init:RequestInit)=>{sent.push(JSON.parse(String(init.body)));return new Response("{}",{status:200})}) as typeof fetch;
+    await deliverEstimateEmails(estimate.number);estimate=await prisma.estimate.findUniqueOrThrow({where:{number:estimate.number}});assert.ok(estimate.emailSentAt);assert.equal(estimate.emailAttempts,2);
+    assert.equal(sent.at(-1)!.to[0],"kim@example.com");assert.deepEqual(Buffer.from(sent.at(-1)!.attachments[0].content,"base64"),Buffer.from(estimate.pdf));assert.match(sent.at(-1)!.attachments[0].filename,new RegExp(String(estimate.number)));
+    await deliverEstimateEmails(estimate.number);assert.equal(sent.length,2);assert.equal(await prisma.estimate.count(),1);
+  });
+
+  test("estimate delivery handles per-item fees, pickup and waivers, and uncertain pricing stays unconfirmed", async () => {
+    const customer=await signup();
+    for(const [rentalCollection,term,expected] of [["delivery","daily",45000],["pickup","daily",15000],["delivery","weekly",0]] as const){
+      await req("/api/bookings",{cookie:customer,json:{...booking,details:{rentalCollection,area:"George Town",items:[{id:"rt40",term,qty:1},{id:"diesel-mixer-9-cu-ft",term,qty:2}]}}});
+      const estimate=await prisma.estimate.findFirstOrThrow({orderBy:{number:"desc"}});assert.equal((estimate.snapshot as unknown as EstimateSnapshot).deliveryCents,expected);
+    }
+    await req("/api/bookings",{cookie:customer,json:{...booking,details:{area:"George Town",items:[{id:"unknown-quote",term:"quote",qty:1}]}}});
+    const quote=await prisma.estimate.findFirstOrThrow({orderBy:{number:"desc"}});assert.equal(quote.totalCents,null);
+    const saved=await prisma.booking.findFirstOrThrow();await prisma.booking.update({where:{id:saved.id},data:{createdAt:new Date("2026-11-15T00:30:00Z")}});
+    const snapshot=await prisma.$transaction(tx=>estimateSnapshot(tx,{...saved,createdAt:new Date("2026-11-15T00:30:00Z")},999));assert.equal(snapshot.date,"14 Nov 2026");
+  });
+
+  test("long estimate descriptions flow to additional template pages", async () => {
+    const snapshot:EstimateSnapshot={number:524,bookingRef:"CCC-00001",date:"14 Nov 2026",customerName:"José Customer",company:"Example Company",billingAddress:"123 Example Road",email:"customer@example.com",phone:"345 555 0100",location:"George Town",requestedStart:"20 Nov 2026 at 08:00",jobDetails:"Roof lifting ".repeat(300),rows:Array.from({length:30},(_,i)=>({item:`Item ${i+1}`,description:`Equipment rental ${i+1} — Daily`,qty:"1",rate:"40",total:"40"})),discountCents:0,deliveryCents:0,pricedSubtotalCents:120000,totalCents:120000};
+    const bytes=await renderEstimatePdf(snapshot,true);const doc=await PDFDocument.load(bytes);assert.ok(doc.getPageCount()>1);assert.ok(doc.getPages().every(p=>p.getWidth()===612&&p.getHeight()===792));
   });
 
   async function uploadProof(id: number, cookie: string, file: File | null, origin?: string) {
@@ -617,7 +678,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
 
     const created = await req("/api/bookings", { json: booking, cookie: kim });
     assert.equal(created.status, 201);
-    assert.equal(sent[0].to[0], "caymancrane@gmail.com");
+    assert.equal(sent.find(m => m.subject.startsWith("Booking request "))!.to[0], "caymancrane@gmail.com");
 
     const admin = await makeAdmin();
     await req("/admin/bookings/1/schedule", { form: { scheduleStart: "2026-11-02", scheduleEnd: "2026-11-04" }, cookie: admin });
