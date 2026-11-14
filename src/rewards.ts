@@ -2,7 +2,7 @@ import { companyAllowsEmail, companyNameKey, subCompanyIssue } from "./companies
 import { prisma } from "./db.js";
 
 // Matches the tiers advertised in the rewards section of public/rentals.html.
-// One point per approved CI$1, so points are simply whole dollars spent.
+// One point per admin-confirmed KYD $1. Pending estimates never unlock tiers.
 import { TIERS } from "./loyalty-tiers.js";
 export { TIERS } from "./loyalty-tiers.js";
 
@@ -46,4 +46,19 @@ export async function spendForUser(userId: number): Promise<number> {
 
 export async function rewardsForUser(userId: number): Promise<Rewards> {
   return rewardsForSpend(await spendForUser(userId));
+}
+
+// Display-only estimate: never included in spendForUser or discount eligibility.
+export function pendingBookingPoints(booking: {status: string; estimate?: {totalCents: number | null} | null}): number | null {
+  if (!['PENDING', 'APPROVED'].includes(booking.status)) return 0;
+  return booking.estimate?.totalCents == null ? null : Math.floor(Math.max(0, booking.estimate.totalCents) / 100);
+}
+
+export async function pendingRewardsForUser(userId: number) {
+  const user = await prisma.user.findUnique({ where: {id: userId}, include: {companyAccount: {include: {subCompanies: true}}} });
+  if (!user) return {points: 0, unpricedCount: 0};
+  const companyId = user.emailVerifiedAt && user.companyAccount && companyAllowsEmail(user.companyAccount, user.email) && !subCompanyIssue(user.companyAccount, user.email, user.subCompanyId) && companyNameKey(user.company || '') === user.companyAccount.nameKey ? user.companyAccount.id : null;
+  const separate = companyId && user.companyAccount?.poolSubcompanyRewards === false && user.subCompanyId;
+  const bookings = await prisma.booking.findMany({where: {...(companyId ? {companyAccountId: companyId, ...(separate ? {subCompanyId: user.subCompanyId} : {})} : {userId, companyAccountId: null}), status: {in: ['PENDING', 'APPROVED']}}, select: {status: true, estimate: {select: {totalCents: true}}}});
+  return bookings.reduce((sum,b) => { const points=pendingBookingPoints(b); return {points: sum.points + (points ?? 0), unpricedCount: sum.unpricedCount + (points === null ? 1 : 0)}; }, {points: 0, unpricedCount: 0});
 }

@@ -19,7 +19,7 @@ import { buildCatalog, ensureCatalogSeeded, setProblem } from "./catalog.js";
 import { prisma } from "./db.js";
 import { deliverAccountEmails, queueWelcomeEmail } from "./account-emails.js";
 import { companyEmailDomain, syncCompanyMembership } from "./companies.js";
-import { rewardsForSpend } from "./rewards.js";
+import { pendingRewardsForUser, pendingBookingPoints, rewardsForUser, rewardsForSpend } from "./rewards.js";
 import { csvCell } from "./routes/admin.js";
 import { parseAmount } from "./views/admin-page.js";
 import { readFileSync } from "node:fs";
@@ -573,6 +573,45 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     await prisma.user.updateMany({where:{email:"kim@example.com"},data:{emailVerifiedAt:null}});
     assert.equal((await req(path,{cookie:owner})).status,403);
     assert.match((await uploadProof(saved.id,owner,receiptFile())).headers.get("location")!,/proof-confirm-email/);
+  });
+
+  test("pending rewards stay locked through proof upload and release only after admin payment confirmation", async () => {
+    const cookie=await signup(); const admin=await makeAdmin();
+    await req('/api/bookings',{cookie,json:booking});const b=await prisma.booking.findFirstOrThrow();
+    await prisma.estimate.update({where:{bookingId:b.id},data:{totalCents:600025}});
+    assert.deepEqual(await pendingRewardsForUser(b.userId!),{points:6000,unpricedCount:0});
+    assert.equal((await rewardsForUser(b.userId!)).tier,'Member');
+    let html=await (await req('/account/profile',{cookie})).text();assert.match(html,/6,000 pending points/);
+    await uploadProof(b.id,cookie,receiptFile());
+    assert.equal((await rewardsForUser(b.userId!)).points,0);assert.equal((await pendingRewardsForUser(b.userId!)).points,6000);
+    html=await (await req('/account/profile',{cookie})).text();assert.match(html,/Proof received — awaiting admin payment confirmation/);
+    await req(`/admin/bookings/${b.id}/approve`,{cookie:admin,form:{}});
+    await req(`/admin/bookings/${b.id}/paid`,{cookie:admin,form:{amount:'5500'}});
+    assert.equal((await pendingRewardsForUser(b.userId!)).points,0);
+    assert.equal((await rewardsForUser(b.userId!)).points,5500);assert.equal((await rewardsForUser(b.userId!)).tier,'Silver');
+    assert.equal(pendingBookingPoints({status:'CANCELLED',estimate:{totalCents:600025}}),0);
+    assert.equal(pendingBookingPoints({status:'APPROVED',estimate:{totalCents:null}}),null);
+  });
+
+  test("pending company points pool staff bookings but respect separate department rewards", async () => {
+    const a=await signup('a@pending.ky'),other=await signup('b@pending.ky');
+    const company=await prisma.company.create({data:{name:'Pending Company',nameKey:'pending',domain:'pending.ky',poolSubcompanyRewards:false}});
+    const sub=await prisma.subCompany.create({data:{companyId:company.id,name:'Works',nameKey:'works',group:'Departments'}});
+    const sub2=await prisma.subCompany.create({data:{companyId:company.id,name:'Other',nameKey:'other',group:'Departments'}});
+    await prisma.user.updateMany({where:{role:'CUSTOMER'},data:{company:company.name,companyAccountId:company.id,subCompanyId:sub.id}});
+    await req('/api/bookings',{cookie:a,json:{...booking,customerEmail:'a@pending.ky'}});
+    await req('/api/bookings',{cookie:other,json:{...booking,customerEmail:'b@pending.ky'}});
+    const users=await prisma.user.findMany({where:{role:'CUSTOMER'},orderBy:{id:'asc'}});
+    await prisma.estimate.updateMany({data:{totalCents:100000}});
+    assert.equal((await pendingRewardsForUser(users[0].id)).points,2000);
+    const second=await prisma.booking.findFirstOrThrow({where:{userId:users[1].id}});
+    await prisma.booking.update({where:{id:second.id},data:{subCompanyId:sub2.id}});
+    assert.equal((await pendingRewardsForUser(users[0].id)).points,1000);
+    await prisma.company.update({where:{id:company.id},data:{poolSubcompanyRewards:true}});
+    assert.equal((await pendingRewardsForUser(users[0].id)).points,2000);
+    await prisma.booking.update({where:{id:second.id},data:{status:'DECLINED'}});
+    assert.equal((await pendingRewardsForUser(users[0].id)).points,1000);
+    assert.equal((await rewardsForUser(users[0].id)).discountPercent,0);
   });
 
   test("payment proof uploads validate file bytes, enforce size and serialize the five-file limit", async () => {

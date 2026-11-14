@@ -10,7 +10,7 @@ import { verifiedCompanyId, syncCompanyMembership, validateCompany, verifiedComp
 import { prisma } from "../db.js";
 import { customerEmailsEnabled } from "../email.js";
 import type { Booking, BookingStatus, User } from "../generated/prisma/client.js";
-import { rewardsForUser } from "../rewards.js";
+import { pendingBookingPoints, rewardsForUser } from "../rewards.js";
 import { AdminPage, centsToInput, parseAmount, pendingCount } from "../views/admin-page.js";
 import { Field, Notice, STATUS_LABELS, StatusBadge, caymanDate, money } from "../views/layout.js";
 import { parseProfile, text } from "./account.js";
@@ -523,6 +523,8 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
               </dd>
               <dt>Account</dt>
               <dd>{booking.user ? <a href={`/admin/customers/${booking.user.id}`}>{booking.user.name}</a> : "Guest booking"}</dd>
+              <dt>Booking rewards</dt>
+              <dd>{['PENDING','APPROVED'].includes(booking.status) ? `${pendingBookingPoints(booking)?.toLocaleString('en-US') ?? 'To be confirmed'} pending points — ${booking.paymentProofs.length ? 'proof received; ' : ''}awaiting admin payment confirmation. Pending points do not unlock tiers.` : booking.status === 'PAID' ? `${Math.floor((booking.amountPaidCents ?? 0)/100).toLocaleString('en-US')} earned points — payment confirmed` : 'No points — booking inactive'}</dd>
               <dt>Tier at booking</dt>
               <dd>{booking.discountPercent ? `${booking.rewardTier}, ${booking.discountPercent}% off equipment` : booking.rewardTier ?? "None"}</dd>
               <dt>Alert email</dt>

@@ -33,7 +33,7 @@ import { customerEmailsEnabled, sendEmail } from "../email.js";
 import { clientIp, createLimiter } from "../ratelimit.js";
 import { queueSignupAlert, deliverAccountEmails } from "../account-emails.js";
 import { companyEmailDomain, validateCompany, syncCompanyMembership, verifiedCompanyId } from "../companies.js";
-import { TIERS, rewardsForUser, type Rewards } from "../rewards.js";
+import { TIERS, rewardsForUser, pendingRewardsForUser, pendingBookingPoints, type Rewards } from "../rewards.js";
 import { Field, Layout, Notice, PHONE_DISPLAY, PHONE_LINK, StatusBadge, WHATSAPP_LINK, caymanDate, money } from "../views/layout.js";
 
 export const account = new Hono<AppEnv>();
@@ -107,7 +107,7 @@ export function parseProfile(body: Record<string, unknown>): ProfileInput | { er
 }
 
 const NOTICES: Record<string, { tone: "success" | "info" | "error"; text: string }> = {
-  "proof-uploaded": { tone: "success", text: "Your proof of payment was uploaded. Cayman Crane will check it before confirming payment." },
+  "proof-uploaded": { tone: "success", text: "Your proof of payment was uploaded. Points remain pending until an admin checks and confirms payment." },
   "proof-invalid": { tone: "error", text: "Choose a JPEG, PNG, WebP image or PDF receipt to upload." },
   "proof-too-large": { tone: "error", text: "The receipt must be 5 MB or smaller. Choose a smaller file and try again." },
   "proof-limit": { tone: "error", text: "This booking already has 5 payment files. Contact Cayman Crane to send further documents." },
@@ -304,7 +304,7 @@ account.post("/logout", async c => {
 
 // ---------- Profile ----------
 
-const RewardsCard: FC<{ rewards: Rewards; brand: RewardsBrand|null }> = ({ rewards,brand }) => (
+const RewardsCard: FC<{ rewards: Rewards; brand: RewardsBrand|null; pending: {points:number;unpricedCount:number} }> = ({ rewards,brand,pending }) => (
   <section class="card rewards-card" aria-labelledby="rewards-title">
     {brand ? <div class="company-rewards-brand"><span class="company-rewards-logo">{brand.logoUrl?<img src={brand.logoUrl} alt={`${brand.name} logo`} width="220" height="100" />:<span class="company-rewards-initials" aria-hidden="true">{brand.initials}</span>}</span><div><p class="company-rewards-name">{brand.name}</p>{brand.parentName?<small>{brand.parentName}</small>:null}<small>Company rewards membership</small></div></div>:null}
     <p class="eyebrow" id="rewards-title">
@@ -317,13 +317,14 @@ const RewardsCard: FC<{ rewards: Rewards; brand: RewardsBrand|null }> = ({ rewar
     <div class="rewards-stats">
       <div>
         <b>{rewards.points.toLocaleString("en-US")}</b>
-        <small>points</small>
+        <small>earned points</small>
       </div>
       <div>
         <b>{money(rewards.spendCents)}</b>
         <small>paid rentals</small>
       </div>
     </div>
+    <p class="booking-meta"><b>{pending.points.toLocaleString("en-US")} pending points</b>{pending.unpricedCount ? ` · ${pending.unpricedCount} booking(s) awaiting a final estimate` : ""}<br/>Pending points do not unlock discount tiers. Payment or uploaded proof must be checked and confirmed by an admin first.</p>
     {rewards.nextTier ? (
       <>
         <div class="progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={rewards.progressPercent} aria-label={`Progress to ${rewards.nextTier}`}>
@@ -355,10 +356,11 @@ type ProfileState = {
 };
 
 async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: ProfileState, status: 200 | 400 | 401 | 409 = 200) {
-  const [rewards, bookings,brand] = await Promise.all([
+  const [rewards, bookings,brand,pendingRewards] = await Promise.all([
     rewardsForUser(user.id),
     prisma.booking.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 50, include: { estimate: { select: estimateMetadata }, paymentProofs: { select: paymentProofMetadata, orderBy: { createdAt: "desc" } } } }),
     rewardsBrand(user.id),
+    pendingRewardsForUser(user.id),
   ]);
   const notice = state.notice ? NOTICES[state.notice] : undefined;
   const membership = await prisma.user.findUnique({ where: { id: user.id }, select: { subCompanyId: true, subCompany: { select: { name: true } } } });
@@ -376,7 +378,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
       </section>
       <div class="grid-2">
         <div class="stack">
-          <>{companyId ? <p class="hint">Company loyalty: {user.company}{membership?.subCompany ? ` / ${membership.subCompany.name}` : ""}. {membership?.subCompany ? "Staff in your sub-company share its rewards. Points stay separate from other departments." : "Company rewards are linked to your verified login. Registered work-domain companies can share points across staff."}</p> : null}<RewardsCard rewards={rewards} brand={brand} /></>
+          <>{companyId ? <p class="hint">Company loyalty: {user.company}{membership?.subCompany ? ` / ${membership.subCompany.name}` : ""}. {membership?.subCompany ? "Staff in your sub-company share its rewards. Points stay separate from other departments." : "Company rewards are linked to your verified login. Registered work-domain companies can share points across staff."}</p> : null}<RewardsCard rewards={rewards} brand={brand} pending={pendingRewards} /></>
           <a class="button primary" href="/rentals#catalog">
             Browse equipment
           </a>
@@ -403,6 +405,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
                       {b.amountPaidCents ? `Paid ${money(b.amountPaidCents)}` : null}
                     </p>
                   ) : null}
+                  {['PENDING','APPROVED'].includes(b.status) ? <p class="booking-meta"><b>{pendingBookingPoints(b) === null ? 'Pending points: to be confirmed' : `${pendingBookingPoints(b)!.toLocaleString('en-US')} pending points`}</b><br/>{b.paymentProofs.length ? 'Proof received — awaiting admin payment confirmation.' : 'Awaiting payment or proof of payment and admin confirmation.'} Points unlock tiers only after payment is confirmed.</p> : b.status === 'PAID' ? <p class="booking-meta">Payment confirmed · {Math.floor((b.amountPaidCents ?? 0)/100).toLocaleString('en-US')} earned points</p> : null}
                   {b.estimate ? <p class="booking-meta"><a class="text-link" href={`/account/bookings/${b.id}/estimate.pdf`}>Download estimate #{b.estimate.number} (PDF)</a></p> : null}
                   <details>
                     <summary>View request</summary>
