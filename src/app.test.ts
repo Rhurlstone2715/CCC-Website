@@ -703,6 +703,17 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.ok(!body.includes("</"), "angle brackets are escaped");
   });
 
+  test("new bookings round the total equipment discount to whole dollars and keep earlier estimates unchanged", async () => {
+    const customer=await signup();await prisma.user.update({where:{email:"kim@example.com"},data:{rewardCreditCents:500000}});
+    await prisma.product.update({where:{id:"rt40"},data:{rates:{daily:985}}});
+    await req("/api/bookings",{cookie:customer,json:{...booking,details:{items:[{id:"rt40",term:"daily",qty:1}]}}});
+    const first=await prisma.booking.findFirstOrThrow();assert.equal(first.discountPercent,5);assert.equal(first.estimateCents,93600);
+    await prisma.product.update({where:{id:"rt40"},data:{rates:{daily:990}}});
+    await req("/api/bookings",{cookie:customer,json:{...booking,details:{items:[{id:"rt40",term:"daily",qty:1}]}}});
+    const second=await prisma.booking.findFirstOrThrow({orderBy:{id:"desc"}});assert.equal(second.estimateCents,94000);
+    assert.equal((await prisma.booking.findUniqueOrThrow({where:{id:first.id}})).estimateCents,93600);
+  });
+
   test("bookings are priced on the server, with the tier discount on equipment only", async () => {
     const customer = await signup();
     const admin = await makeAdmin();
@@ -718,7 +729,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const lines = saved.items as { id: string; amount: number | null; operator: boolean; name: string }[];
     assert.deepEqual(lines.map(l => l.amount), [580, 140, 50, null]);
     assert.equal(lines[2].name, "Lifting Beams — 10′ × 8″");
-    assert.equal(saved.estimateCents, Math.round((580 + 50) * 100 * 0.95) + 140 * 100);
+    assert.equal(saved.estimateCents, (580 + 50 - 32) * 100 + 140 * 100);
     assert.equal(saved.startDate?.toISOString().slice(0, 10), "2030-05-15");
     assert.equal(saved.area, "George Town");
     const page = await (await req(`/admin/bookings/${saved.id}`, { cookie: admin })).text();

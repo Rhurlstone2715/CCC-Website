@@ -189,7 +189,9 @@ export async function priceItems(items: CartItem[], discountPercent: number): Pr
     return { id: item.id, name, term: item.term, qty: item.qty, rate, amount, operator, ...(product?.fuelType && !/crane|boom.?truck/i.test(product.category) ? { fuelType: product.fuelType } : {}) };
   });
 
-  const estimateCents = anyPriced ? Math.round((equipmentCents * (100 - discountPercent)) / 100) + operatorCents : null;
+  // Round the combined equipment discount once to a whole CI dollar.
+  const discountCents = Math.round(equipmentCents * discountPercent / 10_000) * 100;
+  const estimateCents = anyPriced ? equipmentCents - discountCents + operatorCents : null;
   return { lines, estimateCents };
 }
 
