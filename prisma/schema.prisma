@@ -32,6 +32,7 @@ model User {
   passwordHash       String
   name               String
   phone              String?
+  billingAddress     String?
   company            String?
   companyAccountId   Int?
   companyAccount     Company? @relation(fields: [companyAccountId], references: [id], onDelete: SetNull)

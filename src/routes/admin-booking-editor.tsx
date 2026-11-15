@@ -20,7 +20,7 @@ const text=(v:unknown,max=3000)=>typeof v==='string'?v.trim().slice(0,max):'';
 const audit=(b:Booking)=>JSON.parse(JSON.stringify(b)) as Prisma.InputJsonValue;
 async function editor(c:Context<AppEnv>,booking:Booking|null,values:Record<string,unknown>={},error='',status:200|400|409|500=200){
  const [users,products,options,archives,revisions]=await Promise.all([
-  prisma.user.findMany({orderBy:{name:'asc'},select:{id:true,name:true,email:true,phone:true,company:true}}),
+  prisma.user.findMany({orderBy:{name:'asc'},select:{id:true,name:true,email:true,phone:true,billingAddress:true,company:true}}),
   prisma.product.findMany({orderBy:{sortOrder:'asc'}}),prisma.riggingOption.findMany(),
   booking?prisma.estimateArchive.findMany({where:{bookingId:booking.id},orderBy:{number:'desc'},select:{number:true,archivedAt:true}}):[],
   booking?prisma.bookingRevision.findMany({where:{bookingId:booking.id},orderBy:{createdAt:'desc'},take:15,select:{actorName:true,reason:true,createdAt:true}}):[]

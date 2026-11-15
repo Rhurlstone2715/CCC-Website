@@ -3,12 +3,12 @@ import { COMPANY_EMAIL, customerEmailsEnabled, sendEmail } from "./email.js";
 import { welcomeEmail } from "./welcome-email.js";
 import type { User } from "./generated/prisma/client.js";
 
-type Details = { name: string; email: string; phone?: string | null; company?: string | null; companyMode?: string | null; marketing?: boolean; createdAt?: string; baseUrl: string };
+type Details = { name: string; email: string; phone?: string | null; billingAddress?: string | null; company?: string | null; companyMode?: string | null; marketing?: boolean; createdAt?: string; baseUrl: string };
 export async function queueSignupAlert(user: User, baseUrl: string, client: Pick<typeof prisma, "accountEmail" | "subCompany"> = prisma) {
   const subCompany = user.subCompanyId ? await client.subCompany.findUnique({ where: { id: user.subCompanyId }, select: { name: true } }) : null;
   await client.accountEmail.upsert({ where: { key: `signup-${user.id}` }, update: {}, create: {
     key: `signup-${user.id}`, kind: "SIGNUP", userId: user.id, recipient: COMPANY_EMAIL,
-    payload: { name: user.name, email: user.email, phone: user.phone, company: user.company ? `${user.company}${subCompany ? ` / ${subCompany.name}` : ""}` : null, marketing: user.marketingOptIn, createdAt: user.createdAt.toISOString(), baseUrl },
+    payload: { name: user.name, email: user.email, phone: user.phone, billingAddress: user.billingAddress, company: user.company ? `${user.company}${subCompany ? ` / ${subCompany.name}` : ""}` : null, marketing: user.marketingOptIn, createdAt: user.createdAt.toISOString(), baseUrl },
   } });
 }
 export async function queueWelcomeEmail(userId: number, baseUrl: string) {
@@ -32,7 +32,7 @@ export async function deliverAccountEmails() {
         subject: `New customer signup — ${d.name}`,
         text: [
           "NEW CUSTOMER SIGNUP", "", `Customer ID: ${job.userId}`, `Name: ${d.name}`, `Email: ${d.email}`,
-          `Phone: ${d.phone || "Not provided"}`, `Company requested: ${d.company || "Individual account"}`,
+          `Phone: ${d.phone || "Not provided"}`, `Billing address: ${d.billingAddress || "Not provided"}`, `Company requested: ${d.company || "Individual account"}`,
           "Email verification: pending — the customer must confirm their own email.",
           `Marketing emails: ${d.marketing ? "Opted in" : "Not opted in"}`,
           `Registered: ${new Date(d.createdAt!).toLocaleString("en-US", { timeZone: "America/Cayman" })} (Cayman time)`,

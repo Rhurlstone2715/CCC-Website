@@ -156,7 +156,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     let body: string | undefined;
     if (opts.form) {
       headers["content-type"] = "application/x-www-form-urlencoded";
-      body = new URLSearchParams(opts.form).toString();
+      body = new URLSearchParams(path === '/account/signup' ? {billingAddress:'123 Test Road, Grand Cayman', ...opts.form} : opts.form).toString();
     } else if (opts.json !== undefined) {
       headers["content-type"] = "application/json";
       let payload=opts.json;
@@ -573,6 +573,30 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     await prisma.user.updateMany({where:{email:"kim@example.com"},data:{emailVerifiedAt:null}});
     assert.equal((await req(path,{cookie:owner})).status,403);
     assert.match((await uploadProof(saved.id,owner,receiptFile())).headers.get("location")!,/proof-confirm-email/);
+  });
+
+  test("registration saves billing details for prefilled checkout and profile edits update future estimates", async () => {
+    const missing=await req('/account/signup',{form:{name:'No Address',email:'missing@billing.ky',phone:'3455550100',password:'longenough1',billingAddress:''}});assert.equal(missing.status,400);assert.equal(await prisma.user.count(),0);
+    const cookie=await signup();let data=await (await req('/api/rewards',{cookie})).json();assert.equal(data.profile.billingAddress,'123 Test Road, Grand Cayman');
+    let html=await (await req('/account/profile',{cookie})).text();assert.match(html,/123 Test Road, Grand Cayman/);
+    await req('/account/profile',{cookie,form:{name:'Kim Ebanks',email:'kim@example.com',phone:'3455550100',company:'',billingAddress:'Suite 12, New Billing Road, Grand Cayman'}});
+    data=await (await req('/api/rewards',{cookie})).json();assert.equal(data.profile.billingAddress,'Suite 12, New Billing Road, Grand Cayman');
+    await req('/api/bookings',{cookie,json:booking});const saved=await prisma.booking.findFirstOrThrow();assert.equal(saved.billingAddress,'Suite 12, New Billing Road, Grand Cayman');
+    const estimate=await prisma.estimate.findUniqueOrThrow({where:{bookingId:saved.id}});assert.equal((estimate.snapshot as unknown as EstimateSnapshot).billingAddress,saved.billingAddress);
+  });
+
+  test("existing customer billing migration reuses only their latest booking and preserves saved addresses", async () => {
+    const cookie=await signup(),other=await signup('other@billing.ky');
+    await req('/api/bookings',{cookie,json:{...booking,details:{billingAddress:'Old address'}}});
+    await req('/api/bookings',{cookie,json:{...booking,details:{billingAddress:'Latest personal billing address'}}});
+    await prisma.user.update({where:{email:'kim@example.com'},data:{billingAddress:null}});
+    await prisma.$executeRawUnsafe(readFileSync('prisma/migrations/20261115021000_reuse_existing_customer_billing/migration.sql','utf8'));
+    assert.equal((await prisma.user.findUniqueOrThrow({where:{email:'kim@example.com'}})).billingAddress,'Latest personal billing address');
+    assert.equal((await prisma.user.findUniqueOrThrow({where:{email:'other@billing.ky'}})).billingAddress,'123 Test Road, Grand Cayman');
+  });
+
+  test("checkout has one agreement checkbox with estimate acknowledgement inside the terms", async () => {
+    const html=await (await req('/rentals')).text();assert.equal((html.match(/type="checkbox"/g)||[]).length,1);assert.match(html,/name="agreement" required/);assert.doesNotMatch(html,/name="payment_ack"/);assert.match(html,/By accepting these terms, I understand that the displayed total is an estimate/);
   });
 
   test("drawn checkout signatures are validated, saved privately and shown on admin agreements", async () => {

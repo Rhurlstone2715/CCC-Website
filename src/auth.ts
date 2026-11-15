@@ -12,6 +12,7 @@ export type SessionUser = {
   email: string;
   name: string;
   phone: string | null;
+  billingAddress?: string | null;
   company: string | null;
   role: Role;
   emailVerifiedAt: Date | null;
@@ -112,7 +113,7 @@ export async function currentUser(c: Context<AppEnv>): Promise<SessionUser | nul
   if (token) {
     const session = await prisma.session.findUnique({
       where: { id: hashToken(token) },
-      include: { user: { select: { id: true, email: true, name: true, phone: true, company: true, role: true, emailVerifiedAt: true, marketingOptIn: true } } },
+      include: { user: { select: { id: true, email: true, name: true, phone: true, billingAddress: true, company: true, role: true, emailVerifiedAt: true, marketingOptIn: true } } },
     });
     if (session && session.expiresAt.getTime() > Date.now()) {
       user = session.user;

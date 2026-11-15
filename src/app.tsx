@@ -138,7 +138,7 @@ app.get("/api/rewards", async c => {
       amountToNextCents: rewards.amountToNextCents,
       points: rewards.points,
     },
-    profile: { name: user.name, email: user.email, phone: user.phone, company: user.company, companyDisplayName: department?.subCompany ? `${user.company} / ${department.subCompany.name}` : user.company, emailConfirmed: !mustConfirmEmail(user) },
+    profile: { name: user.name, email: user.email, phone: user.phone, billingAddress: user.billingAddress, company: user.company, companyDisplayName: department?.subCompany ? `${user.company} / ${department.subCompany.name}` : user.company, emailConfirmed: !mustConfirmEmail(user) },
     admin: user.role === "ADMIN",
   });
 });
@@ -187,7 +187,7 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
       rewardTier: rewards.tier,
       discountPercent,
       phone: details.phone,
-      billingAddress: details.billingAddress,
+      billingAddress: details.billingAddress || user.billingAddress || null,
       jobDetails: details.jobDetails,
       company: membership?.companyDisplayName ?? details.company,
       startDate: details.startDate,
@@ -210,7 +210,7 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
   await deliverEstimateEmails(estimate.number);
 
   // Accounts made before a phone number was required pick theirs up from checkout.
-  const missing = !user.phone && details.phone ? { phone: details.phone } : {};
+  const missing = { ...(!user.phone && details.phone ? { phone: details.phone } : {}), ...(!user.billingAddress && details.billingAddress ? {billingAddress: details.billingAddress} : {}) };
   if (Object.keys(missing).length) await prisma.user.update({ where: { id: user.id }, data: missing });
 
   // The page only shows "booking sent" on a 2xx. If Cayman Crane can't be

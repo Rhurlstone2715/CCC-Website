@@ -88,19 +88,21 @@ export async function attemptLogin(c: Context<AppEnv>, emailInput: string, passw
   return { user };
 }
 
-type ProfileInput = { name: string; email: string; phone: string | null; company: string | null; subCompanyId: number | null };
+type ProfileInput = { name: string; email: string; phone: string | null; billingAddress?: string | null; company: string | null; subCompanyId: number | null };
 
 export function parseProfile(body: Record<string, unknown>): ProfileInput | { error: string; values: ProfileInput } {
   const values = {
     name: text(body.name),
     email: normalizeEmail(text(body.email)),
     phone: text(body.phone) || null,
+    ...(body.billingAddress !== undefined ? {billingAddress: text(body.billingAddress) || null} : {}),
     company: text(body.company) || null,
     subCompanyId: text(body.subCompanyId) ? Number(text(body.subCompanyId)) : null,
   };
   if (values.subCompanyId !== null && (!Number.isSafeInteger(values.subCompanyId) || values.subCompanyId < 1)) return { error: "Select a valid sub-company.", values };
   if (!values.name || values.name.length > 120) return { error: "Enter your name.", values };
   if (!EMAIL_PATTERN.test(values.email) || values.email.length > 254) return { error: "Enter a valid email address.", values };
+  if ((values.billingAddress?.length ?? 0) > 500) return { error: "Keep the billing address under 500 characters.", values };
   if ((values.phone?.length ?? 0) > 40) return { error: "That phone number is too long.", values };
   if ((values.company?.length ?? 0) > 120) return { error: "That company name is too long.", values };
   return values;
@@ -204,6 +206,7 @@ const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupE
           <Field label="Full name" name="name" value={signup?.name} required autocomplete="name" maxlength={120} />
           <Field label="Email" name="email" type="email" value={signup?.email} required autocomplete="email" maxlength={254} />
           <Field label="Phone" name="phone" type="tel" value={signup?.phone} required autocomplete="tel" maxlength={40} />
+          <Field label="Billing address" name="billingAddress" value={signup?.billingAddress} required autocomplete="billing street-address" maxlength={500} hint="Your personal or company billing address, saved for checkout and estimates." />
           <Field label="Company" name="company" value={signup?.company} autocomplete="organization" maxlength={120} hint="Use a matching work email for shared company rewards, or register a new company with this email as its only login. Email verification is required." />
           <input type="hidden" name="subCompanyId" value={signup?.subCompanyId ?? ""} /><script src="/company-signup.js" defer></script>
           <Field
@@ -273,6 +276,7 @@ account.post("/signup", async c => {
   if (signupByIp(clientIp(c))) return fail("Too many new accounts from this connection. Try again later.", { name: text(body.name), email: text(body.email) }, 429);
   if ("error" in profile) return fail(profile.error, profile.values);
   if (!profile.phone) return fail("Enter your phone number so we can reach you about bookings.", profile);
+  if (!profile.billingAddress) return fail("Enter your billing address for estimates and invoices.", profile);
   const problem = passwordProblem(password);
   if (problem) return fail(problem, profile);
   if (await prisma.user.findUnique({ where: { email: profile.email } })) {
@@ -437,6 +441,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
             <Field label="Full name" name="name" value={details.name} required autocomplete="name" maxlength={120} />
             <Field label="Email" name="email" type="email" value={details.email} required autocomplete="email" maxlength={254} />
             <Field label="Phone" name="phone" type="tel" value={details.phone} autocomplete="tel" maxlength={40} />
+            <Field label="Billing address" name="billingAddress" value={details.billingAddress} autocomplete="billing street-address" maxlength={500} hint="Saved for checkout and estimates." />
             <Field label="Company" name="company" value={details.company} autocomplete="organization" maxlength={120} hint="Select a matching work-domain company, or register a new company limited to this email login. Verify your email to activate rewards." />
             <input type="hidden" name="subCompanyId" value={details.subCompanyId ?? ""} /><script src="/company-signup.js" defer></script>
             <MarketingChoice checked={user.marketingOptIn} />

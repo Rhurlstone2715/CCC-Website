@@ -15,6 +15,6 @@
   if(initial.rate===undefined){const p=catalog.find(p=>p.id===item.value);rate.value=typeof p?.rates[term.value]==='number'?p.rates[term.value]:'';}update();
  }
  for(const item of data.items)addRow(item);if(!data.items.length)addRow();document.querySelector('#addAdminEquipment').onclick=()=>addRow();
- document.querySelector('#editorCustomer').onchange=event=>{const customer=data.users.find(u=>String(u.id)===event.target.value);if(!customer)return;for(const[name,value]of Object.entries({customerName:customer.name,customerEmail:customer.email,phone:customer.phone||'',company:customer.company||''}))form.elements.namedItem(name).value=value;};
+ document.querySelector('#editorCustomer').onchange=event=>{const customer=data.users.find(u=>String(u.id)===event.target.value);if(!customer)return;for(const[name,value]of Object.entries({customerName:customer.name,customerEmail:customer.email,phone:customer.phone||'',billingAddress:customer.billingAddress||'',company:customer.company||''}))form.elements.namedItem(name).value=value;};
  form.addEventListener('submit',event=>{recalc();if(!rows.children.length){event.preventDefault();alert('Add at least one equipment or service item.');}});
 })();
