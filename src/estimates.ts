@@ -79,7 +79,8 @@ function columnMoney(value:string):string{
  const numeric=Number(value.replace(/,/g,''));
  return value.trim()!==''&&Number.isFinite(numeric)?`${numeric<0?'-':''}$${currency(Math.round(Math.abs(numeric)*100))}`:value;
 }
-export async function renderEstimatePdf(s:EstimateSnapshot,preview=false):Promise<Uint8Array>{
+export type ReceiptRender = {number:string; amountPaidCents:number; paidDate:string};
+export async function renderEstimatePdf(s:EstimateSnapshot,preview=false,receipt?:ReceiptRender):Promise<Uint8Array>{
  const [template,regularBytes,boldBytes]=await files();const doc=await PDFDocument.create();doc.registerFontkit(fontkit);
  const font=await doc.embedFont(regularBytes,{subset:true}),bold=await doc.embedFont(boldBytes,{subset:true});
  const columns=[{x:45,w:70},{x:125,w:207},{x:342,w:68},{x:420,w:55},{x:485,w:84}];
@@ -101,7 +102,13 @@ export async function renderEstimatePdf(s:EstimateSnapshot,preview=false):Promis
   const [page]=await doc.copyPages(base,[0]);doc.addPage(page);
   const write=(text:string,x:number,top:number,size=9,strong=false)=>page.drawText(clean(text),{x,y:792-top-size,font:strong?bold:font,size,color:rgb(0,0,0)});
   const centered=(text:string,left:number,right:number,top:number,size=9)=>write(text,(left+right-font.widthOfTextAtSize(text,size))/2,top,size);
-  centered(s.date,441,504,96);write(String(s.number),539.5-font.widthOfTextAtSize(String(s.number),9)/2,96,9);
+  if(receipt){
+   page.drawRectangle({x:400,y:723,width:178,height:38,color:rgb(1,1,1)});
+   write('PAYMENT RECEIPT',423,41,16,true);
+   page.drawRectangle({x:510,y:706,width:60,height:16,color:rgb(1,1,1)});centered('Receipt #',510,570,74);
+   page.drawRectangle({x:68,y:141,width:288,height:30,color:rgb(1,1,1)});write('Thank you for your payment.',90,626,9);
+  }
+  centered(receipt?.paidDate??s.date,441,504,96);const documentNumber=receipt?.number??String(s.number);const documentSize=documentNumber.length>9?7:9;write(documentNumber,539.5-font.widthOfTextAtSize(documentNumber,documentSize)/2,96,documentSize);
   for(const [i,line]of clientLines.slice(0,7).entries())write(line,61,213+i*10,9);
   if(clientLines.length>7)write('Full details continue in the item table.',61,284,7);
   centered(s.bookingRef,337.55,481.55,299);
@@ -115,17 +122,19 @@ export async function renderEstimatePdf(s:EstimateSnapshot,preview=false):Promis
    const height=Math.max(...row.lines.map(c=>c.length))*11+9;top+=height;
    page.drawLine({start:{x:41,y:792-top+4},end:{x:575,y:792-top+4},thickness:.3,color:rgb(.8,.8,.8)});
   }
-  wrap('PROVISIONAL ESTIMATE\nSubject to availability and acceptance.',font,8,207).forEach((line,i)=>centered(line,120.6,337.55,591+i*11,8));
-  write('TOTAL KYD $',399,638,11,true);write('TOTAL USD $',399,666,11,true);
+  const balance=s.totalCents===null?null:s.totalCents-(receipt?.amountPaidCents??0);
+  const footer=receipt?`${balance===0?'PAID IN FULL':'PAYMENT CONFIRMED'}\nEstimate #${s.number} · ${receipt.paidDate}\n${balance===null?'Booking total awaits confirmation.':balance<0?`Credit KYD $${currency(-balance)}`:`Remaining balance KYD $${currency(balance)}`}`:'PROVISIONAL ESTIMATE\nSubject to availability and acceptance.';
+  wrap(footer,font,8,207).forEach((line,i)=>centered(line,120.6,337.55,(receipt?580:591)+i*10,8));
+  write(receipt?'PAID KYD $':'TOTAL KYD $',399,638,11,true);write(receipt?'PAID USD $':'TOTAL USD $',399,666,11,true);
   if(index===pages.length-1){
-   for(const [cents,top]of [[s.totalCents,638],[s.totalCents===null?null:Math.round(s.totalCents/0.80),666]] as const){
+   for(const [cents,top]of [[receipt?.amountPaidCents??s.totalCents,638],[receipt?Math.round(receipt.amountPaidCents/0.80):s.totalCents===null?null:Math.round(s.totalCents/0.80),666]] as const){
     const text=cents===null?'TBC':currency(cents);const size=Math.min(12,75/bold.widthOfTextAtSize(text,1));
     write(text,569-bold.widthOfTextAtSize(text,size),top,size,true);
    }
   }else {write('Continued',516,638,9);write('Continued',516,666,9);}
-  if(preview)write('SAMPLE ONLY — NOT A CUSTOMER ESTIMATE',317,150,8,true);
+  if(preview)write(receipt?'SAMPLE ONLY — NOT A CUSTOMER RECEIPT':'SAMPLE ONLY — NOT A CUSTOMER ESTIMATE',317,150,8,true);
  }
- doc.setTitle(`Cayman Crane Estimate ${s.number}`);doc.setSubject(`Booking ${s.bookingRef}`);doc.setAuthor('Cayman Crane Company');return doc.save();
+ doc.setTitle(receipt?`Cayman Crane Receipt ${receipt.number}`:`Cayman Crane Estimate ${s.number}`);doc.setSubject(`Booking ${s.bookingRef}`);doc.setAuthor('Cayman Crane Company');return doc.save();
 }
 export async function createBookingEstimate(tx:Prisma.TransactionClient,b:Booking,revisionOf?:number){
  const counter=await tx.estimateCounter.upsert({where:{id:1},create:{id:1,lastNumber:524},update:{lastNumber:{increment:1}}});
@@ -150,4 +159,10 @@ estimates.get('/:id{[0-9]+}/estimate.pdf',async c=>{
  const user=(await currentUser(c))!;if(mustConfirmEmail(user))return c.text('Confirm your email before downloading your estimate.',403);
  const estimate=await prisma.estimate.findFirst({where:{bookingId:Number(c.req.param('id')),...(user.role==='ADMIN'?{}:{booking:{userId:user.id}})}});if(!estimate)return c.notFound();
  c.header('Content-Type','application/pdf');c.header('Content-Disposition',`attachment; filename="Cayman-Crane-Estimate-${estimate.number}.pdf"`);c.header('Cache-Control','private, no-store');c.header('X-Content-Type-Options','nosniff');return c.body(new Uint8Array(estimate.pdf));
+});
+
+estimates.get('/:id{[0-9]+}/receipt.pdf',async c=>{
+ const user=(await currentUser(c))!;if(mustConfirmEmail(user))return c.text('Confirm your email before downloading your receipt.',403);
+ const receipt=await prisma.paymentReceipt.findFirst({where:{bookingId:Number(c.req.param('id')),supersededAt:null,booking:{status:'PAID',...(user.role==='ADMIN'?{}:{userId:user.id})}},orderBy:{id:'desc'}});if(!receipt)return c.notFound();
+ c.header('Content-Type','application/pdf');c.header('Content-Disposition',`attachment; filename="Cayman-Crane-Paid-Receipt-R-${receipt.id}.pdf"`);c.header('Cache-Control','private, no-store');c.header('X-Content-Type-Options','nosniff');return c.body(new Uint8Array(receipt.pdf));
 });

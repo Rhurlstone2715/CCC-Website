@@ -1,3 +1,4 @@
+import {queuePaidReceipt,deliverReceiptEmails} from '../receipts.js';
 import {Hono,type Context} from 'hono';
 import {raw} from 'hono/html';
 import {bodyLimit} from 'hono/body-limit';
@@ -88,11 +89,12 @@ async function save(c:Context<AppEnv>,existing:Booking|null){
    const old=await tx.estimate.findUnique({where:{bookingId:b.id}});
    if(old){await tx.estimateArchive.create({data:{number:old.number,bookingId:b.id,snapshot:old.snapshot as Prisma.InputJsonValue,totalCents:old.totalCents,pdf:old.pdf,emailRecipient:old.emailRecipient,originalCreatedAt:old.createdAt}});await tx.estimate.delete({where:{number:old.number}});}
    const estimate=await createBookingEstimate(tx,b,old?.number);
+   if(b.status==='PAID')await queuePaidReceipt(tx,b);
    await tx.bookingRevision.create({data:{bookingId:b.id,actorId:actor.id,actorName:actor.name,reason:existing?reason:'Created by administrator',before:existing?audit(existing):{},after:audit(b)}});
    if(!existing)await queueAdminBookingNotices(tx,b.id);
    return {b,estimate};
   },{timeout:30000,maxWait:15000});
-  void deliverAdminPushNotifications();await deliverEstimateEmails(result.estimate.number);
+  void deliverAdminPushNotifications();await deliverEstimateEmails(result.estimate.number);await deliverReceiptEmails();
   return c.redirect(`/admin/bookings/${result.b.id}?notice=${existing?'booking-edited':'booking-created'}`);
  }catch(error){if(error instanceof AvailabilityError)return fail(error.message,error.status===409?409:400);if(error instanceof Error&&error.message==='changed')return fail('Another admin changed this booking. Reload it before editing.',409);console.error('Admin booking change failed; the original booking was retained.');return fail('The booking could not be saved. Please try again.',500);}
 }

@@ -6,6 +6,8 @@ import * as webPush from "web-push";
 import { deliverAdminPushNotifications } from "./admin-push.js";
 import { inventoryNow } from "./availability.js";
 import { deliverEstimateEmails, renderEstimatePdf, estimateSnapshot, type EstimateSnapshot } from "./estimates.js";
+import {deliverReceiptEmails} from "./receipts.js";
+import {brandedEmailHtml} from "./email.js";
 import { PDFDocument } from "pdf-lib";
 
 import assert from "node:assert/strict";
@@ -573,6 +575,32 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     await prisma.user.updateMany({where:{email:"kim@example.com"},data:{emailVerifiedAt:null}});
     assert.equal((await req(path,{cookie:owner})).status,403);
     assert.match((await uploadProof(saved.id,owner,receiptFile())).headers.get("location")!,/proof-confirm-email/);
+  });
+
+  test("admin payment confirmation creates one immutable PDF receipt, emails it with hook branding and restricts downloads", async () => {
+    const cookie=await signup(),other=await signup('other@receipt.ky'),admin=await makeAdmin();
+    await req('/api/bookings',{cookie,json:{...booking,details:{startDate:'2032-04-01',startTime:'08:00',area:'George Town',siteAddress:'Receipt job',items:[{id:'rt40',term:'hourly',qty:4}]}}});
+    const b=await prisma.booking.findFirstOrThrow();await uploadProof(b.id,cookie,receiptFile());assert.equal(await prisma.paymentReceipt.count(),0);
+    const calls:{headers:Record<string,string>;body:any}[]=[];process.env.RESEND_API_KEY='test-key';process.env.EMAIL_FROM='CCC <bookings@caymancrane.com>';
+    globalThis.fetch=async(_url,init)=>{calls.push({headers:init!.headers as Record<string,string>,body:JSON.parse(String(init!.body))});return new Response('{}',{status:200});};
+    await req(`/admin/bookings/${b.id}/approve`,{cookie:admin,form:{}});assert.equal(await prisma.paymentReceipt.count(),0);
+    await req(`/admin/bookings/${b.id}/paid`,{cookie:admin,form:{amount:'730'}});
+    const receipt=await prisma.paymentReceipt.findFirstOrThrow();assert.equal(receipt.amountPaidCents,73000);assert.ok(receipt.emailSentAt);assert.ok(receipt.pdf.length>1000);
+    const sent=calls.filter(c=>c.body.subject.startsWith('Paid receipt'));assert.equal(sent.length,1);assert.match(sent[0].body.html,/ccc-icon-192.png/);assert.match(sent[0].body.text,/confirmed your payment/);assert.equal(sent[0].body.to[0],'kim@example.com');assert.deepEqual(Buffer.from(sent[0].body.attachments[0].content,'base64'),Buffer.from(receipt.pdf));assert.match((await PDFDocument.load(receipt.pdf)).getTitle()!,/Receipt R-/);
+    await req(`/admin/bookings/${b.id}/paid`,{cookie:admin,form:{amount:'730'}});assert.equal(await prisma.paymentReceipt.count(),1);assert.equal(calls.filter(c=>c.body.subject.startsWith('Paid receipt')).length,1);
+    const url=`/account/bookings/${b.id}/receipt.pdf`;const own=await req(url,{cookie});assert.equal(own.status,200);assert.match(own.headers.get('cache-control')!,/no-store/);assert.equal((await req(url,{cookie:other})).status,404);assert.equal((await req(url,{cookie:admin})).status,200);assert.equal((await req(url)).status,302);
+    await req(`/admin/bookings/${b.id}/paid`,{cookie:admin,form:{amount:'100'}});await req(`/admin/bookings/${b.id}/paid`,{cookie:admin,form:{amount:'730'}});assert.equal(await prisma.paymentReceipt.count(),3);assert.equal(await prisma.paymentReceipt.count({where:{supersededAt:null}}),1);
+    await req(`/admin/bookings/${b.id}/reopen`,{cookie:admin,form:{}});assert.equal((await req(url,{cookie})).status,404);
+  });
+
+  test("failed paid receipt delivery retries the same PDF with one idempotency key and correct partial balance", async () => {
+    const cookie=await signup(),admin=await makeAdmin();await req('/api/bookings',{cookie,json:booking});const b=await prisma.booking.findFirstOrThrow();await prisma.estimate.update({where:{bookingId:b.id},data:{snapshot:{...(await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}})).snapshot as object,totalCents:80000}}});
+    await req(`/admin/bookings/${b.id}/approve`,{cookie:admin,form:{}});
+    process.env.RESEND_API_KEY='test-key';process.env.EMAIL_FROM='CCC <bookings@caymancrane.com>';const calls:any[]=[];
+    globalThis.fetch=async(_url,init)=>{calls.push({headers:init!.headers,body:JSON.parse(String(init!.body))});return new Response('{}',{status:calls.length===1?503:200});};
+    await req(`/admin/bookings/${b.id}/paid`,{cookie:admin,form:{amount:'100'}});let receipt=await prisma.paymentReceipt.findFirstOrThrow();assert.equal(receipt.emailSentAt,null);assert.equal(receipt.emailAttempts,1);assert.match(calls[0].body.text,/Remaining balance: KYD \$700.00/);assert.doesNotMatch(calls[0].body.text,/Paid in full/);
+    await prisma.paymentReceipt.update({where:{id:receipt.id},data:{nextEmailAttemptAt:new Date(0)}});await deliverReceiptEmails();receipt=await prisma.paymentReceipt.findFirstOrThrow();assert.ok(receipt.emailSentAt);assert.equal(calls.length,2);assert.deepEqual(calls[0],calls[1]);await deliverReceiptEmails();assert.equal(calls.length,2);
+    const html=brandedEmailHtml('<script>unsafe</script> https://www.caymancrane.com/account');assert.doesNotMatch(html,/<script>/);assert.match(html,/href="https:\/\/www.caymancrane.com\/account"/);assert.match(html,/hook logo/);
   });
 
   test("registration saves billing details for prefilled checkout and profile edits update future estimates", async () => {

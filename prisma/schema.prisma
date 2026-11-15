@@ -99,6 +99,7 @@ model EmailVerification {
 }
 
 model Booking {
+  paymentReceipts PaymentReceipt[]
   adminEditedAt DateTime?
   revisions BookingRevision[]
   estimateArchives EstimateArchive[]
@@ -380,5 +381,24 @@ model EstimateArchive {
  emailRecipient String
  originalCreatedAt DateTime
  archivedAt DateTime @default(now())
+ @@index([bookingId])
+}
+
+model PaymentReceipt {
+ id Int @id @default(autoincrement())
+ bookingId Int
+ booking Booking @relation(fields:[bookingId],references:[id],onDelete:Cascade)
+ key String @unique
+ amountPaidCents Int
+ paidAt DateTime
+ snapshot Json
+ pdf Bytes
+ emailRecipient String
+ emailSentAt DateTime?
+ emailAttempts Int @default(0)
+ nextEmailAttemptAt DateTime @default(now())
+ supersededAt DateTime?
+ createdAt DateTime @default(now())
+ @@index([emailSentAt,nextEmailAttemptAt])
  @@index([bookingId])
 }

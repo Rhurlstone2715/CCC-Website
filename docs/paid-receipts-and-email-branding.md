@@ -1,0 +1,11 @@
+# Paid receipts and email branding
+
+Admin payment confirmation saves an immutable receipt PDF in the same database transaction as the confirmed amount. Receipts have independent R-000001 numbering and preserve the current estimate's item descriptions, fonts, discount, delivery, booking reference, customer/billing details, and KYD/USD conversion at KYD / 0.80. The document is labelled PAYMENT RECEIPT, with paid totals and the admin confirmation date. It says PAID IN FULL only when the confirmed amount equals the complete estimate total; partial payments show the remaining balance, excess payments show credit, and unknown booking totals remain unconfirmed. No transfer reference or payment method is invented.
+
+Each confirmation state queues one receipt; repeating the same paid action does not send another. Correcting an amount or editing a paid booking creates a new receipt and supersedes the previous one. Original bytes remain recorded. Reopening an unpaid booking suppresses queued receipts and removes its current customer download. A retry worker sends the stored PDF with a stable provider idempotency key and backs off after failures. The worker starts on service boot. No retrospective bulk emails are sent to old paid bookings; reconfirming their payment creates a receipt when needed.
+
+Customers can download their current paid receipt from their own booking history; admins can download from the booking detail. These routes require login/verification, enforce ownership, and disable caching. A company colleague cannot access another staff member's receipt.
+
+Outgoing email HTML receives a signature/footer using the approved hook PNG, company name, website and phone. Existing HTML email bodies are retained; plain-text emails gain an escaped HTML counterpart with clickable website URLs. Plain-text content and PDF attachments remain available. The footer image is public branding, not customer data. Inbox sender avatars are controlled by mail providers separately from this email signature.
+
+Samples at `/previews/paid-receipt-sample.pdf` and `/previews/paid-receipt-email.html` contain fictional details and are clearly marked SAMPLE. They do not consume a real estimate or receipt number.

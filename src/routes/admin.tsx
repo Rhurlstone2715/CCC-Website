@@ -1,3 +1,4 @@
+import {queuePaidReceipt,deliverReceiptEmails} from '../receipts.js';
 import { assertAvailability, AvailabilityError, lockInventory } from "../availability.js";
 import { estimateMetadata } from "../estimates.js";
 import { PaymentProofSection, paymentProofMetadata } from "../payment-proofs.js";
@@ -28,7 +29,7 @@ const NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string
   "contract-failed": { tone: "error", text: "The contract email didn't send. Try again, or send it from your own inbox." },
   declined: { tone: "success", text: "Booking declined." },
   cancelled: { tone: "success", text: "Booking cancelled." },
-  paid: { tone: "success", text: "Payment recorded. The customer's rewards are updated." },
+  paid: { tone: "success", text: "Payment recorded. Rewards are updated and the PDF receipt is queued for email." },
   reopened: { tone: "success", text: "Booking reopened." },
   unpaid: { tone: "success", text: "Payment removed. The booking is back to approved." },
   "note-saved": { tone: "success", text: "Note saved." },
@@ -461,7 +462,7 @@ const BookingActions: FC<{ booking: Booking }> = ({ booking }) => {
 
 admin.get("/bookings/:id{[0-9]+}", async c => {
   const user = (await currentUser(c))!;
-  const booking = await prisma.booking.findUnique({ where: { id: Number(c.req.param("id")) }, include: { user: true, estimate: { select: estimateMetadata }, paymentProofs: { select: paymentProofMetadata, orderBy: { createdAt: "desc" } } } });
+  const booking = await prisma.booking.findUnique({ where: { id: Number(c.req.param("id")) }, include: { user: true, paymentReceipts:{where:{supersededAt:null},select:{id:true},take:1}, estimate: { select: estimateMetadata }, paymentProofs: { select: paymentProofMetadata, orderBy: { createdAt: "desc" } } } });
   if (!booking) return c.notFound();
   const [pending, matchingAccount] = await Promise.all([
     pendingCount(),
@@ -575,6 +576,7 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
               </form>
             ) : null}
           </section>
+          {booking.status==='PAID'&&booking.paymentReceipts.length?<p><a class="button secondary" href={`/account/bookings/${booking.id}/receipt.pdf`}>Download paid receipt PDF</a></p>:null}
           {booking.estimate ? <section class="card"><h2>Customer estimate #{booking.estimate.number}</h2><p>{booking.estimate.totalCents === null ? "Total awaits manual pricing confirmation." : `Estimated total including delivery: ${money(booking.estimate.totalCents)}`}</p><a class="button secondary small" href={`/account/bookings/${booking.id}/estimate.pdf`}>Download estimate PDF</a><p class="hint">{booking.estimate.emailSentAt ? `Emailed ${caymanDate(booking.estimate.emailSentAt)}.` : "Email copy queued. The PDF is available to download now."}</p></section> : null}
           <section class="card" id="payment-proofs">
             <h2>Proof of payment</h2>
@@ -629,10 +631,14 @@ admin.post("/bookings/:id{[0-9]+}/:action", async c => {
   const body = await c.req.parseBody();
   const update = (data: Parameters<typeof prisma.booking.update>[0]["data"]) => prisma.$transaction(async tx=>{
     await lockInventory(tx);
+    const current=await tx.booking.findUniqueOrThrow({where:{id}});
+    if(data.status==='PAID'&&current.status==='PAID')data={...data,paidAt:current.paidAt??data.paidAt};
     const changed=await tx.booking.update({where:{id},data});
     if(['PENDING','APPROVED','PAID'].includes(changed.status)&&('status' in data||'scheduleStart' in data||'scheduleEnd' in data))await assertAvailability(tx,Array.isArray(changed.items)?changed.items as unknown as PricedLine[]:[],changed,id);
+    if(changed.status==='PAID'&&('status' in data||'amountPaidCents' in data))await queuePaidReceipt(tx,changed);
+    if(changed.status!=='PAID')await tx.paymentReceipt.updateMany({where:{bookingId:id,supersededAt:null,emailSentAt:null},data:{supersededAt:new Date()}});
     return changed;
-  });
+  },{timeout:30000,maxWait:15000});
 
   try { switch (action) {
     case "approve": {
@@ -664,6 +670,7 @@ admin.post("/bookings/:id{[0-9]+}/:action", async c => {
       const cents = parseAmount(body.amount);
       if (cents === null) return back("bad-amount");
       await update({ status: "PAID", amountPaidCents: cents, paidAt: booking.paidAt ?? new Date() });
+      await deliverReceiptEmails();
       return back("paid");
     }
     case "reopen":

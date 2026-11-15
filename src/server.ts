@@ -1,3 +1,4 @@
+import {startReceiptEmailDelivery} from './receipts.js';
 import { startAdminPushDelivery } from "./admin-push.js";
 import { startCompanyLogoRefresh } from "./company-logos.js";
 import { startEstimateEmailDelivery } from "./estimates.js";
@@ -12,6 +13,7 @@ await ensureCatalogSeeded();
 const googleCalendarTimer = startGoogleCalendarSync();
 const accountEmailTimer = startAccountEmailDelivery();
 const estimateEmailTimer = startEstimateEmailDelivery();
+const receiptEmailTimer=startReceiptEmailDelivery();
 const companyLogoTimer=startCompanyLogoRefresh();
 const adminPushTimer=startAdminPushDelivery();
 
@@ -22,6 +24,7 @@ function shutdown() {
   clearInterval(googleCalendarTimer);
   clearInterval(accountEmailTimer);
   clearInterval(estimateEmailTimer);
+  clearInterval(receiptEmailTimer);
   clearInterval(companyLogoTimer);
   clearInterval(adminPushTimer);
   server.close(() => {
