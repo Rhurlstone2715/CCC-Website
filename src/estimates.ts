@@ -1,4 +1,4 @@
-import { bundledAccessory, LIFTING_CATEGORIES } from "./delivery-policy.js";
+import { bundledAccessory, LIFTING_CATEGORIES, DURATION_RENTAL_IDS, COLLECTION_RENTAL_IDS } from "./delivery-policy.js";
 import { readFile } from 'node:fs/promises';
 import { Hono } from 'hono';
 import { PDFDocument, rgb, type PDFFont } from 'pdf-lib';
@@ -28,7 +28,10 @@ export async function estimateSnapshot(tx:Prisma.TransactionClient,b:Booking,num
  let deliveryCents:number|null=0;const deliveryRows:Row[]=[];
  for(const line of lines){
   const p=byId.get(line.id);if(!p?.delivery||p.operatorService||p.setPart)continue;
-  if(['plumwall','scaffold'].includes(line.id))continue;
+  if(DURATION_RENTAL_IDS.includes(line.id)){
+   if(!COLLECTION_RENTAL_IDS.includes(line.id)&&bundledAccessory(p,machines))deliveryRows.push({item:'Delivery',description:`${line.name} — included with equipment delivery (no additional delivery fee)`,qty:'',rate:'',total:'0.00'});
+   continue;
+  }
   const portable=['Tools','Power Generation','Attachments','Construction Plant / Equipment','Ground Protection'].includes(p.category);
   if(bundledAccessory(p,machines)){deliveryRows.push({item:'Delivery',description:`${line.name} — included with equipment delivery (no additional delivery fee)`,qty:'',rate:'',total:'0.00'});continue;}
   if(portable&&collection==='pickup')continue;
@@ -37,11 +40,14 @@ export async function estimateSnapshot(tx:Prisma.TransactionClient,b:Booking,num
   if(rate===undefined){deliveryCents=null;deliveryRows.push({item:'Delivery',description:`${line.name} — location / charge to be confirmed`,qty:String(qty),rate:'TBC',total:'TBC'});}
   else{if(deliveryCents!==null)deliveryCents+=rate*qty*100;deliveryRows.push({item:'Delivery',description:`${line.name} — ${b.area}`,qty:String(qty),rate:currency(rate*100),total:currency(rate*qty*100)});}
  }
- if(collection!=='pickup'&&lines.some(l=>['plumwall','scaffold'].includes(l.id)&&byId.get(l.id)?.delivery)){
+ const siteRentals=lines.filter(l=>{const p=byId.get(l.id);return p?.delivery&&DURATION_RENTAL_IDS.includes(l.id)&&(COLLECTION_RENTAL_IDS.includes(l.id)||!bundledAccessory(p,machines));});
+ if(collection!=='pickup'&&siteRentals.length){
   const rate=b.area?DELIVERY_FEES[b.area]:undefined;
-  for(const kind of ['Delivery','Collection']){
-   if(rate===undefined){deliveryCents=null;deliveryRows.push({item:kind,description:`ICF bracing / scaffolding order — ${kind.toLowerCase()} charge to be confirmed`,qty:'1',rate:'TBC',total:'TBC'});}
-   else{if(deliveryCents!==null)deliveryCents+=rate*100;deliveryRows.push({item:kind,description:`ICF bracing / scaffolding order — ${b.area}; charged once for all units`,qty:'1',rate:currency(rate*100),total:currency(rate*100)});}
+  const trips=siteRentals.some(l=>COLLECTION_RENTAL_IDS.includes(l.id))?['Delivery','Collection']:['Delivery'];
+  for(const kind of trips){
+   const label=kind==='Collection'?'ICF bracing / scaffolding order':'Bracing, scaffolding, shores and mats order';
+   if(rate===undefined){deliveryCents=null;deliveryRows.push({item:kind,description:`${label} — ${kind.toLowerCase()} charge to be confirmed`,qty:'1',rate:'TBC',total:'TBC'});}
+   else{if(deliveryCents!==null)deliveryCents+=rate*100;deliveryRows.push({item:kind,description:`${label} — ${b.area}; charged once for all units`,qty:'1',rate:currency(rate*100),total:currency(rate*100)});}
   }
  }
  const equipment=lines.filter(l=>!l.operator).reduce((sum,l)=>sum+Math.round((l.amount||0)*100),0);

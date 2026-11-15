@@ -1,3 +1,4 @@
+import {DURATION_RENTAL_IDS} from './delivery-policy.js';
 import { rentalHours } from "./availability.js";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { prisma } from "./db.js";
@@ -61,7 +62,7 @@ export function bookingGoogleEvent(b: Booking, baseUrl: string) {
   const last = b.scheduleStart ? (b.scheduleEnd ?? start) : start;
   const end = new Date(Math.max(start.getTime(), last.getTime()) + 86400000);
   const items = Array.isArray(b.items) ? b.items as unknown as PricedLine[] : [];
-  const exact=(Boolean(b.adminEditedAt)||items.some(i=>['plumwall','scaffold'].includes(i.id)))&&!b.scheduleStart&&Boolean(b.startTime);
+  const exact=(Boolean(b.adminEditedAt)||items.some(i=>DURATION_RENTAL_IDS.includes(i.id)))&&!b.scheduleStart&&Boolean(b.startTime);
   const exactStart=exact?new Date(`${date(start)}T${b.startTime}:00-05:00`):null;
   const hours=items.filter(i=>!i.operator).map(i=>rentalHours(i.term,i.qty)*(i.periods??1));
   const exactEnd=exactStart?new Date(exactStart.getTime()+Math.max(1,...(hours.length?hours:[24]))*3600000):null;

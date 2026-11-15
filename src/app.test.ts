@@ -577,6 +577,22 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.match((await uploadProof(saved.id,owner,receiptFile())).headers.get("location")!,/proof-confirm-email/);
   });
 
+  test("post shores, mats and Ellis braces use quantity times duration with one delivery and no pickup fee", async () => {
+    const cookie=await signup();await req('/api/bookings',{cookie,json:{...booking,details:{startDate:'2033-11-01',startTime:'08:00',area:'West Bay',siteAddress:'Grouped rental site',rentalCollection:'delivery',items:[{id:'props',term:'weekly',qty:100,periods:3},{id:'mats',term:'daily',qty:20,periods:4},{id:'ellis',term:'daily',qty:50,periods:7}]}}});
+    const b=await prisma.booking.findFirstOrThrow();assert.deepEqual((b.items as any[]).map(l=>[l.qty,l.periods,l.amount]),[[100,3,600],[20,4,400],[50,7,350]]);
+    const e=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}}),snapshot=e.snapshot as unknown as EstimateSnapshot;assert.equal(snapshot.deliveryCents,25000);assert.equal(e.totalCents,160000);assert.equal(snapshot.rows.filter(r=>r.item==='Delivery').length,1);assert.equal(snapshot.rows.filter(r=>r.item==='Collection').length,0);
+    const payload=(startDate:string,qty:number)=>({...booking,details:{startDate,startTime:'08:00',rentalCollection:'pickup',items:[{id:'mats',term:'daily',qty,periods:1}]}});
+    assert.equal((await req('/api/bookings',{cookie,json:payload('2033-11-04',41)})).status,409);
+    await req('/api/bookings',{cookie,json:payload('2033-11-05',60)});assert.equal(await prisma.booking.count(),2);
+  });
+
+  test("fifty Ellis braces incur only one delivery and combining all five rentals adds only the existing ICF collection fee", async () => {
+    const cookie=await signup();await req('/api/bookings',{cookie,json:{...booking,details:{startDate:'2034-01-01',startTime:'08:00',area:'George Town',siteAddress:'Wall braces',rentalCollection:'delivery',items:[{id:'ellis',term:'daily',qty:50,periods:2}]}}});
+    const e=await prisma.estimate.findFirstOrThrow();assert.equal(e.totalCents,25000);assert.equal((e.snapshot as unknown as EstimateSnapshot).deliveryCents,15000);
+    await req('/api/bookings',{cookie,json:{...booking,details:{startDate:'2034-02-01',startTime:'08:00',area:'7 Mile Beach',siteAddress:'All grouped items',rentalCollection:'delivery',items:['props','mats','ellis','plumwall','scaffold'].map(id=>({id,term:['props','scaffold'].includes(id)?'weekly':'daily',qty:10,periods:2}))}}});
+    const last=await prisma.estimate.findFirstOrThrow({orderBy:{number:'desc'}});const snapshot=last.snapshot as unknown as EstimateSnapshot;assert.equal(snapshot.deliveryCents,40000);assert.equal(snapshot.rows.filter(r=>r.item==='Delivery').length,1);assert.equal(snapshot.rows.filter(r=>r.item==='Collection').length,1);
+  });
+
   test("ICF customer quantity and days price separately, reserve units for the full duration and charge one transport pair", async () => {
     const cookie=await signup();const payload=(qty:number,periods:number,startDate='2033-06-01')=>({...booking,details:{startDate,startTime:'08:00',area:'George Town',siteAddress:'ICF job',rentalCollection:'delivery',items:[{id:'plumwall',term:'daily',qty,periods}]}});
     await req('/api/bookings',{cookie,json:payload(75,7)});const b=await prisma.booking.findFirstOrThrow();const line=(b.items as any[])[0];assert.equal(line.qty,75);assert.equal(line.periods,7);assert.equal(line.rate,2);assert.equal(line.amount,1050);

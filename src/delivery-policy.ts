@@ -4,3 +4,6 @@ export function bundledAccessory(product:DeliveryProduct,machines:DeliveryProduc
  if(LIFTING_CATEGORIES.includes(product.category))return false;
  return (product.category==='Attachments'&&machines.length>0)||machines.some(machine=>machine.addOns.includes(product.id));
 }
+
+export const DURATION_RENTAL_IDS=['plumwall','scaffold','props','mats','ellis'];
+export const COLLECTION_RENTAL_IDS=['plumwall','scaffold'];

@@ -8,7 +8,7 @@ const catalog = JSON.parse(readFileSync(new URL('../prisma/catalog-seed.json', i
 function checkout(cart, area = 'George Town', collection = 'delivery') {
   const context = { cart, products: catalog, $: selector => ({ value: selector === '#rentalCollection' ? collection : area }), money: n => `CI$${n}` };
   const declarations = source.split('\n').filter(line =>
-    /^const deliveryFees=|^function (collectableRental|hasCollectableRentals|rentalCollection|deliveryAvailable|groupedSiteRental|firstSiteRental|bundledAccessoryDelivery|hasLiftingService|deliveryEligible|deliveryQuantity|itemDeliveryEstimate|deliveryEstimate|deliveryLine)\(/.test(line));
+    /^const deliveryFees=|^function (collectableRental|hasCollectableRentals|rentalCollection|deliveryAvailable|groupedSiteRental|siteRentalPickup|chargeableSiteRental|firstSiteRental|bundledAccessoryDelivery|hasLiftingService|deliveryEligible|deliveryQuantity|itemDeliveryEstimate|deliveryEstimate|deliveryLine)\(/.test(line));
   return runInNewContext(`${declarations.join('\n')}\n({ total: deliveryEstimate(), lines: cart.map(deliveryLine) })`, context);
 }
 const line = (id, qty = 1, term = 'daily') => ({ id, qty, term });
@@ -89,9 +89,17 @@ test('pickup cannot remove machine delivery charges or mixed-booking delivery fe
 });
 
 test('ICF and scaffold share one delivery and one collection charge regardless of units, term or lines',()=>{
- const result=checkout([line('plumwall',75),line('scaffold',40,'weekly'),line('plumwall',25)],'7 Mile Beach');assert.equal(result.total,400);assert.match(result.lines[0],/delivery CI\$200 \+ collection CI\$200/);
+ const result=checkout([line('plumwall',75),line('scaffold',40,'weekly'),line('plumwall',25)],'7 Mile Beach');assert.equal(result.total,400);assert.match(result.lines[0],/delivery CI\$200 \+ ICF \/ scaffolding collection CI\$200/);
  assert.equal(checkout([line('scaffold',100,'monthly')],'George Town').total,300);
  assert.equal(checkout([line('plumwall',75)],'','delivery').total,null);
  assert.equal(checkout([line('plumwall',75),line('scaffold',40,'weekly')],'','pickup').total,0);
  assert.equal(checkout([line('plumwall',75),line('rt40')],'George Town').total,450);
+});
+
+test('post shores, mats and Ellis braces have one shared delivery and no collection surcharge',()=>{
+ assert.equal(checkout([line('ellis',50)],'George Town').total,150);
+ assert.equal(checkout([line('props',100,'weekly'),line('mats',20),line('ellis',50)],'West Bay').total,250);
+ assert.equal(checkout([line('mats',30,'monthly')],'7 Mile Beach').total,200);
+ assert.equal(checkout([line('props',100,'weekly'),line('ellis',50),line('plumwall',75)],'West Bay').total,500);
+ assert.equal(checkout([line('props',100,'weekly'),line('mats',20)],'','pickup').total,0);
 });

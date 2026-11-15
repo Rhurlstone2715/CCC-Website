@@ -1,3 +1,4 @@
+import {DURATION_RENTAL_IDS} from './delivery-policy.js';
 import type { CartItem } from "./catalog.js";
 import { COMPANY_EMAIL, sendEmail } from "./email.js";
 import type { Booking, User } from "./generated/prisma/client.js";
@@ -59,7 +60,7 @@ export function parseDetails(value: unknown): BookingDetails {
           const id = typeof item.id === "string" && item.id.length <= 80 ? item.id : null;
           const term = typeof item.term === "string" && TERM_PATTERN.test(item.term) ? item.term : null;
           const qty = typeof item.qty === "number" && Number.isInteger(item.qty) && item.qty > 0 && item.qty <= 10_000 ? item.qty : null;
-          return id && term && qty ? [{ id, term, qty, ...(['plumwall','scaffold'].includes(id)&&typeof item.periods==='number'&&item.periods>1?{periods:item.periods}:{}) }] : [];
+          return id && term && qty ? [{ id, term, qty, ...(DURATION_RENTAL_IDS.includes(id)&&typeof item.periods==='number'&&item.periods>1?{periods:item.periods}:{}) }] : [];
         })
     : [];
   return {
@@ -99,8 +100,8 @@ export function parseBooking(body: unknown): BookingInput | { error: string } {
 
   const durationItems=b.details&&typeof b.details==='object'?(b.details as Record<string,unknown>).items:null;
   if(Array.isArray(durationItems))for(const value of durationItems){
-    const item=value as Record<string,unknown>|null;if(!item||!['plumwall','scaffold'].includes(String(item.id)))continue;
-    if(!Number.isInteger(item.qty)||Number(item.qty)<1||Number(item.qty)>10000)return {error:'Enter a whole-number quantity of at least 1 for ICF bracing and scaffolding.'};
+    const item=value as Record<string,unknown>|null;if(!item||!DURATION_RENTAL_IDS.includes(String(item.id)))continue;
+    if(!Number.isInteger(item.qty)||Number(item.qty)<1||Number(item.qty)>10000)return {error:'Enter a whole-number quantity of at least 1 for braces, scaffolding, post shores and mats.'};
     if(item.periods===undefined)continue;
     const max=({daily:366,weekly:52,monthly:12} as Record<string,number>)[String(item.term)];
     if(!max||!Number.isInteger(item.periods)||Number(item.periods)<1||Number(item.periods)>max)return {error:'Enter a whole-number rental duration of at least 1, up to 366 days, 52 weeks or 12 months.'};
