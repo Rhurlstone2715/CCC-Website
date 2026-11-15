@@ -67,3 +67,4 @@
 .fuel-return-note b{font-size:.8rem}.fuel-policy{margin-top:22px;padding:18px;background:#fff7df;border-radius:8px}.fuel-policy p{margin:6px 0 0}
 #fuelReturnItems{padding-left:20px}#fuelReturnItems li{margin:8px 0;line-height:1.5}
 [hidden]{display:none!important}
+.signature-pad canvas{display:block;width:100%;height:auto;aspect-ratio:10/3;background:#fff;border:2px solid #777;border-radius:8px;touch-action:none;cursor:crosshair}.signature-pad canvas:focus{outline:3px solid #b00008;outline-offset:3px}.signature-pad p{margin:8px 0}.signature-pad button{margin-top:10px}

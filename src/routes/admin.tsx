@@ -4,7 +4,7 @@ import { PaymentProofSection, paymentProofMetadata } from "../payment-proofs.js"
 import { Hono, type Context } from "hono";
 import type { FC } from "hono/jsx";
 import { type AppEnv, currentUser, marketingChange, newToken, publicUrl, requireAdmin, safeNext } from "../auth.js";
-import { bookingRef, contractSubject, contractText, parseDate, sendContract } from "../bookings.js";
+import { validateSignatureDrawing, bookingRef, contractSubject, contractText, parseDate, sendContract } from "../bookings.js";
 import { TERM_LABELS, type PricedLine } from "../catalog.js";
 import { verifiedCompanyId, syncCompanyMembership, validateCompany, verifiedCompanyMembership } from "../companies.js";
 import { prisma } from "../db.js";
@@ -498,8 +498,7 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
             <dl class="facts mt-3">
               <dt>Signed by</dt>
               <dd>{booking.signature}</dd>
-              <dt>Initials</dt>
-              <dd>{booking.initials}</dd>
+              {booking.signatureDrawing && validateSignatureDrawing(booking.signatureDrawing) ? <><dt>Handwritten signature</dt><dd><svg viewBox="0 0 1000 300" role="img" aria-label={`Signature of ${booking.signature}`} style="display:block;width:100%;max-width:500px;background:white;border:1px solid #aaa">{(JSON.parse(booking.signatureDrawing) as number[][][]).map(stroke=><polyline points={stroke.map(p=>p.join(',')).join(' ')} fill="none" stroke="#161616" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />)}</svg></dd></> : <><dt>Initials</dt><dd>{booking.initials || 'Not signed online'}</dd></>}
               <dt>Agreement</dt>
               <dd>{booking.agreedToTerms ? "Accepted" : "Not accepted"}</dd>
               <dt>Payment terms</dt>

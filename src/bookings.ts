@@ -10,6 +10,7 @@ export type BookingInput = {
   termsText: string;
   signature: string;
   initials: string;
+  signatureDrawing?: string;
   agreedToTerms: boolean;
   paymentAck: boolean;
   details: BookingDetails;
@@ -85,12 +86,14 @@ export function parseBooking(body: unknown): BookingInput | { error: string } {
   const termsText = text(b.termsText, 100_000);
   const signature = text(b.signature, 254);
   const initials = text(b.initials, 20);
+  const drawing = b.signatureDrawing === undefined ? undefined : validateSignatureDrawing(b.signatureDrawing);
+  if (b.signatureDrawing !== undefined && !drawing) return {error: "Draw your signature in the signature box before submitting."};
 
   if (!customerName) return { error: "Name is required." };
   if (!customerEmail || !EMAIL.test(customerEmail)) return { error: "A valid email is required." };
   if (!requestText) return { error: "Booking details are missing." };
   if (!termsText) return { error: "Rental terms are missing." };
-  if (!signature || !initials) return { error: "Signature and initials are required." };
+  if (!signature || (!initials && !drawing)) return { error: "Your full name and drawn signature are required." };
   if (b.agreement !== true) return { error: "The rental agreement must be accepted." };
   if (b.paymentAck !== true) return { error: "The payment terms must be acknowledged." };
 
@@ -110,7 +113,8 @@ export function parseBooking(body: unknown): BookingInput | { error: string } {
     requestText,
     termsText,
     signature,
-    initials,
+    initials: drawing ? "" : initials!,
+    ...(drawing ? {signatureDrawing: drawing} : {}),
     agreedToTerms: true,
     paymentAck: true,
     details: parseDetails(b.details),
@@ -137,7 +141,7 @@ export async function sendBookingAlert(booking: Booking, account: Pick<User, "na
     `Received ${caymanTime(booking.createdAt)} (Cayman time)`,
     accountLine,
     "",
-    `Signed by: ${booking.signature} (initials ${booking.initials})`,
+    `Signed by: ${booking.signature}${booking.signatureDrawing ? " (handwritten signature saved with booking)" : ` (initials ${booking.initials})`}`,
     "Rental agreement accepted: yes",
     "Payment terms acknowledged: yes",
     "",
@@ -182,7 +186,7 @@ export function contractText(booking: Booking): string {
     booking.termsText,
     "",
     `Signed: ${booking.agreedToTerms?booking.signature:"Not signed online"}`,
-    `Initials: ${booking.initials}`,
+    booking.signatureDrawing ? "Handwritten signature saved with the original booking agreement." : `Initials: ${booking.initials}`,
     `Signed on: ${caymanTime(booking.createdAt)} (Cayman time)`,
     "",
     "Questions? Reply to this email or call (345) 916-0816.",
@@ -193,4 +197,22 @@ export function contractText(booking: Booking): string {
 
 export async function sendContract(booking: Booking): Promise<boolean> {
   return sendEmail({ to: booking.customerEmail, replyTo: COMPANY_EMAIL, subject: contractSubject(booking), text: contractText(booking) });
+}
+
+// Store only bounded numeric pen strokes, never uploaded SVG/HTML or image URLs.
+export function validateSignatureDrawing(value: unknown): string | null {
+  if (typeof value !== 'string' || value.length > 150000) return null;
+  try {
+    const strokes=JSON.parse(value);let count=0,distance=0;
+    if (!Array.isArray(strokes) || !strokes.length || strokes.length>64) return null;
+    for(const stroke of strokes){
+      if(!Array.isArray(stroke)||stroke.length<2)return null;
+      count+=stroke.length;if(count>5000)return null;
+      for(let i=0;i<stroke.length;i++){
+        const p=stroke[i];if(!Array.isArray(p)||p.length!==2||p.some(n=>typeof n!=='number'||!Number.isFinite(n))||p[0]<0||p[0]>1000||p[1]<0||p[1]>300)return null;
+        if(i)distance+=Math.hypot(p[0]-stroke[i-1][0],p[1]-stroke[i-1][1]);
+      }
+    }
+    return distance>=10?JSON.stringify(strokes):null;
+  }catch{return null;}
 }

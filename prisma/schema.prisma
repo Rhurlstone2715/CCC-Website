@@ -111,6 +111,7 @@ model Booking {
   requestText     String
   termsText       String
   signature       String
+  signatureDrawing String?
   initials        String
   agreedToTerms   Boolean
   paymentAck      Boolean

@@ -575,6 +575,20 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.match((await uploadProof(saved.id,owner,receiptFile())).headers.get("location")!,/proof-confirm-email/);
   });
 
+  test("drawn checkout signatures are validated, saved privately and shown on admin agreements", async () => {
+    const cookie=await signup(),admin=await makeAdmin();
+    const signatureDrawing=JSON.stringify([[[40,120],[100,50],[150,190],[210,80],[280,120]]]);
+    for(const invalid of ['', '[]', '<svg onload=alert(1)>', JSON.stringify([[[0,0],[1001,1]]]),JSON.stringify([[[2,2],[2,2]]])]){
+      const response=await req('/api/bookings',{cookie,json:{...booking,initials:undefined,signatureDrawing:invalid}});assert.equal(response.status,400);
+    }
+    assert.equal(await prisma.booking.count(),0);
+    const response=await req('/api/bookings',{cookie,json:{...booking,initials:undefined,signatureDrawing}});assert.equal((await response.json()).saved,true);
+    const saved=await prisma.booking.findFirstOrThrow();assert.equal(saved.signatureDrawing,signatureDrawing);assert.equal(saved.initials,'');assert.equal(saved.signature,booking.signature);
+    const html=await (await req(`/admin/bookings/${saved.id}`,{cookie:admin})).text();assert.match(html,/Handwritten signature/);assert.match(html,/40,120 100,50/);
+    assert.equal((await req(`/admin/bookings/${saved.id}`,{cookie})).status,302);
+    assert.equal((await req('/api/bookings',{cookie,json:{...booking,initials:undefined}})).status,400);
+  });
+
   test("pending rewards stay locked through proof upload and release only after admin payment confirmation", async () => {
     const cookie=await signup(); const admin=await makeAdmin();
     await req('/api/bookings',{cookie,json:booking});const b=await prisma.booking.findFirstOrThrow();
