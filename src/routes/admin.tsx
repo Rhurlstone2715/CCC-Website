@@ -239,7 +239,7 @@ const JobDetails: FC<{ booking: Booking }> = ({ booking: b }) => {
                   <tr>
                     <td data-label="Item">{l.name}</td>
                     <td data-label="Term">
-                      {TERM_LABELS[l.term] ?? l.term} × {l.qty}
+                      {TERM_LABELS[l.term] ?? l.term} × {l.qty}{(l.periods??1)>1?` units × ${l.periods} periods`:""}
                     </td>
                     <td data-label="Amount">{l.amount === null ? <span class="muted">To be quoted</span> : money(Math.round(l.amount * 100))}</td>
                   </tr>
@@ -334,7 +334,7 @@ admin.get("/bookings/export.csv", async c => {
     b.siteAddress,
     isoDate(b.scheduleStart) || null,
     isoDate(b.scheduleEnd) || null,
-    ((b.items ?? []) as unknown as PricedLine[]).map(l => `${l.name} (${TERM_LABELS[l.term] ?? l.term} × ${l.qty})`).join("; ") || null,
+    ((b.items ?? []) as unknown as PricedLine[]).map(l => `${l.name} (${TERM_LABELS[l.term] ?? l.term} × ${l.qty}${(l.periods??1)>1?` × ${l.periods} periods`:""})`).join("; ") || null,
     dollars(b.estimateCents),
     dollars(b.amountPaidCents),
     caymanStamp(b.paidAt),

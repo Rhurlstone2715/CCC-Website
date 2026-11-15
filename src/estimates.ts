@@ -28,6 +28,7 @@ export async function estimateSnapshot(tx:Prisma.TransactionClient,b:Booking,num
  let deliveryCents:number|null=0;const deliveryRows:Row[]=[];
  for(const line of lines){
   const p=byId.get(line.id);if(!p?.delivery||p.operatorService||p.setPart)continue;
+  if(['plumwall','scaffold'].includes(line.id))continue;
   const portable=['Tools','Power Generation','Attachments','Construction Plant / Equipment','Ground Protection'].includes(p.category);
   if(bundledAccessory(p,machines)){deliveryRows.push({item:'Delivery',description:`${line.name} — included with equipment delivery (no additional delivery fee)`,qty:'',rate:'',total:'0.00'});continue;}
   if(portable&&collection==='pickup')continue;
@@ -35,6 +36,13 @@ export async function estimateSnapshot(tx:Prisma.TransactionClient,b:Booking,num
   const qty=line.term==='hourly'?1:line.qty;const rate=b.area?DELIVERY_FEES[b.area]:undefined;
   if(rate===undefined){deliveryCents=null;deliveryRows.push({item:'Delivery',description:`${line.name} — location / charge to be confirmed`,qty:String(qty),rate:'TBC',total:'TBC'});}
   else{if(deliveryCents!==null)deliveryCents+=rate*qty*100;deliveryRows.push({item:'Delivery',description:`${line.name} — ${b.area}`,qty:String(qty),rate:currency(rate*100),total:currency(rate*qty*100)});}
+ }
+ if(collection!=='pickup'&&lines.some(l=>['plumwall','scaffold'].includes(l.id)&&byId.get(l.id)?.delivery)){
+  const rate=b.area?DELIVERY_FEES[b.area]:undefined;
+  for(const kind of ['Delivery','Collection']){
+   if(rate===undefined){deliveryCents=null;deliveryRows.push({item:kind,description:`ICF bracing / scaffolding order — ${kind.toLowerCase()} charge to be confirmed`,qty:'1',rate:'TBC',total:'TBC'});}
+   else{if(deliveryCents!==null)deliveryCents+=rate*100;deliveryRows.push({item:kind,description:`ICF bracing / scaffolding order — ${b.area}; charged once for all units`,qty:'1',rate:currency(rate*100),total:currency(rate*100)});}
+  }
  }
  const equipment=lines.filter(l=>!l.operator).reduce((sum,l)=>sum+Math.round((l.amount||0)*100),0);
  const operator=lines.filter(l=>l.operator).reduce((sum,l)=>sum+Math.round((l.amount||0)*100),0);
@@ -54,7 +62,7 @@ export async function estimateSnapshot(tx:Prisma.TransactionClient,b:Booking,num
   grouped.forEach(j=>consumed.add(j));
   const all=[line,...grouped.map(j=>lines[j])];const amount=all.every(l=>l.amount!==null)?all.reduce((sum,l)=>sum+Math.round(l.amount!*100),0):null;
   const name=grouped.length?`${line.name} complete set — ${grouped.map(j=>lines[j].name).join('; ')}`:line.name;
-  rows.push({item:line.id,description:`${name}\n${term(line.term)}${(line.periods??1)>1?` × ${line.periods} periods`:''}${line.fuelType?`\nReturn with a full tank of ${line.fuelType==='diesel'?'diesel fuel':'gasoline'}.`:''}`,qty:String(line.qty),rate:amount===null?'TBC':currency(Math.round(amount/line.qty)),total:amount===null?'TBC':currency(amount)});
+  rows.push({item:line.id,description:`${name}\n${term(line.term)}${(line.periods??1)>1?` × ${line.periods} periods`:''}${line.fuelType?`\nReturn with a full tank of ${line.fuelType==='diesel'?'diesel fuel':'gasoline'}.`:''}`,qty:String(line.qty),rate:amount===null?'TBC':currency(Math.round(amount/(line.qty*(line.periods??1)))),total:amount===null?'TBC':currency(amount)});
  }
  if(!rows.length)rows.push({item:'Rental',description:'Equipment and rental pricing to be confirmed. Refer to the booking request.',qty:'',rate:'TBC',total:'TBC'});
  rows.push(...deliveryRows);

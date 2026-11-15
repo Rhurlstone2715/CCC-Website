@@ -8,7 +8,7 @@ const catalog = JSON.parse(readFileSync(new URL('../prisma/catalog-seed.json', i
 function checkout(cart, area = 'George Town', collection = 'delivery') {
   const context = { cart, products: catalog, $: selector => ({ value: selector === '#rentalCollection' ? collection : area }), money: n => `CI$${n}` };
   const declarations = source.split('\n').filter(line =>
-    /^const deliveryFees=|^function (collectableRental|hasCollectableRentals|rentalCollection|deliveryAvailable|bundledAccessoryDelivery|hasLiftingService|deliveryEligible|deliveryQuantity|itemDeliveryEstimate|deliveryEstimate|deliveryLine)\(/.test(line));
+    /^const deliveryFees=|^function (collectableRental|hasCollectableRentals|rentalCollection|deliveryAvailable|groupedSiteRental|firstSiteRental|bundledAccessoryDelivery|hasLiftingService|deliveryEligible|deliveryQuantity|itemDeliveryEstimate|deliveryEstimate|deliveryLine)\(/.test(line));
   return runInNewContext(`${declarations.join('\n')}\n({ total: deliveryEstimate(), lines: cart.map(deliveryLine) })`, context);
 }
 const line = (id, qty = 1, term = 'daily') => ({ id, qty, term });
@@ -46,7 +46,7 @@ test('changing quantity or removing equipment recalculates delivery', () => {
 
  test('tools, generators and other physical rentals use the same per-item delivery rates', () => {
   assert.equal(checkout([line('diesel-mixer-9-cu-ft',2),line('compressor'),line('g25')],'West Bay').total,1000);
-  assert.equal(checkout([line('plumwall'),line('cord100'),line('concrete-bottom')],'East End').total,1050);
+  assert.equal(checkout([line('plumwall'),line('cord100'),line('concrete-bottom')],'East End').total,1400);
  });
  test('pickup remains available for tools alone, but mixed machine bookings require delivery', () => {
   assert.equal(checkout([line('diesel-mixer-9-cu-ft',2),line('g25')],'George Town','pickup').total,0);
@@ -86,4 +86,12 @@ test('pickup cannot remove machine delivery charges or mixed-booking delivery fe
  assert.equal(checkout([line('altec2595'),line('bucket')],'7 Mile Beach','pickup').total,200);
  assert.equal(checkout([line('gth636'),line('compressor')],'7 Mile Beach','pickup').total,400);
  assert.equal(checkout([line('bucket')],'7 Mile Beach','pickup').total,0);
+});
+
+test('ICF and scaffold share one delivery and one collection charge regardless of units, term or lines',()=>{
+ const result=checkout([line('plumwall',75),line('scaffold',40,'weekly'),line('plumwall',25)],'7 Mile Beach');assert.equal(result.total,400);assert.match(result.lines[0],/delivery CI\$200 \+ collection CI\$200/);
+ assert.equal(checkout([line('scaffold',100,'monthly')],'George Town').total,300);
+ assert.equal(checkout([line('plumwall',75)],'','delivery').total,null);
+ assert.equal(checkout([line('plumwall',75),line('scaffold',40,'weekly')],'','pickup').total,0);
+ assert.equal(checkout([line('plumwall',75),line('rt40')],'George Town').total,450);
 });

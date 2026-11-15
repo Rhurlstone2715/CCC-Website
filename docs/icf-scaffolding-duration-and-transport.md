@@ -1,0 +1,11 @@
+# ICF bracing and scaffolding quantity, duration and transport
+
+Customers select physical quantity and a separate whole-number rental duration on the catalog card and can edit each in their cart. ICF braces retain KYD $2 per brace per day. Scaffolding retains its catalog weekly and monthly rates; duration is the number of weeks or months. Limits are 366 days, 52 weeks or 12 months. Existing cart lines without duration use one period. Lines with different durations do not merge; matching terms/durations can share quantity.
+
+Server pricing multiplies unit rate × physical units × duration. Only these two public rental products accept a duration field; customer-submitted custom rates and duration overrides for other equipment remain ignored. Invalid quantities or durations are rejected. Inventory reserves physical units across the full duration and restores availability at its end. Estimates, paid receipts, contract summaries, admin views and Google Calendar include the selected duration. Scaffolding weeks use seven days; monthly periods retain the existing thirty-day inventory convention.
+
+When CCC transports ICF braces/scaffolding, the whole order shares exactly one delivery fee and one collection/pickup fee. Each trip uses the existing selected-area rate. Both products and repeated lines share that pair, regardless of quantity/duration. This is an exception to weekly/monthly delivery waivers. Other equipment retains existing per-machine/per-item delivery and attachment bundling. Customer self-pickup and return, where selected, has no CCC delivery/collection fee. Mixed lifting-equipment bookings remain delivery-only. New fees apply to new/revised estimates; saved historic PDFs are not changed.
+
+Example: 75 ICF braces × 7 days × KYD $2 = KYD $1,050. George Town delivery KYD $150 plus collection KYD $150 gives KYD $1,350 before any earned loyalty discount. For 7 Mile Beach, delivery and collection are KYD $200 each, shared with any scaffolding in the same order.
+
+Validation: full regression suite, real database booking/stock/pricing checks, Google Calendar windows, frontend transport calculations and desktop/mobile browser interactions for quantity/duration, combined order totals and distinct cart durations.

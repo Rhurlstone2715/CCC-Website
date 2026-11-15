@@ -86,3 +86,8 @@ test('admin-updated work hours and multi-period rentals update the actual Google
  const actual=bookingGoogleEvent({...booking,adminEditedAt:new Date(),items:[{name:'RT40',term:'hourly',qty:6}]},base);assert.equal(actual.start.dateTime,'2026-11-09T13:00:00.000Z');assert.equal(actual.end.dateTime,'2026-11-09T19:00:00.000Z');
  const longer=bookingGoogleEvent({...booking,adminEditedAt:new Date(),items:[{name:'Telehandler',term:'weekly',qty:1,periods:2}]},base);assert.equal(longer.end.dateTime,'2026-11-23T13:00:00.000Z');assert.match(longer.description,/2 periods/);
 });
+
+test('customer ICF and scaffold durations use the full requested window without multiplying stock units',()=>{
+ const event=bookingGoogleEvent({...booking,items:[{id:'plumwall',name:'ICF braces',term:'daily',qty:75,periods:7},{id:'scaffold',name:'Scaffold',term:'weekly',qty:20,periods:3}]},base);
+ assert.equal(event.start.dateTime,'2026-11-09T13:00:00.000Z');assert.equal(event.end.dateTime,'2026-11-30T13:00:00.000Z');
+});

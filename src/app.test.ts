@@ -577,6 +577,23 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.match((await uploadProof(saved.id,owner,receiptFile())).headers.get("location")!,/proof-confirm-email/);
   });
 
+  test("ICF customer quantity and days price separately, reserve units for the full duration and charge one transport pair", async () => {
+    const cookie=await signup();const payload=(qty:number,periods:number,startDate='2033-06-01')=>({...booking,details:{startDate,startTime:'08:00',area:'George Town',siteAddress:'ICF job',rentalCollection:'delivery',items:[{id:'plumwall',term:'daily',qty,periods}]}});
+    await req('/api/bookings',{cookie,json:payload(75,7)});const b=await prisma.booking.findFirstOrThrow();const line=(b.items as any[])[0];assert.equal(line.qty,75);assert.equal(line.periods,7);assert.equal(line.rate,2);assert.equal(line.amount,1050);
+    const estimate=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}}),snapshot=estimate.snapshot as unknown as EstimateSnapshot;assert.equal(snapshot.deliveryCents,30000);assert.equal(snapshot.totalCents,135000);assert.equal(snapshot.rows.filter(r=>r.item==='Delivery').length,1);assert.equal(snapshot.rows.filter(r=>r.item==='Collection').length,1);assert.equal(snapshot.rows.find(r=>r.item==='plumwall')!.rate,'2.00');
+    assert.equal((await req('/api/bookings',{cookie,json:payload(226,1,'2033-06-07')})).status,409);
+    await req('/api/bookings',{cookie,json:payload(225,1,'2033-06-07')});assert.equal(await prisma.booking.count(),2);
+    const after=await req('/api/bookings',{cookie,json:payload(300,1,'2033-06-08')});assert.notEqual(after.status,409);assert.equal(await prisma.booking.count(),3);
+  });
+
+  test("scaffolding customer duration preserves weekly/monthly rates and shares one ICF transport pair", async () => {
+    const cookie=await signup();await req('/api/bookings',{cookie,json:{...booking,details:{startDate:'2033-07-01',startTime:'08:00',area:'7 Mile Beach',siteAddress:'Combined job',rentalCollection:'delivery',items:[{id:'scaffold',term:'weekly',qty:20,periods:3},{id:'plumwall',term:'daily',qty:75,periods:14}]}}});
+    const b=await prisma.booking.findFirstOrThrow();const lines=b.items as any[];assert.equal(lines[0].amount,300);assert.equal(lines[1].amount,2100);const e=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}});assert.equal((e.snapshot as unknown as EstimateSnapshot).deliveryCents,40000);assert.equal(e.totalCents,280000);
+    const clash=await req('/api/bookings',{cookie,json:{...booking,details:{startDate:'2033-07-21',startTime:'08:00',items:[{id:'scaffold',term:'weekly',qty:481,periods:1}]}}});assert.equal(clash.status,409);
+    for(const periods of [0,-1,1.5,367,'7'])assert.equal((await req('/api/bookings',{cookie,json:{...booking,details:{items:[{id:'plumwall',term:'daily',qty:1,periods}]}}})).status,400);
+    assert.equal((await req('/api/bookings',{cookie,json:{...booking,details:{items:[{id:'scaffold',term:'monthly',qty:1,periods:13}]}}})).status,400);
+  });
+
   test("admin payment confirmation creates one immutable PDF receipt, emails it with hook branding and restricts downloads", async () => {
     const cookie=await signup(),other=await signup('other@receipt.ky'),admin=await makeAdmin();
     await req('/api/bookings',{cookie,json:{...booking,details:{startDate:'2032-04-01',startTime:'08:00',area:'George Town',siteAddress:'Receipt job',items:[{id:'rt40',term:'hourly',qty:4}]}}});
