@@ -1,3 +1,4 @@
+import {sessionWindow} from '../booking-sessions.js';
 import { allocations, peak, rentalHours } from "../availability.js";
 import { Hono } from "hono";
 import type { FC } from "hono/jsx";
@@ -44,6 +45,7 @@ export function bookingSpan(b: Pick<Booking, "scheduleStart" | "scheduleEnd" | "
   const start = b.scheduleStart ?? b.startDate;
   if (!start) return null;
   const lines=Array.isArray(b.items)?b.items as unknown as PricedLine[]:[];
+  if(lines.some(l=>sessionWindow(l))){const windows=allocations(lines,b,new Map(lines.map(l=>[l.id,{id:l.id,operatorService:l.operator}])));if(windows.length){const localDay=(n:number)=>new Date(new Date(n-18000000).toISOString().slice(0,10)+'T00:00:00Z');return {start:localDay(Math.min(...windows.map(w=>w.start))),end:localDay(Math.max(...windows.map(w=>w.end))-1)};}}
   const durations=lines.filter(l=>!l.operator).map(l=>rentalHours(l.term,l.qty)*(l.periods??1));
   const hours=durations.length?Math.max(...durations):24;
   const end = b.scheduleStart ? (b.scheduleEnd ?? b.scheduleStart) : new Date(start.getTime()+Math.floor((Number((b.startTime??'00:00').slice(0,2))+hours-0.001)/24)*DAY_MS);
@@ -109,8 +111,11 @@ adminCalendar.get("/", async c => {
   for (const booking of bookings) {
     const span = bookingSpan(booking);
     if (!span) continue;
+    const sessionLines=Array.isArray(booking.items)?booking.items as unknown as PricedLine[]:[];
+    const sessionSlots=sessionLines.some(l=>sessionWindow(l))?allocations(sessionLines,booking,new Map(sessionLines.map(l=>[l.id,{id:l.id,operatorService:l.operator}]))):null;
     for (let d = span.start < gridStart ? gridStart : span.start; d <= span.end && d <= gridEnd; d = addDays(d, 1)) {
       const key = dayKey(d);
+      if(sessionSlots){const dayStart=Date.parse(key+'T00:00:00-05:00');if(!sessionSlots.some(w=>w.start<dayStart+DAY_MS&&w.end>dayStart))continue;}
       days.set(key, [...(days.get(key) ?? []), { booking, confirmed: Boolean(booking.scheduleStart), clash: [] }]);
     }
   }

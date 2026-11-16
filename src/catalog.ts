@@ -146,8 +146,8 @@ export async function catalogScript(): Promise<string> {
 
 // ---- Pricing booking lines on the server ----
 
-export type CartItem = { id: string; term: string; qty: number; periods?:number };
-export type PricedLine = { id: string; name: string; term: string; qty: number; rate: number | null; amount: number | null; operator: boolean; periods?:number; fuelType?: string };
+export type CartItem = { id: string; term: string; qty: number; periods?:number;sessionStart?:string;sessionEnd?:string };
+export type PricedLine = { id: string; name: string; term: string; qty: number; rate: number | null; amount: number | null; operator: boolean; periods?:number; sessionStart?:string; sessionEnd?:string; amountOverride?:boolean; fuelType?: string };
 
 const toCents = (dollars: number) => Math.round(dollars * 100);
 
@@ -223,8 +223,8 @@ export function setProblem(items: CartItem[], products: SetProduct[]): string | 
     const product = byId.get(item.id);
     if (!product) continue;
     const parent = parents.find(p => p.id === product.id);
-    if (parent) for (const group of setGroups(parent, byId)) add(required, `${group}|${item.term}|${item.periods??1}`, item.qty);
-    if (product.setPart && parents.some(p => p.addOns.includes(product.id))) add(supplied, `${product.setPart}|${item.term}|${item.periods??1}`, item.qty);
+    if (parent) for (const group of setGroups(parent, byId)) add(required, `${group}|${item.term}|${item.periods??1}|${item.sessionStart??""}|${item.sessionEnd??""}`, item.qty);
+    if (product.setPart && parents.some(p => p.addOns.includes(product.id))) add(supplied, `${product.setPart}|${item.term}|${item.periods??1}|${item.sessionStart??""}|${item.sessionEnd??""}`, item.qty);
   }
   for (const key of new Set([...required.keys(), ...supplied.keys()])) {
     if ((required.get(key) ?? 0) === (supplied.get(key) ?? 0)) continue;

@@ -330,6 +330,30 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal((await req(`/admin/bookings/${b.id}/estimates/${old.number}.pdf`,{cookie:admin})).status,200);assert.equal((await req(`/admin/bookings/${b.id}/estimates/${old.number}.pdf`,{cookie:customer})).status,302);
     assert.match(await (await req('/account/profile',{cookie:customer})).text(),/1,020/);
   });
+  test("admin splits a rain-shortened boom truck job into dated hourly and daily sessions with actual prices",async()=>{
+    const cookie=await signup(),other=await signup('other@sessions.ky'),admin=await makeAdmin();
+    await req('/api/bookings',{cookie,json:{...booking,details:{startDate:'2032-12-01',startTime:'08:00',area:'George Town',siteAddress:'Original site',items:[{id:'national1400',term:'daily',qty:1}]}}});let b=await prisma.booking.findFirstOrThrow();
+    await prisma.booking.update({where:{id:b.id},data:{status:'PAID',amountPaidCents:150000,paidAt:new Date()}});b=await prisma.booking.findUniqueOrThrow({where:{id:b.id}});const old=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}});
+    const items=[{id:'national1400',term:'hourly',qty:7.5,periods:1,rate:150,amount:1050,sessionStart:'2032-12-01T08:00',sessionEnd:'2032-12-01T15:30'},{id:'national1400',term:'daily',qty:1,periods:1,rate:1200,sessionStart:'2032-12-02T07:00',sessionEnd:'2032-12-02T17:00'}];
+    const form={version:b.updatedAt.toISOString(),userId:String(b.userId),customerName:b.customerName,customerEmail:b.customerEmail,startDate:'2032-12-01',startTime:'08:00',area:'George Town',siteAddress:'Rain affected job',paidAmount:'1500',reason:'Rain stopped first day at 15:30; returned next day at daily rate',items:JSON.stringify(items)};
+    const response=await req(`/admin/bookings/${b.id}/edit`,{cookie:admin,form});assert.match(response.headers.get('location')!,/booking-edited/);
+    const changed=await prisma.booking.findUniqueOrThrow({where:{id:b.id}}),lines=changed.items as any[];assert.equal(lines[0].qty,7.5);assert.equal(lines[0].amount,1050);assert.equal(lines[0].rate,150);assert.equal(lines[0].amountOverride,true);assert.equal(lines[1].amount,1200);assert.equal(lines[0].sessionEnd,'2032-12-01T15:30');assert.equal(lines[1].sessionStart,'2032-12-02T07:00');assert.equal(changed.estimateCents,225000);assert.equal(changed.amountPaidCents,150000);
+    const revised=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}}),snapshot=revised.snapshot as unknown as EstimateSnapshot;assert.equal(snapshot.totalCents,240000);assert.equal(snapshot.deliveryCents,15000);assert.equal(snapshot.rows.filter(r=>r.item==='Delivery').length,1);assert.match(snapshot.rows[0].description,/2032-12-01 08:00 to 2032-12-01 15:30/);assert.equal(snapshot.rows[0].rate,'150.00');assert.equal(snapshot.rows[0].total,'1,050.00');assert.ok(await prisma.estimateArchive.findUnique({where:{number:old.number}}));assert.equal((await rewardsForUser(b.userId!)).points,1500);assert.equal(await prisma.paymentReceipt.count(),1);
+    const payload=(startDate:string,startTime:string)=>({...booking,details:{startDate,startTime,items:[{id:'national1400',term:'hourly',qty:4}]}});
+    assert.equal((await req('/api/bookings',{cookie:other,json:payload('2032-12-01','14:00')})).status,409);
+    await req('/api/bookings',{cookie:other,json:payload('2032-12-01','16:00')});assert.equal(await prisma.booking.count(),2);
+    assert.equal((await req('/api/bookings',{cookie:other,json:payload('2032-12-02','16:00')})).status,409);
+    await req('/api/bookings',{cookie:other,json:payload('2032-12-02','18:00')});assert.equal(await prisma.booking.count(),3);
+    const bad=await req(`/admin/bookings/${b.id}/edit`,{cookie:admin,form:{...form,version:changed.updatedAt.toISOString(),items:JSON.stringify([{...items[0],sessionEnd:'2032-12-01T07:00'}])}});assert.equal(bad.status,400);assert.equal(await prisma.bookingRevision.count(),1);
+    assert.match((await req(`/admin/bookings/${b.id}/schedule`,{cookie:admin,form:{scheduleStart:'2032-12-03'}})).headers.get('location')!,/edit-sessions/);
+  });
+
+  test("session overlaps are rejected atomically and customers cannot post admin session or price overrides",async()=>{
+    const cookie=await signup(),admin=await makeAdmin();await req('/api/bookings',{cookie,json:{...booking,details:{startDate:'2032-10-01',startTime:'08:00',items:[{id:'national1400',term:'hourly',qty:4,rate:1,amount:1,sessionStart:'2032-09-01T08:00',sessionEnd:'2032-09-01T09:00'}]}}});const b=await prisma.booking.findFirstOrThrow();const l=(b.items as any[])[0];assert.equal(l.sessionStart,undefined);assert.equal(l.amountOverride,undefined);assert.notEqual(l.amount,1);
+    const form={version:b.updatedAt.toISOString(),userId:String(b.userId),customerName:b.customerName,customerEmail:b.customerEmail,startDate:'2032-10-01',startTime:'08:00',area:'George Town',siteAddress:'Session site',reason:'Invalid overlap test',items:JSON.stringify([{id:'national1400',term:'hourly',qty:4,periods:1,rate:150,sessionStart:'2032-10-01T08:00',sessionEnd:'2032-10-01T12:00'},{id:'national1400',term:'daily',qty:1,periods:1,rate:1200,sessionStart:'2032-10-01T11:00',sessionEnd:'2032-10-01T17:00'}])};
+    assert.equal((await req(`/admin/bookings/${b.id}/edit`,{cookie:admin,form})).status,409);assert.equal(await prisma.bookingRevision.count(),0);assert.equal(await prisma.estimateArchive.count(),0);assert.equal((await prisma.booking.findUniqueOrThrow({where:{id:b.id}})).adminEditedAt,null);
+  });
+
   test("admin multi-day quantities use stock units rather than days and conflicts roll back revisions",async()=>{
     const admin=await makeAdmin();const form={customerName:'Manual customer',customerEmail:'manual@example.com',startDate:'2030-10-01',startTime:'08:00',area:'George Town',siteAddress:'Brace job',items:JSON.stringify([{id:'plumwall',term:'daily',qty:100,periods:3,rate:2}])};
     assert.match((await req('/admin/bookings/new',{cookie:admin,form})).headers.get('location')!,/booking-created/);const b=await prisma.booking.findFirstOrThrow();assert.equal(b.estimateCents,60000);

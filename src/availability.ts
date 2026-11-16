@@ -1,3 +1,4 @@
+import {sessionWindow} from './booking-sessions.js';
 import type { Booking, Prisma } from './generated/prisma/client.js';
 import type { CartItem } from './catalog.js';
 
@@ -20,7 +21,7 @@ export function rentalHours(term:string,qty:number){return term==='hourly'?Math.
 export function allocations(items:CartItem[],s:Schedule,map:Map<string,{id:string;operatorService:boolean}>,overrideStart?:number):Allocation[]{
  const start=overrideStart??startTime(s);if(start===null)return [];
  const scheduledEnd=s.scheduleStart?Date.parse(`${(s.scheduleEnd??s.scheduleStart).toISOString().slice(0,10)}T00:00:00-05:00`)+DAY:null;
- return items.flatMap(i=>{const p=map.get(i.id);return !p||p.operatorService?[]:[{id:p.id,start,end:overrideStart===undefined&&scheduledEnd!==null?Math.max(start+DAY,scheduledEnd):start+rentalHours(i.term,i.qty)*(i.periods??1)*HOUR,qty:i.term==='hourly'?1:i.qty}];});
+ return items.flatMap(i=>{const p=map.get(i.id),window=sessionWindow(i),offset=overrideStart===undefined?0:overrideStart-(startTime(s)??overrideStart);return !p||p.operatorService?[]:window?[{id:p.id,start:window.start+offset,end:window.end+offset,qty:i.term==='hourly'?1:i.qty}]:[{id:p.id,start,end:overrideStart===undefined&&scheduledEnd!==null?Math.max(start+DAY,scheduledEnd):start+rentalHours(i.term,i.qty)*(i.periods??1)*HOUR,qty:i.term==='hourly'?1:i.qty}];});
 }
 export function peak(rows:Allocation[]){
  const events=rows.flatMap(r=>[{time:r.start,qty:r.qty},{time:r.end,qty:-r.qty}]).sort((a,b)=>a.time-b.time||a.qty-b.qty);
@@ -29,7 +30,7 @@ export function peak(rows:Allocation[]){
 export async function assertAvailability(tx:Prisma.TransactionClient,items:CartItem[],schedule:Schedule,excludeId?:number){
  if(!items.length)return;
  if(!schedule.startDate&&!schedule.scheduleStart)throw new AvailabilityError({error:'Choose a rental start date and time so we can check equipment availability.'},400);
- if(!schedule.scheduleStart&&(!schedule.startTime||!/^(?:[01]\d|2[0-3]):00$/.test(schedule.startTime)))throw new AvailabilityError({error:'Choose a rental start time on the hour.'},400);
+ if(!items.every(i=>sessionWindow(i))&&!schedule.scheduleStart&&(!schedule.startTime||!/^(?:[01]\d|2[0-3]):00$/.test(schedule.startTime)))throw new AvailabilityError({error:'Choose a rental start time on the hour.'},400);
  const [products,options]=await Promise.all([tx.product.findMany(),tx.riggingOption.findMany()]);
  const map=new Map(products.map(p=>[p.id,p]));for(const o of options){const parent=map.get(o.productId);if(parent)map.set(o.id,parent);}
  for(const i of items){const p=map.get(i.id),compatible=(p?.extra as {compatibleWith?:string[]}|null)?.compatibleWith;const offeredAddon=compatible?.some(id=>items.some(item=>item.id===id));if(!p||(p.hidden&&!p.operatorService&&!offeredAddon))throw new AvailabilityError({error:'An item in your cart is no longer available. Remove it and choose equipment from the catalog.'},400);}

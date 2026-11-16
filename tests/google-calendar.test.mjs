@@ -91,3 +91,8 @@ test('customer ICF and scaffold durations use the full requested window without 
  const event=bookingGoogleEvent({...booking,items:[{id:'plumwall',name:'ICF braces',term:'daily',qty:75,periods:7},{id:'scaffold',name:'Scaffold',term:'weekly',qty:20,periods:3}]},base);
  assert.equal(event.start.dateTime,'2026-11-09T13:00:00.000Z');assert.equal(event.end.dateTime,'2026-11-30T13:00:00.000Z');
 });
+
+test('split hourly and daily work sessions keep their actual Cayman windows in the booking event',()=>{
+ const event=bookingGoogleEvent({...booking,adminEditedAt:new Date(),items:[{id:'national1400',name:'National 1400H',operator:false,term:'hourly',qty:7.5,sessionStart:'2026-11-09T08:00',sessionEnd:'2026-11-09T15:30'},{id:'national1400',name:'National 1400H',operator:false,term:'daily',qty:1,sessionStart:'2026-11-10T07:00',sessionEnd:'2026-11-10T17:00'}]},base);
+ assert.equal(event.start.dateTime,'2026-11-09T13:00:00.000Z');assert.equal(event.end.dateTime,'2026-11-10T22:00:00.000Z');assert.match(event.description,/2026-11-09 15:30/);assert.match(event.description,/2026-11-10 07:00/);
+});

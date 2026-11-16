@@ -1,3 +1,4 @@
+import {sessionLabel} from '../booking-sessions.js';
 import {queuePaidReceipt,deliverReceiptEmails} from '../receipts.js';
 import { assertAvailability, AvailabilityError, lockInventory } from "../availability.js";
 import { estimateMetadata } from "../estimates.js";
@@ -29,6 +30,7 @@ const NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string
   "contract-failed": { tone: "error", text: "The contract email didn't send. Try again, or send it from your own inbox." },
   declined: { tone: "success", text: "Booking declined." },
   cancelled: { tone: "success", text: "Booking cancelled." },
+  "edit-sessions": {tone:"info",text:"This booking has dated work sessions. Use Edit booking to change each session’s start and end."},
   paid: { tone: "success", text: "Payment recorded. Rewards are updated and the PDF receipt is queued for email." },
   reopened: { tone: "success", text: "Booking reopened." },
   unpaid: { tone: "success", text: "Payment removed. The booking is back to approved." },
@@ -239,7 +241,7 @@ const JobDetails: FC<{ booking: Booking }> = ({ booking: b }) => {
                   <tr>
                     <td data-label="Item">{l.name}</td>
                     <td data-label="Term">
-                      {TERM_LABELS[l.term] ?? l.term} × {l.qty}{(l.periods??1)>1?` units × ${l.periods} periods`:""}
+                      {sessionLabel(l)?<span class="sub">{sessionLabel(l)}</span>:null}{l.amountOverride?<span class="sub">Agreed line price</span>:null}{TERM_LABELS[l.term] ?? l.term} × {l.qty}{(l.periods??1)>1?` units × ${l.periods} periods`:""}
                     </td>
                     <td data-label="Amount">{l.amount === null ? <span class="muted">To be quoted</span> : money(Math.round(l.amount * 100))}</td>
                   </tr>
@@ -334,7 +336,7 @@ admin.get("/bookings/export.csv", async c => {
     b.siteAddress,
     isoDate(b.scheduleStart) || null,
     isoDate(b.scheduleEnd) || null,
-    ((b.items ?? []) as unknown as PricedLine[]).map(l => `${l.name} (${TERM_LABELS[l.term] ?? l.term} × ${l.qty}${(l.periods??1)>1?` × ${l.periods} periods`:""})`).join("; ") || null,
+    ((b.items ?? []) as unknown as PricedLine[]).map(l => `${l.name}${sessionLabel(l)?` — ${sessionLabel(l)}`:""} (${TERM_LABELS[l.term] ?? l.term} × ${l.qty}${(l.periods??1)>1?` × ${l.periods} periods`:""})`).join("; ") || null,
     dollars(b.estimateCents),
     dollars(b.amountPaidCents),
     caymanStamp(b.paidAt),
@@ -550,6 +552,7 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
                   ? "Not confirmed yet. The calendar shows the requested start date until you save dates here."
                   : "Set dates to place this booking on the calendar."}
             </p>
+            {Array.isArray(booking.items)&&booking.items.some(l=>Boolean((l as {sessionStart?:string}).sessionStart))?<p class="hint">This booking has dated work sessions. Use <a href={`/admin/bookings/${booking.id}/edit`}>Edit booking</a> to change the dates, hours and prices for each session.</p>:<>
             <form class="form" method="post" action={`/admin/bookings/${booking.id}/schedule`}>
               <div class="rate-grid">
                 <div class="field">
@@ -566,7 +569,7 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
                   Save dates
                 </button>
               </div>
-            </form>
+            </form></>}
             {booking.scheduleStart ? (
               <form class="mt-3" method="post" action={`/admin/bookings/${booking.id}/schedule`}>
                 <input type="hidden" name="clear" value="1" />
@@ -682,6 +685,7 @@ admin.post("/bookings/:id{[0-9]+}/:action", async c => {
       await update({ status: "PENDING", approvedAt: null });
       return back("reopened");
     case "schedule": {
+      if(Array.isArray(booking.items)&&booking.items.some(l=>Boolean((l as {sessionStart?:string}).sessionStart)))return back('edit-sessions');
       if (body.clear === "1") {
         await update({ scheduleStart: null, scheduleEnd: null });
         return back("schedule-cleared");
