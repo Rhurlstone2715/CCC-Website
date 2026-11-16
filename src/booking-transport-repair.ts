@@ -5,7 +5,7 @@ import {companyNameKey} from './companies.js';
 import {lockInventory} from './availability.js';
 import {bookingRef} from './bookings.js';
 import {estimateSnapshot,createBookingEstimate,deliverEstimateEmails,type EstimateSnapshot} from './estimates.js';
-import {queuePaidReceipt,deliverReceiptEmails} from './receipts.js';
+import {queuePaidReceipt,deliverReceiptEmails,receiptNumber} from './receipts.js';
 import type {Prisma} from './generated/prisma/client.js';
 type Target={mode:'inspect'|'apply';name:string;company:string;createdBefore:string;bookingId?:number;estimateNumber?:number};
 const normalize=(s:string)=>s.toLowerCase().replace(/\s+/g,'').trim();
@@ -37,7 +37,7 @@ export async function runBookingTransportRepair(config:Target){
   await tx.bookingRevision.create({data:{bookingId:b.id,actorId:0,actorName:'CCC transport correction — admin-authorized maintenance',reason:note,before:JSON.parse(JSON.stringify(b)),after:JSON.parse(JSON.stringify(changed))}});
   return {status:'corrected',bookingRef:bookingRef(b.id),oldEstimateNumber:estimate.number,revisedEstimateNumber:revised.number,oldTransportCents:before.deliveryCents,newTransportCents:current.deliveryCents,oldTotalCents:before.totalCents,newTotalCents:current.totalCents};
  },{timeout:30000,maxWait:15000});
- if(result.status==='corrected'){await deliverEstimateEmails(result.revisedEstimateNumber);await deliverReceiptEmails();const emailed=await prisma.estimate.findUnique({where:{number:result.revisedEstimateNumber},select:{emailSentAt:true}});return {...result,estimateEmailSent:Boolean(emailed?.emailSentAt)};}
+ if(result.status==='corrected'){await deliverEstimateEmails(result.revisedEstimateNumber);await deliverReceiptEmails();const emailed=await prisma.estimate.findUnique({where:{number:result.revisedEstimateNumber},select:{emailSentAt:true}});const receipt=await prisma.paymentReceipt.findFirst({where:{bookingId:candidate.id,supersededAt:null},orderBy:{id:'desc'},select:{id:true,emailSentAt:true}});return {...result,amountPaidCents:candidate.amountPaidCents,estimateEmailSent:Boolean(emailed?.emailSentAt),...(receipt?{receiptNumber:receiptNumber(receipt.id),receiptEmailSent:Boolean(receipt.emailSentAt)}:{})};}
  return result;
 }
 export async function runConfiguredTransportRepair(){
