@@ -527,7 +527,7 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
               <dd>{booking.user ? <a href={`/admin/customers/${booking.user.id}`}>{booking.user.name}</a> : "Guest booking"}</dd>
               <dt>Booking rewards</dt>
               <dd>{['PENDING','APPROVED'].includes(booking.status) ? `${pendingBookingPoints(booking)?.toLocaleString('en-US') ?? 'To be confirmed'} pending points — ${booking.paymentProofs.length ? 'proof received; ' : ''}awaiting admin payment confirmation. Pending points do not unlock tiers.` : booking.status === 'PAID' ? `${Math.floor((booking.amountPaidCents ?? 0)/100).toLocaleString('en-US')} earned points — payment confirmed` : 'No points — booking inactive'}</dd>
-              <dt>Tier at booking</dt>
+              <dt>Discount tier on this booking</dt>
               <dd>{booking.discountPercent ? `${booking.rewardTier}, ${booking.discountPercent}% off equipment` : booking.rewardTier ?? "None"}</dd>
               <dt>Alert email</dt>
               <dd>{booking.alertSentAt ? `Sent ${caymanDate(booking.alertSentAt)}` : "Not sent (customer was offered the email fallback)"}</dd>

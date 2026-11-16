@@ -20,5 +20,8 @@
  }
  for(const item of data.items)addRow(item);if(!data.items.length)addRow();document.querySelector('#addAdminEquipment').onclick=()=>addRow();
  document.querySelector('#editorCustomer').onchange=event=>{const customer=data.users.find(u=>String(u.id)===event.target.value);if(!customer)return;for(const[name,value]of Object.entries({customerName:customer.name,customerEmail:customer.email,phone:customer.phone||'',billingAddress:customer.billingAddress||'',company:customer.company||''}))form.elements.namedItem(name).value=value;};
+ const discountChoice=document.querySelector('#editorDiscountChoice'),tierReason=document.querySelector('#editorTierReason'),tierReasonLabel=document.querySelector('#editorTierReasonLabel');
+ function discountChanged(){const override=['Member','Silver','Gold','Platinum'].includes(discountChoice.value);tierReason.required=override;tierReasonLabel.hidden=!override;}
+ discountChoice.onchange=discountChanged;discountChanged();
  form.addEventListener('submit',event=>{recalc();if(!rows.children.length){event.preventDefault();alert('Add at least one equipment or service item.');}});
 })();
