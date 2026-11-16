@@ -1,3 +1,4 @@
+import {watermarkPdf} from '../pdf-watermarks.js';
 import {TIERS} from '../loyalty-tiers.js';
 import {sessionWindow,sessionLabel} from '../booking-sessions.js';
 import {queuePaidReceipt,deliverReceiptEmails} from '../receipts.js';
@@ -114,4 +115,4 @@ async function save(c:Context<AppEnv>,existing:Booking|null){
 }
 adminBookingEditor.post('/new',c=>save(c,null));
 adminBookingEditor.post('/:id{[0-9]+}/edit',async c=>{const b=await prisma.booking.findUnique({where:{id:Number(c.req.param('id'))}});return b?save(c,b):c.notFound();});
-adminBookingEditor.get('/:id{[0-9]+}/estimates/:file',async c=>{const match=c.req.param('file').match(/^(\d+)\.pdf$/);if(!match)return c.notFound();const e=await prisma.estimateArchive.findFirst({where:{bookingId:Number(c.req.param('id')),number:Number(match[1])}});if(!e)return c.notFound();c.header('Content-Type','application/pdf');c.header('Content-Disposition',`attachment; filename="Cayman-Crane-Estimate-${e.number}-REPLACED.pdf"`);return c.body(new Uint8Array(e.pdf));});
+adminBookingEditor.get('/:id{[0-9]+}/estimates/:file',async c=>{const match=c.req.param('file').match(/^(\d+)\.pdf$/);if(!match)return c.notFound();const e=await prisma.estimateArchive.findFirst({where:{bookingId:Number(c.req.param('id')),number:Number(match[1])}});if(!e)return c.notFound();c.header('Content-Type','application/pdf');c.header('Content-Disposition',`attachment; filename="Cayman-Crane-Estimate-${e.number}-REPLACED.pdf"`);return c.body(new Uint8Array(await watermarkPdf(e.pdf,'estimate')));});
