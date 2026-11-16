@@ -8,6 +8,7 @@ import { inventoryNow } from "./availability.js";
 import { deliverEstimateEmails, renderEstimatePdf, estimateSnapshot, type EstimateSnapshot } from "./estimates.js";
 import {deliverReceiptEmails} from "./receipts.js";
 import {brandedEmailHtml} from "./email.js";
+import {runBookingTransportRepair} from "./booking-transport-repair.js";
 import { PDFDocument } from "pdf-lib";
 
 import assert from "node:assert/strict";
@@ -557,17 +558,28 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     for(const machine of ['rt40','altec2595','gth636']){
       const response=await (await req('/api/bookings',{cookie,json:{...booking,details:{area:'7 Mile Beach',rentalCollection:'pickup',items:[{id:machine,term:'daily',qty:1},{id:'bucket',term:'daily',qty:1},{id:'concrete-bottom',term:'daily',qty:1}]}}})).json();
       const estimate=await prisma.estimate.findUniqueOrThrow({where:{number:response.estimateNumber},include:{booking:true}});const snapshot=estimate.snapshot as unknown as EstimateSnapshot;
-      assert.equal(estimate.booking.rentalCollection,'delivery');assert.equal(snapshot.deliveryCents,40000);assert.equal(snapshot.rows.filter(r=>r.description.includes('no additional delivery fee')).length,2);
+      assert.equal(estimate.booking.rentalCollection,'delivery');assert.equal(snapshot.deliveryCents,20000);assert.equal(snapshot.rows.filter(r=>r.description.includes('no additional delivery or pickup fee')).length,2);
       assert.ok((estimate.booking.items as unknown as {id:string;amount:number}[]).find(l=>l.id==='bucket')!.amount>0);
     }
     const standalone=await (await req('/api/bookings',{cookie,json:{...booking,details:{area:'7 Mile Beach',rentalCollection:'delivery',items:[{id:'bucket',term:'daily',qty:1}]}}})).json();
     assert.equal((await prisma.estimate.findUniqueOrThrow({where:{number:standalone.estimateNumber}})).totalCents!==null,true);
     const s=(await prisma.estimate.findUniqueOrThrow({where:{number:standalone.estimateNumber}})).snapshot as unknown as EstimateSnapshot;assert.equal(s.deliveryCents,40000);
   });
+  test("admin-authorized repair inspects and corrects the exact Ric/Paragon booking without changing payments or prices",async()=>{
+    const cookie=await signup();await req('/api/bookings',{cookie,json:{...booking,details:{startDate:'2036-03-01',startTime:'08:00',area:'7 Mile Beach',siteAddress:'Repair fixture',items:[{id:'rt40',term:'daily',qty:1},{id:'bucket',term:'daily',qty:1}]}}});
+    let b=await prisma.booking.findFirstOrThrow();b=await prisma.booking.update({where:{id:b.id},data:{customerName:'Ric Hurlstone',company:'Paragon Builders',status:'PAID',paidAt:new Date(),amountPaidCents:180000}});
+    let e=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}});const old=e.snapshot as unknown as EstimateSnapshot,broken={...old,deliveryCents:old.deliveryCents!+20000,totalCents:old.totalCents!+20000};const oldPdf=await renderEstimatePdf(broken);await prisma.estimate.update({where:{number:e.number},data:{snapshot:broken as any,totalCents:broken.totalCents,pdf:new Uint8Array(oldPdf)}});
+    const target={mode:'inspect' as const,name:'Ric Hurlstone',company:'Paragon Builders',createdBefore:new Date(Date.now()+60000).toISOString()};const inspected=await runBookingTransportRepair(target);assert.equal(inspected.status,'inspected');assert.equal((inspected as any).bookingId,b.id);assert.equal((inspected as any).oldTransportCents,40000);assert.equal((inspected as any).newTransportCents,20000);assert.equal(await prisma.estimateArchive.count(),0);
+    assert.equal((await runBookingTransportRepair({...target,mode:'apply',bookingId:b.id,estimateNumber:e.number+1})).status,'stale-target');
+    const repaired=await runBookingTransportRepair({...target,mode:'apply',bookingId:b.id,estimateNumber:e.number});assert.equal(repaired.status,'corrected');const after=await prisma.booking.findUniqueOrThrow({where:{id:b.id}});assert.equal(after.amountPaidCents,b.amountPaidCents);assert.equal(after.paidAt!.getTime(),b.paidAt!.getTime());assert.deepEqual(after.items,b.items);assert.equal(after.adminEditedAt,b.adminEditedAt);assert.equal(after.signature,b.signature);
+    const revised=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}});assert.equal(revised.totalCents,old.totalCents);assert.equal((revised.snapshot as unknown as EstimateSnapshot).deliveryCents,20000);assert.equal((revised.snapshot as unknown as EstimateSnapshot).rows.filter(r=>r.item==='Collection').length,0);assert.deepEqual(Buffer.from((await prisma.estimateArchive.findUniqueOrThrow({where:{number:e.number}})).pdf),Buffer.from(oldPdf));assert.equal(await prisma.bookingRevision.count(),1);assert.equal(await prisma.paymentReceipt.count(),1);assert.equal((await rewardsForUser(b.userId!)).points,1800);
+    assert.equal((await runBookingTransportRepair({...target,mode:'apply',bookingId:b.id,estimateNumber:e.number})).status,'stale-target');assert.equal(await prisma.bookingRevision.count(),1);
+  });
+
   test("rigging size add-ons share machine delivery and two main machines keep two delivery fees",async()=>{
     const cookie=await signup();
     const response=await (await req('/api/bookings',{cookie,json:{...booking,details:{area:'George Town',items:[{id:'rt40',term:'hourly',qty:4},{id:'national1400',term:'hourly',qty:4},{id:'lifting-10',term:'daily',qty:1}]}}})).json();
-    const estimate=await prisma.estimate.findUniqueOrThrow({where:{number:response.estimateNumber}});const s=estimate.snapshot as unknown as EstimateSnapshot;assert.equal(s.deliveryCents,45000);assert.ok(s.rows.some(r=>r.description.includes('Lifting Beams')&&r.description.includes('no additional delivery fee')));
+    const estimate=await prisma.estimate.findUniqueOrThrow({where:{number:response.estimateNumber}});const s=estimate.snapshot as unknown as EstimateSnapshot;assert.equal(s.deliveryCents,30000);assert.ok(s.rows.some(r=>r.description.includes('Lifting Beams')&&r.description.includes('no additional delivery or pickup fee')));
   });
 
   test("estimate delivery handles per-item fees, pickup and waivers, and uncertain pricing stays unconfirmed", async () => {
@@ -630,7 +642,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
       {items:[{id:'diesel-mixer-9-cu-ft',term:'daily',qty:2},{id:'g25',term:'daily',qty:1}],collection:'delivery',total:60000,pickup:true},
       {items:[{id:'diesel-mixer-9-cu-ft',term:'weekly',qty:2}],collection:'delivery',total:15000,pickup:true},
       {items:[{id:'diesel-mixer-9-cu-ft',term:'daily',qty:2}],collection:'pickup',total:0,pickup:false},
-      {items:[{id:'rt40',term:'daily',qty:1},{id:'bucket',term:'daily',qty:1}],collection:'delivery',total:30000,pickup:true}
+      {items:[{id:'rt40',term:'daily',qty:1},{id:'bucket',term:'daily',qty:1}],collection:'delivery',total:15000,pickup:false}
     ];
     for(const entry of cases){await req('/api/bookings',{cookie,json:{...booking,details:{area:'George Town',siteAddress:'Pickup fee site',rentalCollection:entry.collection,items:entry.items}}});const e=await prisma.estimate.findFirstOrThrow({orderBy:{number:'desc'}});const snapshot=e.snapshot as unknown as EstimateSnapshot;assert.equal(snapshot.deliveryCents,entry.total);assert.equal(snapshot.rows.filter(r=>r.item==='Collection').length,entry.pickup?1:0);}
   });

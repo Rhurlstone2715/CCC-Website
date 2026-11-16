@@ -1,0 +1,7 @@
+# Bundled attachment transport correction
+
+An attachment or catalog-listed add-on travelling with a crane, boom truck or telehandler incurs no additional delivery or collection fee. The main machine keeps its normal area delivery fee, including the existing dated-session deduplication. Multiple main machines retain their own delivery charges. Standalone attachments and independent tools still use the normal delivery/collection policy; free transport is not applied to unrelated rentals just because a machine is also booked.
+
+Checkout excludes bundled items from pickup eligibility and hides the pickup row if no independent rental needs collection. Server estimates and paid receipts use the same rule. Bulk-rental delivery grouping does not override a genuine machine/add-on bundle.
+
+The environment-gated `BOOKING_TRANSPORT_REPAIR` maintenance hook supports a read-only inspection followed by an exact booking-ID/estimate-number correction. It matches the specified customer/company and cutoff, rejects stale targets and any equipment/discount changes, permits only a transport reduction, archives the original PDF, records an admin-authorized maintenance revision, and issues a revised estimate. Confirmed payments, paid dates, stock windows, signatures and earned points remain unchanged. Paid bookings receive an updated receipt through the normal queue. No refund or new payment is fabricated. The hook has no HTTP endpoint, does nothing without its explicit configuration, and must be cleared after the authorized correction.

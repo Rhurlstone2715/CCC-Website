@@ -1,6 +1,6 @@
 # Pickup / collection fees
 
-When CCC collects delivered rental items, one area-rate pickup fee is charged for the whole order. Cranes, boom trucks and telehandlers are excluded. An order containing only those machines has no collection fee. Non-lifting tools, plant, generators, mats, shores, braces, scaffolding and physical attachments attract one shared collection fee, including attachments whose outbound delivery is included with a machine. Operator services and included set components do not trigger an extra charge.
+When CCC collects delivered rental items, one area-rate pickup fee is charged for the whole order. Cranes, boom trucks and telehandlers are excluded. An order containing only those machines has no collection fee. Non-lifting tools, plant, generators, mats, shores, braces, scaffolding and physical attachments attract one shared collection fee, except attachments/add-ons bundled with a crane, boom truck or telehandler: these have no additional delivery or pickup fee. Standalone attachments and unrelated rentals still attract the normal collection fee. Operator services and included set components do not trigger an extra charge.
 
 Customers collecting and returning their own portable rentals pay no CCC transport fee. Weekly/monthly outbound delivery waivers remain applicable to non-grouped rentals, but do not waive collection. The five bulk rental types still share a single outbound delivery charge; other existing outbound delivery rules are preserved.
 

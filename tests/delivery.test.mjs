@@ -8,7 +8,7 @@ const catalog = JSON.parse(readFileSync(new URL('../prisma/catalog-seed.json', i
 function checkout(cart, area = 'George Town', collection = 'delivery') {
   const context = { cart, products: catalog, $: selector => ({ value: selector === '#rentalCollection' ? collection : area }), money: n => `CI$${n}` };
   const declarations = source.split('\n').filter(line =>
-    /^const deliveryFees=|^function (collectableRental|hasCollectableRentals|rentalCollection|deliveryAvailable|groupedSiteRental|separateSiteDelivery|chargeableSiteRental|firstSiteRental|bundledAccessoryDelivery|hasLiftingService|deliveryEligible|deliveryQuantity|itemDeliveryEstimate|collectionEligible|collectionEstimate|outboundDeliveryEstimate|deliveryEstimate|deliveryLine)\(/.test(line));
+    /^const deliveryFees=|^function (collectableRental|hasCollectableRentals|rentalCollection|deliveryAvailable|groupedSiteRental|chargeableSiteRental|firstSiteRental|bundledAccessoryDelivery|hasLiftingService|deliveryEligible|deliveryQuantity|itemDeliveryEstimate|collectionEligible|collectionEstimate|outboundDeliveryEstimate|deliveryEstimate|deliveryLine)\(/.test(line));
   return runInNewContext(`${declarations.join('\n')}\n({ total: deliveryEstimate(), lines: cart.map(deliveryLine) })`, context);
 }
 const line = (id, qty = 1, term = 'daily') => ({ id, qty, term });
@@ -76,14 +76,14 @@ test('7 Mile Beach costs CI$200 per delivered item with weekly and monthly waive
 
 test('attachments share machine delivery while standalone attachments keep their own fee',()=>{
  for(const machine of ['rt40','altec2595','gth636']){
-  const result=checkout([line(machine),line('bucket'),line('concrete-bottom')],'7 Mile Beach');assert.equal(result.total,400);assert.match(result.lines[1],/No additional delivery fee/);assert.match(result.lines[2],/No additional delivery fee/);
+  const result=checkout([line(machine),line('bucket'),line('concrete-bottom')],'7 Mile Beach');assert.equal(result.total,200);assert.match(result.lines[1],/No additional delivery or pickup fee/);assert.match(result.lines[2],/No additional delivery or pickup fee/);
  }
  assert.equal(checkout([line('bucket'),line('concrete-bottom')],'7 Mile Beach').total,600);
- assert.equal(checkout([line('rt40',2),line('bucket',2)],'7 Mile Beach').total,600);
- assert.equal(checkout([line('rt40',1,'weekly'),line('bucket')],'7 Mile Beach').total,200);
+ assert.equal(checkout([line('rt40',2),line('bucket',2)],'7 Mile Beach').total,400);
+ assert.equal(checkout([line('rt40',1,'weekly'),line('bucket')],'7 Mile Beach').total,0);
 });
 test('pickup cannot remove machine delivery charges or mixed-booking delivery fees',()=>{
- assert.equal(checkout([line('altec2595'),line('bucket')],'7 Mile Beach','pickup').total,400);
+ assert.equal(checkout([line('altec2595'),line('bucket')],'7 Mile Beach','pickup').total,200);
  assert.equal(checkout([line('gth636'),line('compressor')],'7 Mile Beach','pickup').total,600);
  assert.equal(checkout([line('bucket')],'7 Mile Beach','pickup').total,0);
 });
@@ -109,4 +109,10 @@ test('one collection charge applies to all eligible rentals while the three lift
  assert.equal(checkout([line('diesel-mixer-9-cu-ft',10)],'George Town').total,1650);
  assert.equal(checkout([line('diesel-mixer-9-cu-ft',10,'weekly')],'George Town').total,150);
  assert.equal(checkout([line('diesel-mixer-9-cu-ft'),line('compressor'),line('g25')],'George Town').total,600);
+});
+
+test('attachments ride with each lifting machine without outbound or collection fees, but unrelated rentals still pay pickup',()=>{
+ for(const id of ['rt40','altec2595','gth636'])assert.equal(checkout([line(id),line('bucket'),line('concrete-bottom')],'George Town').total,150);
+ assert.equal(checkout([line('rt40'),line('bucket'),line('compressor')],'George Town').total,450);
+ assert.equal(checkout([line('bucket')],'George Town').total,300);
 });

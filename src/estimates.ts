@@ -1,5 +1,5 @@
 import {sessionLabel} from './booking-sessions.js';
-import { bundledAccessory, LIFTING_CATEGORIES, DURATION_RENTAL_IDS, SEPARATE_DELIVERY_RENTAL_IDS } from "./delivery-policy.js";
+import { bundledAccessory, LIFTING_CATEGORIES, DURATION_RENTAL_IDS } from "./delivery-policy.js";
 import { readFile } from 'node:fs/promises';
 import { Hono } from 'hono';
 import { PDFDocument, rgb, type PDFFont } from 'pdf-lib';
@@ -31,11 +31,11 @@ export async function estimateSnapshot(tx:Prisma.TransactionClient,b:Booking,num
  for(const line of lines){
   const p=byId.get(line.id);if(!p?.delivery||p.operatorService||p.setPart)continue;
   if(DURATION_RENTAL_IDS.includes(line.id)){
-   if(!SEPARATE_DELIVERY_RENTAL_IDS.includes(line.id)&&bundledAccessory(p,machines))deliveryRows.push({item:'Delivery',description:`${line.name} — included with equipment delivery (no additional delivery fee)`,qty:'',rate:'',total:'0.00'});
+   if(bundledAccessory(p,machines))deliveryRows.push({item:'Delivery',description:`${line.name} — included with equipment delivery (no additional delivery or pickup fee)`,qty:'',rate:'',total:'0.00'});
    continue;
   }
   const portable=['Tools','Power Generation','Attachments','Construction Plant / Equipment','Ground Protection'].includes(p.category);
-  if(bundledAccessory(p,machines)){deliveryRows.push({item:'Delivery',description:`${line.name} — included with equipment delivery (no additional delivery fee)`,qty:'',rate:'',total:'0.00'});continue;}
+  if(bundledAccessory(p,machines)){deliveryRows.push({item:'Delivery',description:`${line.name} — included with equipment delivery (no additional delivery or pickup fee)`,qty:'',rate:'',total:'0.00'});continue;}
   if(portable&&collection==='pickup')continue;
   if(['weekly','monthly'].includes(line.term)){deliveryRows.push({item:'Delivery',description:`${line.name} — delivery fee waived (${term(line.term)})`,qty:'',rate:'',total:'0'});continue;}
   const sessionMachine=Boolean(line.sessionStart)&&LIFTING_CATEGORIES.includes(p.category);
@@ -44,7 +44,7 @@ export async function estimateSnapshot(tx:Prisma.TransactionClient,b:Booking,num
   if(rate===undefined){deliveryCents=null;deliveryRows.push({item:'Delivery',description:`${line.name} — location / charge to be confirmed`,qty:String(qty),rate:'TBC',total:'TBC'});}
   else{if(deliveryCents!==null)deliveryCents+=rate*qty*100;deliveryRows.push({item:'Delivery',description:`${line.name} — ${b.area}`,qty:String(qty),rate:currency(rate*100),total:currency(rate*qty*100)});}
  }
- const siteRentals=lines.filter(l=>{const p=byId.get(l.id);return p?.delivery&&DURATION_RENTAL_IDS.includes(l.id)&&(SEPARATE_DELIVERY_RENTAL_IDS.includes(l.id)||!bundledAccessory(p,machines));});
+ const siteRentals=lines.filter(l=>{const p=byId.get(l.id);return p?.delivery&&DURATION_RENTAL_IDS.includes(l.id)&&!bundledAccessory(p,machines);});
  if(collection!=='pickup'&&siteRentals.length){
   const rate=b.area?DELIVERY_FEES[b.area]:undefined;
   const trips=['Delivery'];
@@ -54,7 +54,7 @@ export async function estimateSnapshot(tx:Prisma.TransactionClient,b:Booking,num
    else{if(deliveryCents!==null)deliveryCents+=rate*100;deliveryRows.push({item:kind,description:`${label} — ${b.area}; charged once for all units`,qty:'1',rate:currency(rate*100),total:currency(rate*100)});}
   }
  }
- if(collection!=='pickup'&&lines.some(l=>{const p=byId.get(l.id);return p?.delivery&&!p.operatorService&&!p.setPart&&!LIFTING_CATEGORIES.includes(p.category);})){
+ if(collection!=='pickup'&&lines.some(l=>{const p=byId.get(l.id);return p?.delivery&&!p.operatorService&&!p.setPart&&!LIFTING_CATEGORIES.includes(p.category)&&!bundledAccessory(p,machines);})){
   const rate=b.area?DELIVERY_FEES[b.area]:undefined;
   if(rate===undefined){deliveryCents=null;deliveryRows.push({item:'Collection',description:'Rental order pickup / collection — area charge to be confirmed',qty:'1',rate:'TBC',total:'TBC'});}
   else{if(deliveryCents!==null)deliveryCents+=rate*100;deliveryRows.push({item:'Collection',description:`Rental order pickup / collection — ${b.area}; charged once for all eligible items. Cranes, boom trucks and telehandlers excluded.`,qty:'1',rate:currency(rate*100),total:currency(rate*100)});}

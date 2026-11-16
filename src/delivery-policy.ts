@@ -6,4 +6,3 @@ export function bundledAccessory(product:DeliveryProduct,machines:DeliveryProduc
 }
 
 export const DURATION_RENTAL_IDS=['plumwall','scaffold','props','mats','ellis'];
-export const SEPARATE_DELIVERY_RENTAL_IDS=['plumwall','scaffold'];
