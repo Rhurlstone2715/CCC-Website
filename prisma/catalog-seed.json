@@ -260,8 +260,8 @@
    "image": "assets/catalog/39-globe-20-ton-flatbed-trailer.png",
    "chart": "assets/load-charts/20-ton-flatbed.pdf",
    "rates": {
-    "hourly": 110,
-    "daily": 765
+    "hourly": 125,
+    "daily": 850
    }
   },
   {
@@ -273,7 +273,7 @@
    "image": "assets/catalog/mack-trailer-head-cutout.png",
    "rates": {
     "hourly": 90,
-    "daily": 750
+    "daily": 675
    },
    "availableQuantity": 1
   },

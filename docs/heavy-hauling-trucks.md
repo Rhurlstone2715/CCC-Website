@@ -2,7 +2,7 @@
 
 | Vehicle | Hourly KYD | Daily KYD |
 | --- | ---: | ---: |
-| Mack Trailer Head | 90 | 750 |
+| Mack Trailer Head | 90 | 675 |
 | Ford F-450 Flatbed with Dumping Bed | 60 | 495 |
 | Ford F-550 Flatbed with Dumping Bed | 60 | 495 |
 
