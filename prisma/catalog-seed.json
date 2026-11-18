@@ -274,7 +274,8 @@
    "image": "assets/catalog/fascut-fs600.jpg",
    "rates": {
     "daily": 75,
-    "weekly": 250
+    "weekly": 300,
+    "monthly": 1000
    },
    "needsPower": true,
    "delivery": true
@@ -288,8 +289,9 @@
    "desc": "Rebar bending and cutting equipment for reinforcing-steel fabrication.",
    "image": "assets/catalog/fascut-fr800c.jpg",
    "rates": {
-    "daily": 150,
-    "weekly": 400
+    "daily": 120,
+    "weekly": 500,
+    "monthly": 1750
    },
    "needsPower": true,
    "delivery": true
