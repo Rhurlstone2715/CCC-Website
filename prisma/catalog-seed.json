@@ -932,6 +932,51 @@
    "availableQuantity": 1,
    "delivery": true,
    "fuelType": "gasoline"
+  },
+  {
+   "id": "fiberglass-step-ladder-12ft",
+   "name": "12' Fiberglass Step Ladder",
+   "category": "Tools",
+   "spec": "12 ft • Orange fiberglass • Step ladder",
+   "desc": "Orange fiberglass 12-foot step ladder.",
+   "image": "assets/catalog/fiberglass-step-ladder-12ft.png",
+   "rates": {
+    "daily": 25,
+    "weekly": 100,
+    "monthly": 375
+   },
+   "availableQuantity": 1,
+   "delivery": true
+  },
+  {
+   "id": "fiberglass-step-ladder-8ft",
+   "name": "8' Fiberglass Step Ladder",
+   "category": "Tools",
+   "spec": "8 ft • Orange fiberglass • Step ladder",
+   "desc": "Orange fiberglass 8-foot step ladder.",
+   "image": "assets/catalog/fiberglass-step-ladder-8ft.png",
+   "rates": {
+    "daily": 20,
+    "weekly": 80,
+    "monthly": 300
+   },
+   "availableQuantity": 1,
+   "delivery": true
+  },
+  {
+   "id": "fiberglass-step-ladder-6ft",
+   "name": "6' Fiberglass Step Ladder",
+   "category": "Tools",
+   "spec": "6 ft • Orange fiberglass • Step ladder",
+   "desc": "Orange fiberglass 6-foot step ladder.",
+   "image": "assets/catalog/fiberglass-step-ladder-6ft.png",
+   "rates": {
+    "daily": 15,
+    "weekly": 65,
+    "monthly": 275
+   },
+   "availableQuantity": 1,
+   "delivery": true
   }
  ],
  "riggingSizes": {
