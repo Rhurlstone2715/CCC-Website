@@ -1152,6 +1152,21 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     await prisma.$executeRawUnsafe(sql);const edited=await prisma.product.findUniqueOrThrow({where:{id}});assert.equal(edited.availableQuantity,1);assert.equal((edited.rates as {daily:number}).daily,41);
   });
 
+  test("pallet jack rates migrate existing catalogs and price all three terms at checkout", async () => {
+    const sql=readFileSync('prisma/migrations/20261118030000_pallet_jack_rental_rates/migration.sql','utf8');
+    await prisma.product.update({where:{id:'palletjacks'},data:{rates:{daily:20}}});
+    await prisma.$executeRawUnsafe(sql);
+    const product=await prisma.product.findUniqueOrThrow({where:{id:'palletjacks'}});
+    assert.deepEqual(product.rates,{daily:25,weekly:100,monthly:350});assert.equal(product.availableQuantity,2);
+    const cookie=await signup();
+    for(const [term,rate] of Object.entries({daily:25,weekly:100,monthly:350})){
+      await req('/api/bookings',{cookie,json:{...booking,details:{rentalCollection:'pickup',items:[{id:'palletjacks',term,qty:1,price:0}]}}});
+      const saved=await prisma.booking.findFirstOrThrow({orderBy:{id:'desc'}});
+      assert.equal(saved.estimateCents,rate*100,term);
+      await prisma.booking.update({where:{id:saved.id},data:{status:'CANCELLED'}});
+    }
+  });
+
   test("catalog.js is served for the rentals page", async () => {
     const res = await req("/catalog.js");
     assert.equal(res.status, 200);

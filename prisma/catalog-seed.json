@@ -576,7 +576,9 @@
    "desc": "Move palletized materials efficiently around jobsites and warehouses.",
    "image": "assets/catalog/21-pallet-jacks.jpg",
    "rates": {
-    "daily": 20
+    "daily": 25,
+    "weekly": 100,
+    "monthly": 350
    },
    "delivery": true
   },
