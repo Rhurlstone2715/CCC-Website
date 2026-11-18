@@ -1471,6 +1471,21 @@
    },
    "availableQuantity": 1,
    "delivery": true
+  },
+  {
+   "id": "togopower-gg8000",
+   "name": "TogoPower GG8000 Portable Generator — 8,000W Peak",
+   "category": "Power Generation",
+   "spec": "6,500W running • 8,000W peak • Gasoline",
+   "desc": "Portable gasoline generator with a 420cc four-stroke OHV engine, electric start, wheels and a folding handle. Offers 120V and 120/240V outlets. Fuel tank: 6.6 US gallons.",
+   "image": "assets/catalog/togopower-gg8000.jpg",
+   "availableQuantity": 1,
+   "delivery": true,
+   "fuelType": "gasoline",
+   "rates": {
+    "daily": 50,
+    "weekly": 225
+   }
   }
  ],
  "riggingSizes": {
