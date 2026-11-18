@@ -7,7 +7,7 @@ test('browse categories include every customer-facing item exactly once without 
  assert.equal(ids.length,new Set(ids).size);assert.deepEqual([...ids].sort(),seed.filter(p=>!p.hidden&&!p.setPart&&!p.operatorService).map(p=>p.id).sort());assert.equal(JSON.stringify(seed),before);
 });
 test('cranes, boom trucks, telehandlers and Heavy Hauling are separate browse groups',()=>{
- for(const[id,count]of[['cranes',4],['boom-trucks',2],['telehandlers',3],['heavy-hauling',2]])assert.equal(layout.itemsFor(seed,id).length,count);
+ for(const[id,count]of[['cranes',4],['boom-trucks',2],['telehandlers',3],['heavy-hauling',5]])assert.equal(layout.itemsFor(seed,id).length,count);
  assert.equal(layout.categories.find(c=>c.id==='hydraulic').name,'Rebar Benders/Cutters');assert.equal(layout.categories.find(c=>c.id==='heavy-hauling').name,'Heavy Hauling');assert.ok(!layout.categories.some(c=>['Heavy Equipment','Lifting Equipment'].includes(c.name)));
 });
 test('wall bracing is separate from scaffolding and retains the animated ICF image',()=>{

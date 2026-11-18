@@ -265,6 +265,45 @@
    }
   },
   {
+   "id": "mack-trailer-head",
+   "name": "Mack Trailer Head",
+   "category": "Heavy Hauling",
+   "spec": "Trailer head • Heavy hauling",
+   "desc": "Mack trailer head for heavy hauling and transport services. Share your load and route details when booking.",
+   "image": "assets/catalog/mack-trailer-head-cutout.png",
+   "rates": {
+    "hourly": 90,
+    "daily": 750
+   },
+   "availableQuantity": 1
+  },
+  {
+   "id": "ford-f450-dump-flatbed",
+   "name": "Ford F-450 Flatbed with Dumping Bed",
+   "category": "Heavy Hauling",
+   "spec": "Flatbed truck • Dumping bed",
+   "desc": "Ford F-450 flatbed with a dumping bed for transporting and unloading materials. Share your load, route and site requirements when booking.",
+   "image": "assets/catalog/ford-f450-dump-flatbed-cutout.png",
+   "rates": {
+    "hourly": 60,
+    "daily": 495
+   },
+   "availableQuantity": 1
+  },
+  {
+   "id": "ford-f550-dump-flatbed",
+   "name": "Ford F-550 Flatbed with Dumping Bed",
+   "category": "Heavy Hauling",
+   "spec": "Flatbed truck • Dumping bed",
+   "desc": "Ford F-550 flatbed with a dumping bed for transporting and unloading materials. Share your load, route and site requirements when booking.",
+   "image": "assets/catalog/ford-f550-dump-flatbed-cutout.png",
+   "rates": {
+    "hourly": 60,
+    "daily": 495
+   },
+   "availableQuantity": 1
+  },
+  {
    "id": "fs600",
    "availableQuantity": 3,
    "name": "FASCUT FS-600",

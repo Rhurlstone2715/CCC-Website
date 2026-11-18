@@ -1195,6 +1195,32 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     }
   });
 
+  test("new heavy hauling trucks seed safely, preserve admin edits and use approved checkout rates", async () => {
+    const ids=['mack-trailer-head','ford-f450-dump-flatbed','ford-f550-dump-flatbed'];
+    const sql=readFileSync('prisma/migrations/20261118050000_heavy_hauling_trucks/migration.sql','utf8');
+    await prisma.$executeRawUnsafe('TRUNCATE "Product" CASCADE');await prisma.$executeRawUnsafe(sql);assert.equal(await prisma.product.count(),0);await ensureCatalogSeeded();
+    const seed=JSON.parse(readFileSync('prisma/catalog-seed.json','utf8'));assert.equal(await prisma.product.count(),seed.products.length);
+    await prisma.product.deleteMany({where:{id:{in:ids}}});const before=await prisma.product.count();await prisma.$executeRawUnsafe(sql);await prisma.$executeRawUnsafe(sql);assert.equal(await prisma.product.count(),before+3);
+    const cookie=await signup();
+    for(const [id,rates]of [[ids[0],{hourly:90,daily:750}],[ids[1],{hourly:60,daily:495}],[ids[2],{hourly:60,daily:495}]] as const){
+      const p=await prisma.product.findUniqueOrThrow({where:{id}});assert.equal(p.category,'Heavy Hauling');assert.equal(p.availableQuantity,1);assert.equal(p.delivery,false);assert.deepEqual(p.rates,rates);assert.match(p.image,/-cutout\.png$/);
+      for(const [term,rate]of Object.entries(rates)){
+        const qty=term==='hourly'?4:1;const response=await req('/api/bookings',{cookie,json:{...booking,details:{items:[{id,term,qty,price:0}]}}});assert.equal(response.status,503,await response.clone().text());
+        const saved=await prisma.booking.findFirstOrThrow({orderBy:{id:'desc'}});assert.equal(saved.estimateCents,rate*qty*100);await prisma.booking.update({where:{id:saved.id},data:{status:'CANCELLED'}});
+      }
+      await prisma.product.update({where:{id},data:{rates:{hourly:99},availableQuantity:2}});await prisma.$executeRawUnsafe(sql);const edited=await prisma.product.findUniqueOrThrow({where:{id}});assert.deepEqual(edited.rates,{hourly:99});assert.equal(edited.availableQuantity,2);
+    }
+  });
+  test("each heavy hauling truck reserves its own single unit for overlapping bookings", async () => {
+    const cookie=await signup(),startDate=new Date(Date.now()+7*86400000).toISOString().slice(0,10);
+    const payload=(id:string)=>({...booking,details:{startDate,startTime:'09:00',items:[{id,term:'hourly',qty:4}]}});
+    for(const id of ['mack-trailer-head','ford-f450-dump-flatbed','ford-f550-dump-flatbed']){
+      assert.equal((await req('/api/bookings',{cookie,json:payload(id)})).status,503);
+      const conflict=await req('/api/bookings',{cookie,json:payload(id)});assert.equal(conflict.status,409);assert.match((await conflict.json()).error,/available|booked|stock|unit/i);
+    }
+    assert.equal(await prisma.booking.count(),3);
+  });
+
   test("catalog.js is served for the rentals page", async () => {
     const res = await req("/catalog.js");
     assert.equal(res.status, 200);
