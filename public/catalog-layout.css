@@ -8,3 +8,5 @@
 #checkoutSocketSection .checkout-power-info>label{min-width:0;flex:1}#checkoutSocketSelect{width:100%;min-width:0}
 
 .socket-category-heading{grid-column:1/-1;margin:20px 0 0;padding:14px 0 10px;border-bottom:2px solid var(--red,#a50000);font-size:1.35rem}#subfilters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}#subfilters[hidden]{display:none}
+
+.socket-subcategory-card{font:inherit;color:inherit;text-align:left;cursor:pointer;align-self:start;width:100%}.socket-subcategory-card:hover{border-color:var(--red,#a50000)}
