@@ -9,7 +9,7 @@ window.CCC_BROWSE=(()=>{
   {id:'wall-bracing',name:'Wall Bracing',description:'ICF bracing & Ellis wall braces',hero:'plumwall'},
   {id:'air',name:'Air Tools & Compressors',description:'Compressors & pneumatic tools',hero:'compressor'},
   {id:'power-generation',name:'Generators & Welders',description:'Site power, welding & electrical accessories',hero:'g25'},
-  {id:'hydraulic',name:'Hydraulic Tools',description:'Rebar cutting & bending tools',hero:'fs600'},
+  {id:'hydraulic',name:'Rebar Benders/Cutters',description:'Rebar cutting & bending tools',hero:'fs600'},
   {id:'heavy-hauling',name:'Heavy Hauling',description:'Lowboy & flatbed transport',hero:'lowboy'},
   {id:'attachments',name:'Attachments & Rigging',description:'Buckets, baskets, beams & lifting accessories',hero:'bucket'},
   {id:'handling',name:'Material Handling',description:'Pallet jacks & roller skids',hero:'palletjacks'},

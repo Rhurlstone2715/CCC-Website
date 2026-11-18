@@ -319,7 +319,8 @@
    "image": "assets/catalog/wyco-complete-rental.png",
    "rates": {
     "daily": 35,
-    "weekly": 125
+    "weekly": 150,
+    "monthly": 500
    },
    "addOns": [
     "wyco-8914",
@@ -385,8 +386,9 @@
    "desc": "Reinforced pencil vibrator shaft with a strong outer casing and opposite-wound spring core to resist kinking and wear. Compatible with Wyco vibrator motors and CK-8900 pencil heads.",
    "image": "assets/catalog/wyco-shaft.webp",
    "rates": {
-    "daily": 15,
-    "weekly": 50
+    "daily": 0,
+    "weekly": 0,
+    "monthly": 0
    },
    "setPart": "Shaft"
   },
@@ -399,8 +401,9 @@
    "desc": "Reinforced pencil vibrator shaft with a strong outer casing and opposite-wound spring core to resist kinking and wear. Compatible with Wyco vibrator motors and CK-8900 pencil heads.",
    "image": "assets/catalog/wyco-shaft.webp",
    "rates": {
-    "daily": 20,
-    "weekly": 75
+    "daily": 0,
+    "weekly": 0,
+    "monthly": 0
    },
    "setPart": "Shaft"
   },
@@ -413,8 +416,9 @@
    "desc": "Hardened-steel square head for CK-8900 pencil shafts. Changing vibration pattern gives 22% more displacement and 20–50% faster consolidation than a round head, according to Wyco; suited to low-slump concrete.",
    "image": "assets/catalog/wyco-head.webp",
    "rates": {
-    "daily": 5,
-    "weekly": 20
+    "daily": 0,
+    "weekly": 0,
+    "monthly": 0
    },
    "setPart": "Head"
   },
@@ -427,8 +431,9 @@
    "desc": "Hardened-steel square head for CK-8900 pencil shafts. Changing vibration pattern gives 22% more displacement and 20–50% faster consolidation than a round head, according to Wyco; suited to low-slump concrete.",
    "image": "assets/catalog/wyco-head.webp",
    "rates": {
-    "daily": 5,
-    "weekly": 20
+    "daily": 0,
+    "weekly": 0,
+    "monthly": 0
    },
    "setPart": "Head"
   },

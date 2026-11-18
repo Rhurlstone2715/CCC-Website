@@ -18,7 +18,7 @@ import { after, before, beforeEach, describe, test } from "node:test";
 import { app } from "./app.js";
 import { hashPassword, safeNext, verifyPassword } from "./auth.js";
 import { parseBooking, parseDetails } from "./bookings.js";
-import { buildCatalog, ensureCatalogSeeded, setProblem } from "./catalog.js";
+import { buildCatalog, ensureCatalogSeeded, priceItems, setProblem } from "./catalog.js";
 import { prisma } from "./db.js";
 import { deliverAccountEmails, queueWelcomeEmail } from "./account-emails.js";
 import { companyEmailDomain, syncCompanyMembership } from "./companies.js";
@@ -1274,6 +1274,25 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const [first, second] = await prisma.booking.findMany({ orderBy: { id: "asc" } });
     assert.equal(first.estimateCents, 580_00);
     assert.equal(second.estimateCents, 600_00);
+  });
+
+  test("complete vibrator rate migration includes every shaft/head, monthly checkout and preserves earlier estimates", async () => {
+    const cookie=await signup(),ids=['wyco-995','wyco-8914','wyco-8920','wyco-750d','wyco-750eh'];
+    for(const [id,rates]of [['wyco-995',{daily:35,weekly:125}],['wyco-8914',{daily:15,weekly:50}],['wyco-8920',{daily:20,weekly:75}],['wyco-750d',{daily:5,weekly:20}],['wyco-750eh',{daily:5,weekly:20}]] as const)await prisma.product.update({where:{id},data:{rates}});
+    const lines=(term:string,shaft='wyco-8920',head='wyco-750d',qty=1)=>['wyco-995',shaft,head].map(id=>({id,term,qty}));
+    await req('/api/bookings',{cookie,json:{...booking,details:{rentalCollection:'pickup',items:lines('daily')}}});
+    const old=await prisma.booking.findFirstOrThrow(),oldEstimate=await prisma.estimate.findFirstOrThrow({where:{bookingId:old.id}});assert.equal(old.estimateCents,6000);
+    await prisma.booking.update({where:{id:old.id},data:{status:'CANCELLED'}});
+    const before=await prisma.product.findMany({where:{id:{in:ids}}});
+    await prisma.$executeRawUnsafe(readFileSync('prisma/migrations/20261118040000_complete_vibrator_rental_rates/migration.sql','utf8'));
+    for(const p of before){const updated=await prisma.product.findUniqueOrThrow({where:{id:p.id}});assert.equal(updated.availableQuantity,p.availableQuantity);assert.equal(updated.setPart,p.setPart);}
+    for(const [term,rate]of Object.entries({daily:35,weekly:150,monthly:500})){
+      for(const shaft of ['wyco-8914','wyco-8920'])for(const head of ['wyco-750d','wyco-750eh'])assert.equal((await priceItems(lines(term,shaft,head,2),0)).estimateCents,rate*200);
+      const response=await req('/api/bookings',{cookie,json:{...booking,details:{rentalCollection:'pickup',items:lines(term).map(i=>({...i,price:0}))}}});assert.equal(response.status,503,await response.clone().text());
+      const saved=await prisma.booking.findFirstOrThrow({orderBy:{id:'desc'}});assert.equal(saved.estimateCents,rate*100);await prisma.booking.update({where:{id:saved.id},data:{status:'CANCELLED'}});
+    }
+    assert.equal((await prisma.booking.findUniqueOrThrow({where:{id:old.id}})).estimateCents,6000);
+    assert.deepEqual(Buffer.from((await prisma.estimate.findUniqueOrThrow({where:{number:oldEstimate.number}})).pdf),Buffer.from(oldEstimate.pdf));
   });
 
   test("bookings refuse an incomplete vibrator set, and set parts are edited in the catalog", async () => {
