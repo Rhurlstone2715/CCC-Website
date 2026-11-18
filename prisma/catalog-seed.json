@@ -247,8 +247,8 @@
    "image": "assets/catalog/38-60-ton-lowboy.png",
    "chart": "assets/load-charts/60-ton-lowboy.pdf",
    "rates": {
-    "hourly": 150,
-    "daily": 990
+    "hourly": 175,
+    "daily": 1350
    }
   },
   {
