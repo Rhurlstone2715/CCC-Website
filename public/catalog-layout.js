@@ -12,7 +12,8 @@ window.CCC_BROWSE=(()=>{
   {id:'power-generation',name:'Generators & Welders',description:'Site power, welding & electrical accessories',hero:'g100'},
   {id:'hydraulic',name:'Rebar Benders/Cutters',description:'Rebar cutting & bending tools',hero:'fr800c'},
   {id:'heavy-hauling',name:'Heavy Hauling',description:'Trailer heads, dump trucks & heavy transport',hero:'lowboy'},
-  {id:'attachments',name:'Attachments & Rigging',description:'Buckets, baskets, beams & lifting accessories',hero:'blockforks'},
+  {id:'attachments',name:'Attachments',description:'Buckets, forks, baskets & equipment attachments',hero:'blockforks'},
+  {id:'rigging-gear',name:'Rigging Gear',description:'Lifting clamps, beams & spreader gear',hero:'karryton-vertical-plate-clamp'},
   {id:'handling',name:'Material Handling',description:'Pallet jacks & roller skids',hero:'palletjacks'},
   {id:'ground',name:'Ground Protection',description:'Mats for site access & surface protection',hero:'mats'},
   {id:'compaction',name:'Compaction Equipment',description:'Compactors, rollers & rammers',image:'/assets/categories/compaction.jpg'},
@@ -28,6 +29,7 @@ window.CCC_BROWSE=(()=>{
   {id:'other',name:'Other Equipment & Tools',description:'More equipment for your jobsite',fallback:true,image:'/assets/ccc-icon-192.png'}
  ];
  const productGroups={
+  'rigging-gear':['karryton-vertical-plate-clamp','liftingbeams','spreaderbars','spreaderbeams'],
   'construction-site-tools':['magnetic-sweeper-36'],
   'pumps':['multiquip-st2047','discharge-hose-2in'],
   'ladders':['fiberglass-step-ladder-12ft','fiberglass-step-ladder-8ft','fiberglass-step-ladder-6ft'],
@@ -39,6 +41,7 @@ window.CCC_BROWSE=(()=>{
  };
  const standardGroups={'Rough Terrain Cranes':'cranes','Boom Trucks':'boom-trucks','Telehandlers':'telehandlers','Heavy Hauling':'heavy-hauling','Power Generation':'power-generation','Attachments':'attachments','Ground Protection':'ground'};
  function categoryId(p){
+  if(productGroups['rigging-gear'].includes(p.rigging?.family||p.id))return 'rigging-gear';
   if(standardGroups[p.category])return standardGroups[p.category];
   for(const [id,ids]of Object.entries(productGroups))if(ids.includes(p.id))return id;
   const name=String(p.name||'').toLowerCase();

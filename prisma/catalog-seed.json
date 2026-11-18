@@ -1415,6 +1415,20 @@
    },
    "availableQuantity": 1,
    "delivery": true
+  },
+  {
+   "id": "karryton-vertical-plate-clamp",
+   "name": "KARRYTON 2-Ton Vertical Plate Lifting Clamp",
+   "category": "Attachments",
+   "spec": "2 ton / 4,400 lb • Vertical plate clamp • Per piece",
+   "desc": "Vertical steel plate lifting clamp, rented per piece. Select the quantity needed for your lift.",
+   "image": "assets/catalog/karryton-vertical-plate-clamp-cutout.png",
+   "rates": {
+    "daily": 10,
+    "weekly": 40
+   },
+   "availableQuantity": 2,
+   "delivery": true
   }
  ],
  "riggingSizes": {
