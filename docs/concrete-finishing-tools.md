@@ -5,7 +5,7 @@ Both tools are listed under Tools and use the existing rental duration, delivery
 | Tool | Daily KYD | Weekly KYD | Monthly KYD |
 | --- | ---: | ---: | ---: |
 | Concrete Jitter Bug | 20 | 80 | 350 |
-| Concrete Bull Float | 25 | 100 | 350 |
+| Concrete Bull Float | 25 | 100 | 375 |
 
 The seed supplies new databases. Migration 20261118023000 adds missing products to existing catalogs without overwriting admin edits. Previously made bookings retain their saved prices.
 

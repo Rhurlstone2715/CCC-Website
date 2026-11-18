@@ -371,7 +371,7 @@
    "rates": {
     "daily": 25,
     "weekly": 100,
-    "monthly": 350
+    "monthly": 375
    },
    "delivery": true,
    "availableQuantity": 3
