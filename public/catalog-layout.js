@@ -13,7 +13,7 @@ window.CCC_BROWSE=(()=>{
   {id:'hydraulic',name:'Rebar Benders/Cutters',description:'Rebar cutting & bending tools',hero:'fr800c'},
   {id:'heavy-hauling',name:'Heavy Hauling',description:'Trailer heads, dump trucks & heavy transport',hero:'lowboy'},
   {id:'attachments',name:'Attachments',description:'Buckets, forks, baskets & equipment attachments',hero:'blockforks'},
-  {id:'rigging-gear',name:'Rigging Gear',description:'Lifting clamps, beams & spreader gear',hero:'karryton-vertical-plate-clamp'},
+  {id:'rigging-gear',name:'Lifting/Rigging Gear',description:'Lifting clamps, beams & spreader gear',hero:'karryton-vertical-plate-clamp'},
   {id:'handling',name:'Material Handling',description:'Pallet jacks & roller skids',hero:'palletjacks'},
   {id:'ground',name:'Ground Protection',description:'Mats for site access & surface protection',hero:'mats'},
   {id:'compaction',name:'Compaction Equipment',description:'Compactors, rollers & rammers',image:'/assets/categories/compaction.jpg'},
