@@ -261,7 +261,7 @@
    "chart": "assets/load-charts/20-ton-flatbed.pdf",
    "rates": {
     "hourly": 125,
-    "daily": 850
+    "daily": 900
    }
   },
   {
@@ -900,6 +900,38 @@
     "hourly": 35,
     "daily": 315
    }
+  },
+  {
+   "id": "simpson-alh3425",
+   "name": "Simpson ALH3425 3600 PSI Pressure Washer",
+   "category": "Tools",
+   "spec": "3600 PSI • 2.5 GPM • Honda GX200 • Gasoline",
+   "desc": "Simpson Aluminum Series gasoline pressure washer for pressure cleaning.",
+   "image": "assets/catalog/simpson-alh3425-cutout.png",
+   "rates": {
+    "daily": 55,
+    "weekly": 275,
+    "monthly": 875
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "fuelType": "gasoline"
+  },
+  {
+   "id": "simpson-cm61083",
+   "name": "Simpson Clean Machine CM61083 3400 PSI Pressure Washer",
+   "category": "Tools",
+   "spec": "3400 PSI • 2.5 GPM • CRX engine • Gasoline",
+   "desc": "Simpson Clean Machine gasoline pressure washer for pressure cleaning.",
+   "image": "assets/catalog/simpson-cm61083-cutout.png",
+   "rates": {
+    "daily": 45,
+    "weekly": 200,
+    "monthly": 750
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "fuelType": "gasoline"
   }
  ],
  "riggingSizes": {

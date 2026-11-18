@@ -1195,6 +1195,23 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     }
   });
 
+  test("pressure washers migrate safely and checkout uses all six rental rates", async () => {
+    const ids=['simpson-alh3425','simpson-cm61083'];
+    const sql=readFileSync('prisma/migrations/20261118052000_pressure_washers_and_flatbed_rate/migration.sql','utf8');
+    // Execute statements separately because PostgreSQL prepared queries reject multiple commands.
+    const apply=async()=>{for(const statement of sql.replace(/--[^\n]*/g,'').split(';').filter(s=>s.trim()))await prisma.$executeRawUnsafe(statement)};
+    await prisma.product.deleteMany({where:{id:{in:ids}}});const before=await prisma.product.count();await apply();await apply();assert.equal(await prisma.product.count(),before+2);
+    assert.deepEqual((await prisma.product.findUniqueOrThrow({where:{id:'flatbed'}})).rates,{hourly:125,daily:900});
+    const cookie=await signup();
+    for(const [id,rates]of [[ids[0],{daily:55,weekly:275,monthly:875}],[ids[1],{daily:45,weekly:200,monthly:750}]] as const){
+      const p=await prisma.product.findUniqueOrThrow({where:{id}});assert.equal(p.fuelType,'gasoline');assert.equal(p.delivery,true);assert.equal(p.availableQuantity,1);assert.deepEqual(p.rates,rates);
+      for(const [term,rate]of Object.entries(rates)){
+        const response=await req('/api/bookings',{cookie,json:{...booking,details:{items:[{id,term,qty:1,price:0}]}}});assert.equal(response.status,503,await response.clone().text());
+        const saved=await prisma.booking.findFirstOrThrow({orderBy:{id:'desc'}});assert.equal(saved.estimateCents,rate*100);await prisma.booking.update({where:{id:saved.id},data:{status:'CANCELLED'}});
+      }
+      await prisma.product.update({where:{id},data:{availableQuantity:2}});await apply();assert.equal((await prisma.product.findUniqueOrThrow({where:{id}})).availableQuantity,2);
+    }
+  });
   test("new heavy hauling trucks seed safely, preserve admin edits and use approved checkout rates", async () => {
     const ids=['mack-trailer-head','ford-f450-dump-flatbed','ford-f550-dump-flatbed'];
     const sql=readFileSync('prisma/migrations/20261118050000_heavy_hauling_trucks/migration.sql','utf8');

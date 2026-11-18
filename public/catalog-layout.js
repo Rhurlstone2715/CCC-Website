@@ -27,6 +27,7 @@ window.CCC_BROWSE=(()=>{
   {id:'other',name:'Other Equipment & Tools',description:'More equipment for your jobsite',fallback:true,image:'/assets/ccc-icon-192.png'}
  ];
  const productGroups={
+  'pressure':['simpson-alh3425','simpson-cm61083'],
   'concrete':['wyco-995','diesel-mixer-9-cu-ft','concrete-jitter-bug','concrete-bull-float'],
   'scaffolding':['scaffold','props'],'wall-bracing':['plumwall','ellis'],
   'air':['compressor','impactgun'],'power-generation':['mini-welder','mini-plasma'],
