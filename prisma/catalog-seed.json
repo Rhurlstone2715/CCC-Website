@@ -1443,6 +1443,20 @@
    },
    "availableQuantity": 1,
    "delivery": true
+  },
+  {
+   "id": "ironwalls-chain-drum-lifter",
+   "name": "IRONWALLS Chain Drum Lifter — 1 Ton",
+   "category": "Attachments",
+   "spec": "1-ton capacity • 30–55 gallon drums • Two-hook assembly",
+   "desc": "Complete two-hook chain drum lifting assembly for compatible sealed metal or plastic drums. Not for plastic drums with clamp-on lids. Drum not included.",
+   "image": "assets/catalog/ironwalls-chain-drum-lifter-cutout.png",
+   "rates": {
+    "daily": 5,
+    "weekly": 20
+   },
+   "availableQuantity": 1,
+   "delivery": true
   }
  ],
  "riggingSizes": {

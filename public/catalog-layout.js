@@ -29,7 +29,7 @@ window.CCC_BROWSE=(()=>{
   {id:'other',name:'Other Equipment & Tools',description:'More equipment for your jobsite',fallback:true,image:'/assets/ccc-icon-192.png'}
  ];
  const productGroups={
-  'rigging-gear':['gryvoze-stone-lifting-clamp','karryton-vertical-plate-clamp','liftingbeams','spreaderbars','spreaderbeams'],
+  'rigging-gear':['ironwalls-chain-drum-lifter','gryvoze-stone-lifting-clamp','karryton-vertical-plate-clamp','liftingbeams','spreaderbars','spreaderbeams'],
   'construction-site-tools':['magnetic-sweeper-36'],
   'pumps':['multiquip-st2047','discharge-hose-2in'],
   'ladders':['fiberglass-step-ladder-12ft','fiberglass-step-ladder-8ft','fiberglass-step-ladder-6ft'],
