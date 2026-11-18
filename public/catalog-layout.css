@@ -6,3 +6,5 @@
 .toast{pointer-events:none}.site-header .category-nav-links{display:grid;width:min(680px,calc(100vw - 32px))}
 #catalogTitle{text-transform:none}.catalog-section .search input{background:transparent;border:0;padding:0;min-height:25px}.catalog-section .search>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
 #checkoutSocketSection .checkout-power-info>label{min-width:0;flex:1}#checkoutSocketSelect{width:100%;min-width:0}
+
+.socket-category-heading{grid-column:1/-1;margin:20px 0 0;padding:14px 0 10px;border-bottom:2px solid var(--red,#a50000);font-size:1.35rem}#subfilters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}#subfilters[hidden]{display:none}
