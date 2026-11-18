@@ -27,6 +27,7 @@ window.CCC_BROWSE=(()=>{
   {id:'other',name:'Other Equipment & Tools',description:'More equipment for your jobsite',fallback:true,image:'/assets/ccc-icon-192.png'}
  ];
  const productGroups={
+  'pumps':['multiquip-st2047','discharge-hose-2in'],
   'ladders':['fiberglass-step-ladder-12ft','fiberglass-step-ladder-8ft','fiberglass-step-ladder-6ft'],
   'pressure':['simpson-alh3425','simpson-cm61083'],
   'concrete':['wyco-995','diesel-mixer-9-cu-ft','concrete-jitter-bug','concrete-bull-float'],

@@ -977,6 +977,40 @@
    },
    "availableQuantity": 1,
    "delivery": true
+  },
+  {
+   "id": "multiquip-st2047",
+   "name": "Multiquip ST2047 2″ Submersible Pump",
+   "category": "Tools",
+   "spec": "2″ outlet • Electric • 110 V • Up to 87 GPM",
+   "desc": "Portable electric submersible water pump. Maximum head: 47 ft. Discharge hose rented separately.",
+   "image": "assets/catalog/multiquip-st2047.jpg",
+   "rates": {
+    "daily": 40,
+    "weekly": 185,
+    "monthly": 650
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "needsPower": true,
+   "addOns": [
+    "discharge-hose-2in"
+   ]
+  },
+  {
+   "id": "discharge-hose-2in",
+   "name": "2″ Discharge Hose",
+   "category": "Tools",
+   "spec": "2″ discharge hose",
+   "desc": "Discharge hose for water pumping applications. Rented separately from the pump.",
+   "image": "assets/catalog/discharge-hose-2in.jpg",
+   "rates": {
+    "daily": 5,
+    "weekly": 20,
+    "monthly": 75
+   },
+   "availableQuantity": 1,
+   "delivery": true
   }
  ],
  "riggingSizes": {
