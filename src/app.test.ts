@@ -1332,6 +1332,22 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal((await req('/api/bookings',{cookie,json:payload('magnetic-sweeper-17')})).status,503);
     assert.equal((await req('/api/bookings',{cookie,json:payload('magnetic-sweeper-17')})).status,409);
   });
+  test("100 ft extension cord preserves existing cords and charges approved rates", async () => {
+    const ids=['lifesupply-100ft-10-3-cord'];
+    const sql=readFileSync('prisma/migrations/20261118071000_lifesupply_extension_cord/migration.sql','utf8');
+    // Execute statements separately because PostgreSQL prepared queries reject multiple commands.
+    const apply=async()=>{for(const statement of sql.replace(/--[^\n]*/g,'').split(';').filter(s=>s.trim()))await prisma.$executeRawUnsafe(statement)};
+    await prisma.product.deleteMany({where:{id:{in:ids}}});const before=await prisma.product.count();await apply();await apply();assert.equal(await prisma.product.count(),before+1);
+    const cookie=await signup();
+    for(const [id,rates]of [[ids[0],{daily:6,weekly:18}]] as const){
+      const p=await prisma.product.findUniqueOrThrow({where:{id}});assert.equal(p.fuelType,null);assert.equal(p.category,'Power Generation');assert.match(p.spec,/100 ft.*10\/3/);assert.equal(p.needsPower,false);assert.equal(p.delivery,true);assert.equal(p.availableQuantity,1);assert.deepEqual(p.rates,rates);
+      for(const [term,rate]of Object.entries(rates)){
+        const response=await req('/api/bookings',{cookie,json:{...booking,details:{items:[{id,term,qty:1,price:0}]}}});assert.equal(response.status,503,await response.clone().text());
+        const saved=await prisma.booking.findFirstOrThrow({orderBy:{id:'desc'}});assert.equal(saved.estimateCents,rate*100);await prisma.booking.update({where:{id:saved.id},data:{status:'CANCELLED'}});
+      }
+      await prisma.product.update({where:{id},data:{availableQuantity:2}});await apply();assert.equal((await prisma.product.findUniqueOrThrow({where:{id}})).availableQuantity,2);
+    }
+  });
   test("portable generator migrates safely with approved rates and gasoline return requirement", async () => {
     const ids=['togopower-gg8000'];
     const sql=readFileSync('prisma/migrations/20261118070000_togopower_generator/migration.sql','utf8');

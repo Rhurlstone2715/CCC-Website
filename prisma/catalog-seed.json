@@ -1486,6 +1486,20 @@
     "daily": 50,
     "weekly": 225
    }
+  },
+  {
+   "id": "lifesupply-100ft-10-3-cord",
+   "name": "LifeSupplyUSA 100 ft 10/3 Extension Cord",
+   "category": "Power Generation",
+   "spec": "100 ft • 10/3 • Grounded indoor/outdoor cord",
+   "desc": "Heavy-duty 100 ft extension cord with grounded three-prong plugs for indoor and outdoor use.",
+   "image": "assets/catalog/lifesupply-100ft-10-3-cord.jpg",
+   "rates": {
+    "daily": 6,
+    "weekly": 18
+   },
+   "availableQuantity": 1,
+   "delivery": true
   }
  ],
  "riggingSizes": {
