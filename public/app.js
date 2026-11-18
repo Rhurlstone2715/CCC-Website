@@ -70,7 +70,6 @@ const addonGroups={
 };
 addonGroups.national1400={...addonGroups.crane,intro:"Choose lifting accessories for the National 1400H. The man basket is available only with this boom truck."};
 const catalogCategories=Object.keys(catalogTree);
-let listedCategoriesOnly=false;
 let activeCategory=catalogCategories.includes(new URLSearchParams(location.search).get("category"))?new URLSearchParams(location.search).get("category"):"All";let activeSubcategory="All";let query="";let cart=JSON.parse(localStorage.getItem("ccc-rental-cart")||"[]");let lastRequest="";let lastMailto="";let rewardsAccount=null;let signedIn=false;let emailConfirmed=true;
 // Carry earlier quote-only items forward at their now-published daily rate.
 cart=cart.map(i=>i.id==="national-manbasket"&&i.term==="quote"?{...i,term:"fourhour",key:`${i.id}:${i.parentKey}:fourhour`}:i);
@@ -116,17 +115,16 @@ function renderFilters(){
  $('#catalogTitle').textContent=selected?selected.name:'What do you need for the job?';
  $('#catalogDescription').textContent=selected?selected.description:'Choose a category to see equipment, rental rates and details. Rates are in Cayman Islands dollars.';
  $('#categoryBreadcrumb').innerHTML=selected?`<a href="${categoryUrl('All')}" data-browse-category="All">All categories</a><span aria-hidden="true"> / </span>${escapeCatalog(selected.name)}`:'Browse categories';
- $('#filters').innerHTML=`<button class="filter ${activeCategory==='All'?'active':''}" data-browse-category="All">All categories <span>${browseCategories.length}</span></button><button class="filter ${listedCategoriesOnly?'active':''}" id="listedCategoryFilter" aria-pressed="${listedCategoriesOnly}">With listed equipment <span>${browseCategories.filter(c=>browseLayout.itemsFor(products,c.id).length).length}</span></button><label class="category-select-label">Category<select id="browseCategorySelect" aria-label="Choose equipment category"><option value="All">All categories</option>${browseCategories.map(c=>`<option value="${c.id}" ${c.id===activeCategory?'selected':''}>${escapeCatalog(c.name)}</option>`).join('')}</select></label>`;
+ $('#filters').innerHTML=`<button class="filter ${activeCategory==='All'?'active':''}" data-browse-category="All">All categories <span>${browseCategories.length}</span></button><label class="category-select-label">Category<select id="browseCategorySelect" aria-label="Choose equipment category"><option value="All">All categories</option>${browseCategories.map(c=>`<option value="${c.id}" ${c.id===activeCategory?'selected':''}>${escapeCatalog(c.name)}</option>`).join('')}</select></label>`;
  $('#subfilters').hidden=true;$('#subfilters').innerHTML='';
  $('#categoryGrid').hidden=!home;$('#catalogCategoryNote').hidden=!home;
- $('#categoryGrid').innerHTML=browseCategories.filter(c=>!listedCategoriesOnly||browseLayout.itemsFor(products,c.id).length).filter(c=>!query||`${c.name} ${c.description}`.toLowerCase().includes(query)||browseLayout.itemsFor(products,c.id).some(p=>catalogSearchText(p).includes(query))).map(c=>{
+ $('#categoryGrid').innerHTML=browseCategories.filter(c=>!query||`${c.name} ${c.description}`.toLowerCase().includes(query)||browseLayout.itemsFor(products,c.id).some(p=>catalogSearchText(p).includes(query))).map(c=>{
   const items=browseLayout.itemsFor(products,c.id),image=items.find(p=>p.id===c.hero)?.image||items.find(p=>p.image)?.image||c.image||'/assets/ccc-icon-192.png';
   return `<a class="rental-category-card ${items.length?'':'category-no-stock'}" href="${categoryUrl(c.id)}" data-browse-category="${c.id}"><div class="rental-category-image"><img src="${escapeCatalog(image)}" alt="" loading="lazy"></div><div class="rental-category-copy"><h3>${escapeCatalog(c.name)}</h3><p>${escapeCatalog(c.description)}</p><div class="rental-category-bottom"><span>${items.length?`${items.length} items listed`:'No items currently listed'}</span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m6 18 12-12M6 6h12v12"/></svg></div></div></a>`;
  }).join('');
  const nav=browseCategories.map(c=>`<a href="${categoryUrl(c.id)}" data-browse-category="${c.id}">${escapeCatalog(c.name)}</a>`).join('');
  $('#categoryNavLinks').innerHTML=`<a href="${categoryUrl('All')}" data-browse-category="All"><b>All equipment categories</b></a>${nav}`;
  $('#browseCategorySelect').onchange=e=>chooseCatalogCategory(e.target.value);
- $('#listedCategoryFilter').hidden=!home;$('#listedCategoryFilter').onclick=()=>{listedCategoriesOnly=!listedCategoriesOnly;renderFilters();renderProducts()};
 }
 document.addEventListener('click',e=>{const link=e.target.closest('[data-browse-category]');if(!link||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;e.preventDefault();chooseCatalogCategory(link.dataset.browseCategory);setMenu(false)});
 window.addEventListener('popstate',()=>{const id=new URLSearchParams(location.search).get('category');chooseCatalogCategory(id||'All',{historyEntry:false,scroll:false})});

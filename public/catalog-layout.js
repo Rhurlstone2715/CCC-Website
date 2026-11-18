@@ -44,6 +44,6 @@ window.CCC_BROWSE=(()=>{
   return rules.find(([,pattern])=>pattern.test(name))?.[0]||'other';
  }
  function itemsFor(products,id){return products.filter(p=>!p.hidden&&!p.setPart&&!p.operatorService&&categoryId(p)===id)}
- function visibleCategories(products){return categories.filter(c=>!c.fallback||itemsFor(products,c.id).length)}
+ function visibleCategories(products){return categories.filter(c=>itemsFor(products,c.id).length)}
  return {categories,categoryId,itemsFor,visibleCategories};
 })();

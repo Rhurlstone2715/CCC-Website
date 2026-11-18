@@ -2,7 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';import{read
 const seed=JSON.parse(readFileSync(new URL('../prisma/catalog-seed.json',import.meta.url),'utf8')).products;
 const context={window:{}};runInNewContext(readFileSync(new URL('../public/catalog-layout.js',import.meta.url),'utf8'),context);const layout=context.window.CCC_BROWSE;
 test('browse categories include every customer-facing item exactly once without changing catalog data',()=>{
- const before=JSON.stringify(seed),categories=layout.visibleCategories(seed);assert.equal(categories.length,23);
+ const before=JSON.stringify(seed),categories=layout.visibleCategories(seed);assert.ok(categories.length>0);assert.ok(categories.every(c=>layout.itemsFor(seed,c.id).length>0));
  const ids=categories.flatMap(c=>Array.from(layout.itemsFor(seed,c.id),p=>p.id));
  assert.equal(ids.length,new Set(ids).size);assert.deepEqual([...ids].sort(),seed.filter(p=>!p.hidden&&!p.setPart&&!p.operatorService).map(p=>p.id).sort());assert.equal(JSON.stringify(seed),before);
 });
