@@ -32,7 +32,7 @@ window.CCC_BROWSE=(()=>{
   'pressure':['simpson-alh3425','simpson-cm61083'],
   'concrete':['wyco-995','diesel-mixer-9-cu-ft','concrete-jitter-bug','concrete-bull-float'],
   'scaffolding':['scaffold','props'],'wall-bracing':['plumwall','ellis'],
-  'air':['compressor','impactgun'],'power-generation':['mini-welder','mini-plasma'],
+  'air':['compressor','impactgun','socket-axle-3','socket-axle-3-1-8','socket-axle-3-1-4','socket-axle-3-3-8','socket-axle-3-1-2','socket-axle-3-3-4','socket-axle-4','socket-deep-17mm','socket-deep-19mm','socket-deep-21mm','socket-deep-22mm','socket-deep-24mm','socket-deep-27mm','socket-deep-30mm','socket-deep-32mm','socket-deep-34mm','socket-deep-36mm','socket-deep-38mm','socket-deep-41mm','socket-deep-46mm','socket-deep-50mm','socket-deep-55mm'],'power-generation':['mini-welder','mini-plasma'],
   'hydraulic':['fs600','fr800c','handheld-rebar'],'handling':['palletjacks','rollers']
  };
  const standardGroups={'Rough Terrain Cranes':'cranes','Boom Trucks':'boom-trucks','Telehandlers':'telehandlers','Heavy Hauling':'heavy-hauling','Power Generation':'power-generation','Attachments':'attachments','Ground Protection':'ground'};

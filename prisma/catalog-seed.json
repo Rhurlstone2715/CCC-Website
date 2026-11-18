@@ -701,7 +701,31 @@
    "rates": {
     "daily": 25
    },
-   "delivery": true
+   "delivery": true,
+   "addOns": [
+    "socket-axle-3",
+    "socket-axle-3-1-8",
+    "socket-axle-3-1-4",
+    "socket-axle-3-3-8",
+    "socket-axle-3-1-2",
+    "socket-axle-3-3-4",
+    "socket-axle-4",
+    "socket-deep-17mm",
+    "socket-deep-19mm",
+    "socket-deep-21mm",
+    "socket-deep-22mm",
+    "socket-deep-24mm",
+    "socket-deep-27mm",
+    "socket-deep-30mm",
+    "socket-deep-32mm",
+    "socket-deep-34mm",
+    "socket-deep-36mm",
+    "socket-deep-38mm",
+    "socket-deep-41mm",
+    "socket-deep-46mm",
+    "socket-deep-50mm",
+    "socket-deep-55mm"
+   ]
   },
   {
    "id": "mini-welder",
@@ -1011,6 +1035,336 @@
    },
    "availableQuantity": 1,
    "delivery": true
+  },
+  {
+   "id": "socket-axle-3",
+   "name": "3″ Shallow Spindle Axle Nut Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 3″ • Shallow spindle axle nut socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-axle-3.png",
+   "rates": {
+    "daily": 5
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "shallow",
+   "socketSize": "3″"
+  },
+  {
+   "id": "socket-axle-3-1-8",
+   "name": "3-1/8″ Shallow Spindle Axle Nut Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 3-1/8″ • Shallow spindle axle nut socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-axle-3-1-8.png",
+   "rates": {
+    "daily": 6
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "shallow",
+   "socketSize": "3-1/8″"
+  },
+  {
+   "id": "socket-axle-3-1-4",
+   "name": "3-1/4″ Shallow Spindle Axle Nut Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 3-1/4″ • Shallow spindle axle nut socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-axle-3-1-4.png",
+   "rates": {
+    "daily": 7
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "shallow",
+   "socketSize": "3-1/4″"
+  },
+  {
+   "id": "socket-axle-3-3-8",
+   "name": "3-3/8″ Shallow Spindle Axle Nut Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 3-3/8″ • Shallow spindle axle nut socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-axle-3-3-8.png",
+   "rates": {
+    "daily": 8
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "shallow",
+   "socketSize": "3-3/8″"
+  },
+  {
+   "id": "socket-axle-3-1-2",
+   "name": "3-1/2″ Shallow Spindle Axle Nut Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 3-1/2″ • Shallow spindle axle nut socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-axle-3-1-2.png",
+   "rates": {
+    "daily": 9
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "shallow",
+   "socketSize": "3-1/2″"
+  },
+  {
+   "id": "socket-axle-3-3-4",
+   "name": "3-3/4″ Shallow Spindle Axle Nut Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 3-3/4″ • Shallow spindle axle nut socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-axle-3-3-4.png",
+   "rates": {
+    "daily": 10
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "shallow",
+   "socketSize": "3-3/4″"
+  },
+  {
+   "id": "socket-axle-4",
+   "name": "4″ Shallow Spindle Axle Nut Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 4″ • Shallow spindle axle nut socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-axle-4.png",
+   "rates": {
+    "daily": 11
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "shallow",
+   "socketSize": "4″"
+  },
+  {
+   "id": "socket-deep-17mm",
+   "name": "17mm Deep Impact Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 17mm • Deep metric impact socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-deep-17mm.png",
+   "rates": {
+    "daily": 2.0
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "deep",
+   "socketSize": "17mm"
+  },
+  {
+   "id": "socket-deep-19mm",
+   "name": "19mm Deep Impact Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 19mm • Deep metric impact socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-deep-19mm.png",
+   "rates": {
+    "daily": 2.5
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "deep",
+   "socketSize": "19mm"
+  },
+  {
+   "id": "socket-deep-21mm",
+   "name": "21mm Deep Impact Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 21mm • Deep metric impact socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-deep-21mm.png",
+   "rates": {
+    "daily": 3.0
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "deep",
+   "socketSize": "21mm"
+  },
+  {
+   "id": "socket-deep-22mm",
+   "name": "22mm Deep Impact Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 22mm • Deep metric impact socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-deep-22mm.png",
+   "rates": {
+    "daily": 3.5
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "deep",
+   "socketSize": "22mm"
+  },
+  {
+   "id": "socket-deep-24mm",
+   "name": "24mm Deep Impact Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 24mm • Deep metric impact socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-deep-24mm.png",
+   "rates": {
+    "daily": 4.0
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "deep",
+   "socketSize": "24mm"
+  },
+  {
+   "id": "socket-deep-27mm",
+   "name": "27mm Deep Impact Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 27mm • Deep metric impact socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-deep-27mm.png",
+   "rates": {
+    "daily": 4.5
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "deep",
+   "socketSize": "27mm"
+  },
+  {
+   "id": "socket-deep-30mm",
+   "name": "30mm Deep Impact Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 30mm • Deep metric impact socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-deep-30mm.png",
+   "rates": {
+    "daily": 5.0
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "deep",
+   "socketSize": "30mm"
+  },
+  {
+   "id": "socket-deep-32mm",
+   "name": "32mm Deep Impact Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 32mm • Deep metric impact socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-deep-32mm.png",
+   "rates": {
+    "daily": 5.5
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "deep",
+   "socketSize": "32mm"
+  },
+  {
+   "id": "socket-deep-34mm",
+   "name": "34mm Deep Impact Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 34mm • Deep metric impact socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-deep-34mm.png",
+   "rates": {
+    "daily": 6.0
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "deep",
+   "socketSize": "34mm"
+  },
+  {
+   "id": "socket-deep-36mm",
+   "name": "36mm Deep Impact Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 36mm • Deep metric impact socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-deep-36mm.png",
+   "rates": {
+    "daily": 6.5
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "deep",
+   "socketSize": "36mm"
+  },
+  {
+   "id": "socket-deep-38mm",
+   "name": "38mm Deep Impact Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 38mm • Deep metric impact socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-deep-38mm.png",
+   "rates": {
+    "daily": 7.0
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "deep",
+   "socketSize": "38mm"
+  },
+  {
+   "id": "socket-deep-41mm",
+   "name": "41mm Deep Impact Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 41mm • Deep metric impact socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-deep-41mm.png",
+   "rates": {
+    "daily": 7.5
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "deep",
+   "socketSize": "41mm"
+  },
+  {
+   "id": "socket-deep-46mm",
+   "name": "46mm Deep Impact Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 46mm • Deep metric impact socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-deep-46mm.png",
+   "rates": {
+    "daily": 8.0
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "deep",
+   "socketSize": "46mm"
+  },
+  {
+   "id": "socket-deep-50mm",
+   "name": "50mm Deep Impact Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 50mm • Deep metric impact socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-deep-50mm.png",
+   "rates": {
+    "daily": 8.5
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "deep",
+   "socketSize": "50mm"
+  },
+  {
+   "id": "socket-deep-55mm",
+   "name": "55mm Deep Impact Socket (1″ Drive)",
+   "category": "Tools",
+   "spec": "1″ drive • 55mm • Deep metric impact socket",
+   "desc": "Individual socket rental for the 1″ drive pneumatic impact gun. Select the size required for your fastener.",
+   "image": "assets/catalog/socket-deep-55mm.png",
+   "rates": {
+    "daily": 9.0
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "socketProfile": "deep",
+   "socketSize": "55mm"
   }
  ],
  "riggingSizes": {

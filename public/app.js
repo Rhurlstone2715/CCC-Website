@@ -68,6 +68,7 @@ const addonGroups={
  crane:{title:"Add lifting accessories",intro:"Choose accessories and attachments for this crane or boom truck booking. Our team will confirm equipment compatibility and suitability before acceptance."},
  other:{title:"Add extras",intro:"Choose anything else you need with this booking. We will confirm fit and availability before acceptance."}
 };
+addonGroups.impactgun={title:"Choose 1″ drive impact sockets",intro:"Add the individual socket sizes you need. Axle-nut sockets start at CI$5/day and metric deep impact sockets start at CI$2/day. Each socket is rented separately."};
 addonGroups.national1400={...addonGroups.crane,intro:"Choose lifting accessories for the National 1400H. The man basket is available only with this boom truck."};
 const catalogCategories=Object.keys(catalogTree);
 let activeCategory=catalogCategories.includes(new URLSearchParams(location.search).get("category"))?new URLSearchParams(location.search).get("category"):"All";let activeSubcategory="All";let query="";let cart=JSON.parse(localStorage.getItem("ccc-rental-cart")||"[]");let lastRequest="";let lastMailto="";let rewardsAccount=null;let signedIn=false;let emailConfirmed=true;
@@ -268,7 +269,25 @@ $("#checkoutPowerAddons").addEventListener("click",e=>{
  addLine(item.id,term,qty);saveCart();renderCheckout();
  $("#checkoutPowerStatus").textContent=`${item.name} added to your booking. The request summary and total have been updated.`;
 });
+function renderImpactSocketAddons(){
+ const section=$("#checkoutSocketSection"),select=$("#checkoutSocketSelect"),hasGun=cart.some(i=>i.id==="impactgun");
+ section.hidden=!hasGun;if(!hasGun)return;
+ const gun=products.find(p=>p.id==="impactgun"),sockets=(gun?.addOns||[]).map(id=>products.find(p=>p.id===id)).filter(p=>p&&!p.hidden&&p.socketProfile&&p.rates.daily!==undefined&&!cart.some(i=>i.id===p.id));
+ const previous=select.value;
+ select.innerHTML=sockets.length?[['shallow','Shallow axle-nut sockets'],['deep','Deep metric sockets']].map(([profile,label])=>`<optgroup label="${label}">${sockets.filter(p=>p.socketProfile===profile).map(p=>`<option value="${p.id}">${escapeCatalog(p.socketSize)} — ${money(p.rates.daily)}/day</option>`).join('')}</optgroup>`).join(''):'<option value="">All socket sizes are already in your booking</option>';
+ if(sockets.some(p=>p.id===previous))select.value=previous;
+ $("#addCheckoutSocket").disabled=!sockets.length;select.disabled=!sockets.length;updateCheckoutSocketPreview();
+}
+function updateCheckoutSocketPreview(){
+ const p=products.find(p=>p.id===$("#checkoutSocketSelect").value),img=$("#checkoutSocketImage");img.hidden=!p;if(p){img.src=p.image;img.alt=p.name}
+}
+$("#checkoutSocketSelect").addEventListener("change",updateCheckoutSocketPreview);
+$("#addCheckoutSocket").addEventListener("click",()=>{
+ const p=products.find(p=>p.id===$("#checkoutSocketSelect").value);if(!p||cart.some(i=>i.id===p.id)||!cart.some(i=>i.id==="impactgun"))return;
+ addLine(p.id,"daily",1);saveCart();renderCheckout();$("#checkoutSocketStatus").textContent=`${p.name} added. Your booking total has been updated.`;
+});
 function renderCheckout(){
+ renderImpactSocketAddons();
  $("#deliveryOnlyNote").hidden=!hasLiftingService();if(hasLiftingService())$("#rentalCollection").value="delivery";
  $("#rentalCollectionFields").hidden=!hasCollectableRentals();$("#rentalCollection").disabled=!hasCollectableRentals();
  const addressRequired=needsDeliveryAddress();for(const[name,id]of[["area","deliveryAreaField"],["site_address","deliveryAddressField"]]){const field=document.querySelector(`[name="${name}"]`);$("#"+id).hidden=!addressRequired;field.disabled=!addressRequired;field.required=addressRequired}
