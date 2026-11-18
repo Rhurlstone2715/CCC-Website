@@ -303,8 +303,9 @@
    "desc": "Portable rebar cutting equipment for convenient on-site reinforcing-steel work.",
    "image": "assets/catalog/handheld-rebar.jpg",
    "rates": {
-    "daily": 25,
-    "weekly": 80
+    "daily": 40,
+    "weekly": 200,
+    "monthly": 750
    },
    "needsPower": true,
    "delivery": true
