@@ -1429,6 +1429,20 @@
    },
    "availableQuantity": 2,
    "delivery": true
+  },
+  {
+   "id": "gryvoze-stone-lifting-clamp",
+   "name": "GRYVOZE Stone Lifting Clamp — GSLC-F800",
+   "category": "Attachments",
+   "spec": "1,763 lb / 800 kg • 14–35″ opening",
+   "desc": "Adjustable stone lifting clamp for granite, marble, concrete blocks and curb stones. Rental rate is per clamp.",
+   "image": "assets/catalog/gryvoze-stone-lifting-clamp-cutout.png",
+   "rates": {
+    "daily": 15,
+    "weekly": 60
+   },
+   "availableQuantity": 1,
+   "delivery": true
   }
  ],
  "riggingSizes": {
