@@ -1232,6 +1232,23 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal((await req('/api/bookings',{cookie,json:{...booking,details:{startDate,startTime:'09:00',items:[{id:ids[0],term:'daily',qty:1}]}}})).status,409);
     await prisma.product.update({where:{id:ids[0]},data:{rates:{daily:99},availableQuantity:2}});await apply();const edited=await prisma.product.findUniqueOrThrow({where:{id:ids[0]}});assert.deepEqual(edited.rates,{daily:99});assert.equal(edited.availableQuantity,2);
   });
+  test("pressure washer attachments migrate safely with requested daily rates and preserved add-ons", async () => {
+    const ids=['washer-undercarriage','washer-short-gun'];
+    const sql=readFileSync('prisma/migrations/20261118060000_pressure_washer_attachments/migration.sql','utf8');
+    // Execute statements separately because PostgreSQL prepared queries reject multiple commands.
+    const apply=async()=>{for(const statement of sql.replace(/--[^\n]*/g,'').split(';').filter(s=>s.trim()))await prisma.$executeRawUnsafe(statement)};
+    await prisma.product.deleteMany({where:{id:{in:ids}}});const before=await prisma.product.count();await apply();await apply();assert.equal(await prisma.product.count(),before+2);
+    for(const id of ['simpson-alh3425','simpson-cm61083']){const machine=await prisma.product.findUniqueOrThrow({where:{id}});assert.ok(ids.every(item=>machine.addOns.includes(item)));assert.equal(new Set(machine.addOns).size,machine.addOns.length);}
+    const cookie=await signup();
+    for(const [id,rates]of [[ids[0],{daily:10}],[ids[1],{daily:5}]] as const){
+      const p=await prisma.product.findUniqueOrThrow({where:{id}});assert.equal(p.fuelType,null);assert.equal(p.needsPower,false);assert.equal((p.extra as any).washerAttachment,true);assert.equal(p.delivery,true);assert.equal(p.availableQuantity,1);assert.deepEqual(p.rates,rates);
+      for(const [term,rate]of Object.entries(rates)){
+        const response=await req('/api/bookings',{cookie,json:{...booking,details:{items:[{id,term,qty:1,price:0}]}}});assert.equal(response.status,503,await response.clone().text());
+        const saved=await prisma.booking.findFirstOrThrow({orderBy:{id:'desc'}});assert.equal(saved.estimateCents,rate*100);await prisma.booking.update({where:{id:saved.id},data:{status:'CANCELLED'}});
+      }
+      await prisma.product.update({where:{id},data:{availableQuantity:2}});await apply();assert.equal((await prisma.product.findUniqueOrThrow({where:{id}})).availableQuantity,2);
+    }
+  });
   test("pump and discharge hose migrate safely and checkout uses all six rental rates", async () => {
     const ids=['multiquip-st2047','discharge-hose-2in'];
     const sql=readFileSync('prisma/migrations/20261118054000_submersible_pump_and_hose/migration.sql','utf8');

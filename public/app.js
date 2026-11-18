@@ -69,6 +69,7 @@ const addonGroups={
  other:{title:"Add extras",intro:"Choose anything else you need with this booking. We will confirm fit and availability before acceptance."}
 };
 addonGroups.impactgun={title:"Choose 1″ drive impact sockets",intro:"Add the individual socket sizes you need. Axle-nut sockets start at CI$5/day and metric deep impact sockets start at CI$2/day. Each socket is rented separately."};
+for(const id of ['simpson-alh3425','simpson-cm61083'])addonGroups[id]={title:"Add pressure washer attachments",intro:"Choose optional cleaning attachments for this pressure washer. Attachments are rented separately at the daily rates shown."};
 addonGroups.national1400={...addonGroups.crane,intro:"Choose lifting accessories for the National 1400H. The man basket is available only with this boom truck."};
 const catalogCategories=Object.keys(catalogTree);
 let activeCategory=catalogCategories.includes(new URLSearchParams(location.search).get("category"))?new URLSearchParams(location.search).get("category"):"All";let activeSubcategory="All";let query="";let cart=JSON.parse(localStorage.getItem("ccc-rental-cart")||"[]");let lastRequest="";let lastMailto="";let rewardsAccount=null;let signedIn=false;let emailConfirmed=true;
@@ -303,7 +304,18 @@ $("#addCheckoutSocket").addEventListener("click",()=>{
  const p=products.find(p=>p.id===$("#checkoutSocketSelect").value);if(!p||cart.some(i=>i.id===p.id)||!cart.some(i=>i.id==="impactgun"))return;
  addLine(p.id,"daily",1);saveCart();renderCheckout();$("#checkoutSocketStatus").textContent=`${p.name} added. Your booking total has been updated.`;
 });
+function hasPressureWasherInCart(){return cart.some(i=>{const p=products.find(p=>p.id===i.id);return p&&!p.washerAttachment&&browseLayout.categoryId(p)==="pressure"})}
+function renderWasherAddons(){
+ const section=$("#checkoutWasherSection");section.hidden=!hasPressureWasherInCart();if(section.hidden)return;
+ $("#checkoutWasherAddons").innerHTML=products.filter(p=>p.washerAttachment&&!p.hidden).map(p=>{const added=cart.some(i=>i.id===p.id);return `<article class="checkout-power-item"><div class="checkout-power-info"><img src="${p.image}" alt="" loading="lazy"><div><h3>${p.name}</h3>${inventoryLabel(p)}<small>${money(p.rates.daily)} per day</small></div></div><button type="button" class="button primary" data-add-washer="${p.id}" ${added?'disabled':''}>${added?'Added to booking':'Add to booking'}</button></article>`}).join('');
+}
+$("#checkoutWasherAddons").addEventListener("click",e=>{
+ const button=e.target.closest('[data-add-washer]');if(!button||!hasPressureWasherInCart())return;
+ const p=products.find(p=>p.id===button.dataset.addWasher&&p.washerAttachment);if(!p||cart.some(i=>i.id===p.id))return;
+ addLine(p.id,'daily',1);saveCart();renderCheckout();$("#checkoutWasherStatus").textContent=`${p.name} added. Your booking total has been updated.`;
+});
 function renderCheckout(){
+ renderWasherAddons();
  renderImpactSocketAddons();
  $("#deliveryOnlyNote").hidden=!hasLiftingService();if(hasLiftingService())$("#rentalCollection").value="delivery";
  $("#rentalCollectionFields").hidden=!hasCollectableRentals();$("#rentalCollection").disabled=!hasCollectableRentals();

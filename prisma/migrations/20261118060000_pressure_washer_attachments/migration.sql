@@ -1,0 +1,7 @@
+-- Add pressure washer attachments while preserving catalog records and admin edits.
+INSERT INTO "Product" ("id","name","category","spec","description","image","rates","availableQuantity","delivery","extra","sortOrder","updatedAt")
+SELECT 'washer-undercarriage', 'Undercarriage Pressure Washer Attachment', 'Tools', 'Siebwin • 16″ spray bar • Six nozzles', 'Wheeled undercarriage cleaning attachment with extension wands. Requires a pressure washer. Rented separately.', 'assets/catalog/washer-undercarriage-cutout.png', '{"daily": 10}'::jsonb, 1, TRUE, '{"washerAttachment":true}'::jsonb, COALESCE(MAX("sortOrder"),0)+1, CURRENT_TIMESTAMP FROM "Product" HAVING COUNT(*)>0
+UNION ALL
+SELECT 'washer-short-gun', 'Short Pressure Washer Gun', 'Tools', 'MEKOH • Short gun • Quick-connect fittings', 'Short pressure washer gun with a swivel quick-connect and M22-14mm adapter. Requires a pressure washer. Rented separately.', 'assets/catalog/washer-short-gun-cutout.png', '{"daily": 5}'::jsonb, 1, TRUE, '{"washerAttachment":true}'::jsonb, COALESCE(MAX("sortOrder"),0)+2, CURRENT_TIMESTAMP FROM "Product" HAVING COUNT(*)>0
+ON CONFLICT ("id") DO NOTHING;
+UPDATE "Product" SET "addOns"="addOns" || ARRAY(SELECT item.id FROM unnest(ARRAY['washer-undercarriage','washer-short-gun']::text[]) WITH ORDINALITY AS item(id,position) WHERE NOT item.id=ANY("Product"."addOns") ORDER BY item.position), "updatedAt"=CURRENT_TIMESTAMP WHERE "id" IN ('simpson-alh3425','simpson-cm61083');

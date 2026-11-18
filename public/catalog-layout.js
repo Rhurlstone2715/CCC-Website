@@ -29,7 +29,7 @@ window.CCC_BROWSE=(()=>{
  const productGroups={
   'pumps':['multiquip-st2047','discharge-hose-2in'],
   'ladders':['fiberglass-step-ladder-12ft','fiberglass-step-ladder-8ft','fiberglass-step-ladder-6ft'],
-  'pressure':['simpson-alh3425','simpson-cm61083'],
+  'pressure':['simpson-alh3425','simpson-cm61083','washer-undercarriage','washer-short-gun'],
   'concrete':['wyco-995','diesel-mixer-9-cu-ft','concrete-jitter-bug','concrete-bull-float'],
   'scaffolding':['scaffold','props'],'wall-bracing':['plumwall','ellis'],
   'air':['compressor','impactgun','socket-axle-3','socket-axle-3-1-8','socket-axle-3-1-4','socket-axle-3-3-8','socket-axle-3-1-2','socket-axle-3-3-4','socket-axle-4','socket-deep-17mm','socket-deep-19mm','socket-deep-21mm','socket-deep-22mm','socket-deep-24mm','socket-deep-27mm','socket-deep-30mm','socket-deep-32mm','socket-deep-34mm','socket-deep-36mm','socket-deep-38mm','socket-deep-41mm','socket-deep-46mm','socket-deep-50mm','socket-deep-55mm'],'power-generation':['mini-welder','mini-plasma'],

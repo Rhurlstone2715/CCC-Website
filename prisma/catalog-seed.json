@@ -939,7 +939,11 @@
    },
    "availableQuantity": 1,
    "delivery": true,
-   "fuelType": "gasoline"
+   "fuelType": "gasoline",
+   "addOns": [
+    "washer-undercarriage",
+    "washer-short-gun"
+   ]
   },
   {
    "id": "simpson-cm61083",
@@ -955,7 +959,11 @@
    },
    "availableQuantity": 1,
    "delivery": true,
-   "fuelType": "gasoline"
+   "fuelType": "gasoline",
+   "addOns": [
+    "washer-undercarriage",
+    "washer-short-gun"
+   ]
   },
   {
    "id": "fiberglass-step-ladder-12ft",
@@ -1365,6 +1373,34 @@
    "delivery": true,
    "socketProfile": "deep",
    "socketSize": "55mm"
+  },
+  {
+   "id": "washer-undercarriage",
+   "name": "Undercarriage Pressure Washer Attachment",
+   "category": "Tools",
+   "spec": "Siebwin • 16″ spray bar • Six nozzles",
+   "desc": "Wheeled undercarriage cleaning attachment with extension wands. Requires a pressure washer. Rented separately.",
+   "image": "assets/catalog/washer-undercarriage-cutout.png",
+   "rates": {
+    "daily": 10
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "washerAttachment": true
+  },
+  {
+   "id": "washer-short-gun",
+   "name": "Short Pressure Washer Gun",
+   "category": "Tools",
+   "spec": "MEKOH • Short gun • Quick-connect fittings",
+   "desc": "Short pressure washer gun with a swivel quick-connect and M22-14mm adapter. Requires a pressure washer. Rented separately.",
+   "image": "assets/catalog/washer-short-gun-cutout.png",
+   "rates": {
+    "daily": 5
+   },
+   "availableQuantity": 1,
+   "delivery": true,
+   "washerAttachment": true
   }
  ],
  "riggingSizes": {
