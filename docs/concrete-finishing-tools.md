@@ -1,6 +1,6 @@
 # Concrete finishing tool rentals
 
-Both tools are listed under Tools and use the existing rental duration, delivery/collection and inventory rules. No engine or fuel-return note applies. Stock uses the catalog's default of one unit until an admin specifies the actual quantity.
+Both tools are listed under Tools and use the existing rental duration, delivery/collection and inventory rules. No engine or fuel-return note applies. Stock is three units per tool, as confirmed by the customer. Overlapping bookings reserve units against that capacity.
 
 | Tool | Daily KYD | Weekly KYD | Monthly KYD |
 | --- | ---: | ---: | ---: |

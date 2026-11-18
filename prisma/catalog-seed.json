@@ -358,7 +358,8 @@
     "weekly": 80,
     "monthly": 350
    },
-   "delivery": true
+   "delivery": true,
+   "availableQuantity": 3
   },
   {
    "id": "concrete-bull-float",
@@ -372,7 +373,8 @@
     "weekly": 100,
     "monthly": 350
    },
-   "delivery": true
+   "delivery": true,
+   "availableQuantity": 3
   },
   {
    "id": "wyco-8914",
