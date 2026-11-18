@@ -13,6 +13,7 @@
   <link rel="preload" as="image" href="assets/current-site/two-cranes-homepage.webp">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="rentals-nav.css">
+  <link rel="stylesheet" href="catalog-layout.css?v=categories-1">
 </head>
 <body>
   <a class="skip-link" href="#catalog">Skip to equipment</a>
@@ -21,15 +22,7 @@
     <div class="wrap nav-row">
       <a class="brand" href="#top" aria-label="Cayman Crane Company home"><img src="assets/cayman-crane-logo.png" alt="Cayman Crane Company"><span class="brand-copy"><b>Cayman Crane Company</b><small>Services • Rentals • Rigging</small></span></a>
       <nav aria-label="Main navigation">
-        <div class="nav-dropdown"><button type="button" aria-haspopup="true">Equipment &amp; services <span>⌄</span></button><div class="nav-mega">
-          <a href="#catalog" data-catalog-category="Services"><b>Services</b><small>Cranes, boom trucks, telehandlers and heavy transport</small></a>
-          <a href="#catalog" data-catalog-category="Rentals"><b>Rentals</b><small>Telehandlers, tools, power, attachments and construction plant</small></a>
-          <a href="#catalog" data-catalog-category="Tools"><b>Tools</b><small>Compressors, pallet jacks, rollers, welding and cutting tools</small></a>
-          <a href="#catalog" data-catalog-category="Power Generation"><b>Power Generation</b><small>Generators, distribution boxes and extension cords</small></a>
-          <a href="#catalog" data-catalog-category="Attachments"><b>Attachments</b><small>Baskets, buckets, jibs, bins, beams, bars and forks</small></a>
-          <a href="#catalog" data-catalog-category="Construction Plant / Equipment"><b>Construction Plant / Equipment</b><small>Shoring, ICF bracing, turnbuckles and scaffolding</small></a>
-          <a href="#catalog" data-catalog-category="Ground Protection"><b>Ground Protection</b><small>Heavy-duty access and surface protection mats</small></a>
-        </div></div>
+        <div class="nav-dropdown"><button type="button" aria-haspopup="true">Equipment &amp; tools <span>⌄</span></button><div class="nav-mega category-nav-links" id="categoryNavLinks"></div></div>
         <a href="#services">Services</a><a href="#terms">Rental terms</a><a href="#rewards">Rewards</a><a href="#gallery">Gallery</a><a href="#contact">Contact</a>
       </nav>
       <a class="account-button" href="/account" target="_top">Sign up / Log in</a>
@@ -47,8 +40,9 @@
     <section class="booking-strip" aria-label="Booking process"><div class="wrap process"><div><b>1</b><span><strong>Choose equipment</strong><small>Select a rate and quantity</small></span></div><i></i><div><b>2</b><span><strong>Send job details</strong><small>Date, location and lift notes</small></span></div><i></i><div><b>3</b><span><strong>We confirm</strong><small>Availability is manually approved</small></span></div></div></section>
     <section class="rewards-banner" id="rewards"><div class="rewards-glow" aria-hidden="true"></div><div class="wrap rewards-banner-grid"><div class="rewards-copy"><p class="eyebrow">Cayman Crane Rewards</p><h2>Every rental moves you up.</h2><p>Earn one point for every approved CI$1 spent. Reach a new tier and unlock savings on future equipment rentals.</p><div class="rewards-note"><b>Three metallic tiers</b><span>Silver at CI$5,000 · Gold at CI$15,000 · Platinum at CI$25,000</span></div><a class="button light" href="/account" target="_top">Create account or sign in</a></div><div class="reward-tier-cards"><article class="reward-tier-silver"><span>Silver</span><b>5% <small>off</small></b><p>Unlocked after</p><strong>CI$5,000</strong></article><article class="reward-tier-gold"><span>Gold</span><b>10% <small>off</small></b><p>Unlocked after</p><strong>CI$15,000</strong></article><article class="reward-tier-platinum"><span>Platinum</span><b>15% <small>off</small></b><p>Unlocked after</p><strong>CI$25,000</strong></article></div></div></section>
     <section class="catalog-section" id="catalog"><div class="wrap">
-      <div class="section-heading split"><div><p class="eyebrow red">Services &amp; rental catalog</p><h2>Find the right equipment.</h2><p>Browse by service or equipment type. Rates are in Cayman Islands dollars; items without published rates are confirmed with your booking.</p></div><div class="availability-note"><span></span><b>Request-based booking</b><small>No booking is final until confirmed by our team.</small></div></div>
-      <div class="catalog-tools"><div class="catalog-main-row"><label class="search"><span>Search</span><input id="searchInput" type="search" placeholder="Crane, telehandler, generator…" autocomplete="off"></label><div class="filters" id="filters" role="group" aria-label="Main catalog categories"></div></div><div class="subfilters" id="subfilters" role="group" aria-label="Catalog subcategories" hidden></div></div>
+      <div class="section-heading split"><div><p class="eyebrow red">Services &amp; rental catalog</p><h2 id="catalogTitle">What do you need for the job?</h2><p id="catalogDescription">Choose a category to see equipment, rental rates and details. Rates are in Cayman Islands dollars.</p></div><div class="availability-note"><span></span><b>Request-based booking</b><small>No booking is final until confirmed by our team.</small></div></div>
+      <div class="category-breadcrumb" id="categoryBreadcrumb">Browse categories</div><div class="catalog-tools"><div class="catalog-main-row"><label class="search"><span>Search</span><input id="searchInput" type="search" placeholder="Search equipment or categories…" autocomplete="off"></label><div class="filters" id="filters" role="group" aria-label="Main catalog categories"></div></div><div class="subfilters" id="subfilters" role="group" aria-label="Catalog subcategories" hidden></div></div>
+      <div class="rental-category-grid" id="categoryGrid" aria-label="Equipment categories"></div><p class="catalog-category-note" id="catalogCategoryNote">Category images are illustrative. Categories with no listed items do not currently have equipment in our catalog.</p>
       <div class="product-grid" id="productGrid" aria-live="polite"></div><p class="empty-state" id="emptyState" hidden>No equipment matches that search.</p>
     </div></section>
     <section class="services" id="services"><div class="wrap services-grid"><div class="service-image"><img src="assets/current-site/618c9a_f06ff00364a54810851f6b2a46f8d7f2~mv2.jpg" alt="Crane working beside a multi-storey building in Cayman"><div><strong>One call. One capable team.</strong><span>From mobilization to final placement.</span></div></div><div class="service-copy"><p class="eyebrow red">More than equipment</p><h2>Professional lifting support from start to finish.</h2><p>Our team helps match the crane, rigging and access plan to your site—not just the load weight.</p><ul><li><b>Certified operators, riggers and banksmen</b><span>Experienced personnel for safe, disciplined execution.</span></li><li><b>Lift planning and rigging solutions</b><span>Support for reach, radius, setup and load-control requirements.</span></li><li><b>Heavy hauling and site logistics</b><span>Lowboy and flatbed transport for machinery and materials.</span></li></ul><a class="text-link" href="mailto:caymancrane@gmail.com?subject=Lift%20Planning%20Inquiry">Discuss a complex lift <span>→</span></a></div></div></section>
@@ -74,5 +68,6 @@
   </dialog>
   <script src="catalog.js"></script>
   <script src="signature-pad.js"></script>
-  <script src="app.js"></script>
+  <script src="catalog-layout.js?v=categories-1"></script>
+  <script src="app.js?v=categories-1"></script>
 </body></html>
