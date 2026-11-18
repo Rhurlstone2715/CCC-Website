@@ -30,7 +30,7 @@ window.CCC_BROWSE=(()=>{
  ];
  const productGroups={
   'rigging-gear':['ironwalls-chain-drum-lifter','gryvoze-stone-lifting-clamp','karryton-vertical-plate-clamp','liftingbeams','spreaderbars','spreaderbeams'],
-  'construction-site-tools':['magnetic-sweeper-36'],
+  'construction-site-tools':['magnetic-sweeper-36','magnetic-sweeper-17'],
   'pumps':['multiquip-st2047','discharge-hose-2in'],
   'ladders':['fiberglass-step-ladder-12ft','fiberglass-step-ladder-8ft','fiberglass-step-ladder-6ft'],
   'pressure':['simpson-alh3425','simpson-cm61083','washer-undercarriage','washer-short-gun'],

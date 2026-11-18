@@ -1413,7 +1413,7 @@
     "daily": 10,
     "weekly": 40
    },
-   "availableQuantity": 1,
+   "availableQuantity": 2,
    "delivery": true
   },
   {
@@ -1453,6 +1453,20 @@
    "image": "assets/catalog/ironwalls-chain-drum-lifter-cutout.png",
    "rates": {
     "daily": 5,
+    "weekly": 20
+   },
+   "availableQuantity": 1,
+   "delivery": true
+  },
+  {
+   "id": "magnetic-sweeper-17",
+   "name": "17″ Magnetic Sweeper",
+   "category": "Tools",
+   "spec": "Toolwiz • 17″ wide • Adjustable handle",
+   "desc": "Compact wheeled magnetic sweeper for collecting nails, screws and small ferrous metal debris around construction sites.",
+   "image": "assets/catalog/magnetic-sweeper-17.jpg",
+   "rates": {
+    "daily": 6,
     "weekly": 20
    },
    "availableQuantity": 1,
