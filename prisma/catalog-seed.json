@@ -347,6 +347,34 @@
    "delivery": true
   },
   {
+   "id": "concrete-jitter-bug",
+   "name": "Concrete Jitter Bug",
+   "category": "Tools",
+   "spec": "Manual concrete tamper",
+   "desc": "Manual concrete jitter bug for tamping freshly placed concrete and working coarse aggregate below the surface before finishing.",
+   "image": "assets/catalog/concrete-jitter-bug.jpg",
+   "rates": {
+    "daily": 20,
+    "weekly": 80,
+    "monthly": 350
+   },
+   "delivery": true
+  },
+  {
+   "id": "concrete-bull-float",
+   "name": "Concrete Bull Float",
+   "category": "Tools",
+   "spec": "Concrete finishing float with extension handles",
+   "desc": "Manual bull float with extension handles for leveling and smoothing freshly placed concrete.",
+   "image": "assets/catalog/concrete-bull-float.jpg",
+   "rates": {
+    "daily": 25,
+    "weekly": 100,
+    "monthly": 350
+   },
+   "delivery": true
+  },
+  {
    "id": "wyco-8914",
    "availableQuantity": 2,
    "name": "Wyco CK-8914 Pencil Head Shaft",

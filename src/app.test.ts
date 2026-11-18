@@ -1167,6 +1167,34 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     }
   });
 
+  test("concrete finishing tools seed safely, preserve admin edits and price all rental terms", async () => {
+    const ids=['concrete-jitter-bug','concrete-bull-float'];
+    const sql=readFileSync('prisma/migrations/20261118023000_concrete_finishing_tools/migration.sql','utf8');
+    await prisma.$executeRawUnsafe('TRUNCATE "Product" CASCADE');
+    await prisma.$executeRawUnsafe(sql);assert.equal(await prisma.product.count(),0);
+    await ensureCatalogSeeded();
+    const seed=JSON.parse(readFileSync('prisma/catalog-seed.json','utf8'));
+    assert.equal(await prisma.product.count(),seed.products.length);
+    await prisma.product.deleteMany({where:{id:{in:ids}}});const before=await prisma.product.count();
+    await prisma.$executeRawUnsafe(sql);await prisma.$executeRawUnsafe(sql);
+    assert.equal(await prisma.product.count(),before+2);
+    const customer=await signup();
+    for(const [id,rates] of [[ids[0],{daily:20,weekly:80,monthly:350}],[ids[1],{daily:25,weekly:100,monthly:350}]] as const){
+      const p=await prisma.product.findUniqueOrThrow({where:{id}});
+      assert.equal(p.category,'Tools');assert.equal(p.delivery,true);assert.equal(p.fuelType,null);assert.equal(p.needsPower,false);assert.deepEqual(p.rates,rates);
+      for(const [term,rate] of Object.entries(rates)){
+        const response=await req('/api/bookings',{cookie:customer,json:{...booking,details:{rentalCollection:'pickup',items:[{id,term,qty:1,price:0}]}}});
+        assert.equal(response.status,503,await response.clone().text()); // Saved; no alert email provider in this test.
+        const saved=await prisma.booking.findFirstOrThrow({orderBy:{id:'desc'}});
+        assert.equal(saved.estimateCents,rate*100);
+        await prisma.booking.update({where:{id:saved.id},data:{status:'CANCELLED'}});
+      }
+      await prisma.product.update({where:{id},data:{rates:{daily:99},availableQuantity:3}});
+      await prisma.$executeRawUnsafe(sql);
+      const edited=await prisma.product.findUniqueOrThrow({where:{id}});assert.deepEqual(edited.rates,{daily:99});assert.equal(edited.availableQuantity,3);
+    }
+  });
+
   test("catalog.js is served for the rentals page", async () => {
     const res = await req("/catalog.js");
     assert.equal(res.status, 200);
