@@ -5,6 +5,7 @@ window.CCC_BROWSE=(()=>{
   {id:'boom-trucks',name:'Boom Trucks',description:'National & Altec boom trucks',hero:'altec2595'},
   {id:'telehandlers',name:'Forklifts/Telehandlers',description:'Telehandlers for lifting & material placement',hero:'gth1056'},
   {id:'concrete',name:'Concrete Equipment',description:'Mixing, vibrating & finishing',hero:'diesel-mixer-9-cu-ft'},
+  {id:'construction-site-tools',name:'Construction Site Tools',description:'Tools for jobsite cleanup & maintenance',hero:'magnetic-sweeper-36'},
   {id:'scaffolding',name:'Scaffolding & Props',description:'Scaffolding sets & post shores',hero:'scaffold'},
   {id:'wall-bracing',name:'Wall Bracing',description:'ICF bracing & Ellis wall braces',hero:'plumwall'},
   {id:'air',name:'Air Tools & Compressors',description:'Compressors & pneumatic tools',hero:'compressor'},
@@ -27,6 +28,7 @@ window.CCC_BROWSE=(()=>{
   {id:'other',name:'Other Equipment & Tools',description:'More equipment for your jobsite',fallback:true,image:'/assets/ccc-icon-192.png'}
  ];
  const productGroups={
+  'construction-site-tools':['magnetic-sweeper-36'],
   'pumps':['multiquip-st2047','discharge-hose-2in'],
   'ladders':['fiberglass-step-ladder-12ft','fiberglass-step-ladder-8ft','fiberglass-step-ladder-6ft'],
   'pressure':['simpson-alh3425','simpson-cm61083','washer-undercarriage','washer-short-gun'],

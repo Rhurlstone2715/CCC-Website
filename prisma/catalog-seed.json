@@ -1401,6 +1401,20 @@
    "availableQuantity": 1,
    "delivery": true,
    "washerAttachment": true
+  },
+  {
+   "id": "magnetic-sweeper-36",
+   "name": "36″ Magnetic Sweeper",
+   "category": "Tools",
+   "spec": "VEVOR • 36″ wide • Telescoping handle",
+   "desc": "Wheeled push-type magnetic sweeper for collecting nails, screws and other ferrous metal debris around construction sites.",
+   "image": "assets/catalog/magnetic-sweeper-36.jpg",
+   "rates": {
+    "daily": 10,
+    "weekly": 40
+   },
+   "availableQuantity": 1,
+   "delivery": true
   }
  ],
  "riggingSizes": {

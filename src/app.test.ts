@@ -1249,6 +1249,22 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
       await prisma.product.update({where:{id},data:{availableQuantity:2}});await apply();assert.equal((await prisma.product.findUniqueOrThrow({where:{id}})).availableQuantity,2);
     }
   });
+  test("magnetic sweeper migrates safely and checkout uses daily and weekly rental rates", async () => {
+    const ids=['magnetic-sweeper-36'];
+    const sql=readFileSync('prisma/migrations/20261118061000_magnetic_sweeper/migration.sql','utf8');
+    // Execute statements separately because PostgreSQL prepared queries reject multiple commands.
+    const apply=async()=>{for(const statement of sql.replace(/--[^\n]*/g,'').split(';').filter(s=>s.trim()))await prisma.$executeRawUnsafe(statement)};
+    await prisma.product.deleteMany({where:{id:{in:ids}}});const before=await prisma.product.count();await apply();await apply();assert.equal(await prisma.product.count(),before+1);
+    const cookie=await signup();
+    for(const [id,rates]of [[ids[0],{daily:10,weekly:40}]] as const){
+      const p=await prisma.product.findUniqueOrThrow({where:{id}});assert.equal(p.fuelType,null);assert.equal(p.needsPower,false);assert.equal(p.delivery,true);assert.equal(p.availableQuantity,1);assert.deepEqual(p.rates,rates);
+      for(const [term,rate]of Object.entries(rates)){
+        const response=await req('/api/bookings',{cookie,json:{...booking,details:{items:[{id,term,qty:1,price:0}]}}});assert.equal(response.status,503,await response.clone().text());
+        const saved=await prisma.booking.findFirstOrThrow({orderBy:{id:'desc'}});assert.equal(saved.estimateCents,rate*100);await prisma.booking.update({where:{id:saved.id},data:{status:'CANCELLED'}});
+      }
+      await prisma.product.update({where:{id},data:{availableQuantity:2}});await apply();assert.equal((await prisma.product.findUniqueOrThrow({where:{id}})).availableQuantity,2);
+    }
+  });
   test("pump and discharge hose migrate safely and checkout uses all six rental rates", async () => {
     const ids=['multiquip-st2047','discharge-hose-2in'];
     const sql=readFileSync('prisma/migrations/20261118054000_submersible_pump_and_hose/migration.sql','utf8');
