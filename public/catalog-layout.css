@@ -12,3 +12,5 @@
 .socket-subcategory-card{font:inherit;color:inherit;text-align:left;cursor:pointer;align-self:start;width:100%}.socket-subcategory-card:hover{border-color:var(--red,#a50000)}
 
 .washer-addon-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.washer-addon-grid button{white-space:normal}@media(max-width:680px){.washer-addon-grid{grid-template-columns:1fr}}
+
+#catalog{scroll-margin-top:0}

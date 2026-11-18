@@ -615,7 +615,7 @@ input,select,textarea{font-size:1rem}
  .addon-rigging:has(.rigging-picker){grid-row:auto}
 }
 @media(max-width:680px){
- html{scroll-padding-top:16px}.site-header{position:relative}
+ html{scroll-padding-top:16px}
  .product-grid{grid-template-columns:minmax(0,1fr)}
  .hero{min-height:0}.hero-content{padding-block:52px}
  .hero h1{font-size:clamp(2.25rem,10vw,3.1rem);line-height:1.02;letter-spacing:-.045em;overflow-wrap:anywhere}
@@ -649,7 +649,7 @@ input,select,textarea{font-size:1rem}
  .utility-inner{font-size:.875rem;min-height:36px;height:auto}
 }
 @media(max-height:500px) and (orientation:landscape){
- .site-header{position:relative}.catalog-tools{position:static}
+ .catalog-tools{position:static}
  .checkout-dialog,.addon-dialog,.success-dialog{max-height:calc(100dvh - 12px)}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
@@ -682,13 +682,6 @@ input,select,textarea{font-size:1rem}
   .menu-button[aria-expanded="true"] .menu-icon{background:transparent}
   .menu-button[aria-expanded="true"] .menu-icon::before{top:0;transform:rotate(45deg)}
   .menu-button[aria-expanded="true"] .menu-icon::after{top:0;transform:rotate(-45deg)}
-
-  /* Header: sticks to the top with just its cart and menu row showing, hides
-     while scrolling down and comes back when scrolling up (see app.js). */
-  .site-header{position:sticky;top:calc(-1 * var(--pin-offset,0px));z-index:40;transition:transform .2s ease-out,box-shadow .2s ease-out}
-  .site-header.header-hidden{transform:translateY(-100%)}
-  .site-header.header-stuck{box-shadow:0 2px 8px rgba(0,0,0,.08)}
-  html{scroll-padding-top:76px}
 
   /* Menu: a plain list of the page's sections, dropping down over the page. */
   .site-header .mobile-nav.open{position:absolute;top:100%;left:0;right:0;display:flex;flex-direction:column;gap:0;max-height:75dvh;overflow-y:auto;overscroll-behavior:contain;padding:4px 20px 20px;background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);box-shadow:0 16px 32px rgba(0,0,0,.14);font-weight:800}
@@ -723,3 +716,8 @@ input,select,textarea{font-size:1rem}
 .set-extras{margin:8px 0 6px;font-weight:800;font-size:.95rem}
 
 .hero-bg{object-position:center}
+
+/* Keep the full navigation visible while the page scrolls on every screen. */
+.site-header{position:sticky;top:0;z-index:40}
+html{scroll-padding-top:calc(var(--site-header-height,130px) + 12px)}
+.site-header .mobile-nav.open{max-height:calc(100dvh - var(--site-header-height,130px) - 8px)}

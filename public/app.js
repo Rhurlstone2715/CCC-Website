@@ -329,32 +329,12 @@ function renderGallery(){$("#galleryGrid").innerHTML=galleryImages.map((x,i)=>`<
 $("#searchInput").oninput=e=>{query=e.target.value.trim().toLowerCase();renderFilters();renderProducts()};$("#cartButton").onclick=openCart;$("#closeCart").onclick=closeCart;$("#drawerBackdrop").onclick=closeCart;$("#browseButton").onclick=closeCart;$("#menuButton").onclick=()=>setMenu(!$("#mobileNav").classList.contains("open"));$$('[data-catalog-category]').forEach(a=>a.onclick=()=>{activeCategory=a.dataset.catalogCategory;activeSubcategory=a.dataset.catalogSubcategory||"All";renderFilters();renderProducts();setMenu(false)});$$('#mobileNav a:not([data-catalog-category])').forEach(a=>a.onclick=()=>setMenu(false));
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#mobileNav").classList.contains("open")){setMenu(false);$("#menuButton").focus()}});
 document.addEventListener("click",e=>{if($("#mobileNav").classList.contains("open")&&!e.target.closest(".site-header"))setMenu(false)});
-// Phones and tablets: the header scrolls away until just its cart and menu row is
-// left stuck at the top, slides out of view while scrolling down, and comes back
-// when scrolling up. Desktop keeps its always-visible header.
+// Keep section links and the mobile menu clear of the always-visible header.
 (()=>{
- const header=$(".site-header"),small=matchMedia("(max-width:980px)");
- let lastY=window.scrollY,pinOffset=0;
- function measure(){
-  if(!small.matches){header.style.removeProperty("--pin-offset");header.classList.remove("header-hidden","header-stuck");return}
-  const top=header.getBoundingClientRect().top,cart=$("#cartButton").getBoundingClientRect(),brand=header.querySelector(".brand").getBoundingClientRect();
-  // Where the cart sits on its own row under the logo, keep only that row; otherwise drop just the phone/WhatsApp strip.
-  pinOffset=Math.max(0,Math.round(cart.top>=brand.bottom-1?brand.bottom-top:header.querySelector(".utility").offsetHeight));
-  header.style.setProperty("--pin-offset",`${pinOffset}px`);
- }
- function update(){
-  if(!small.matches)return;
-  const y=Math.max(0,Math.min(window.scrollY,document.documentElement.scrollHeight-window.innerHeight)),delta=y-lastY;
-  header.classList.toggle("header-stuck",y>pinOffset);
-  if(Math.abs(delta)<6)return;
-  lastY=y;
-  header.classList.toggle("header-hidden",delta>0&&y>header.offsetHeight&&!$("#mobileNav").classList.contains("open"));
- }
- window.addEventListener("scroll",update,{passive:true});
- window.addEventListener("resize",measure);
- small.addEventListener("change",measure);
- header.addEventListener("focusin",()=>header.classList.remove("header-hidden"));
- measure();
+ const header=$(".site-header");
+ const measure=()=>document.documentElement.style.setProperty("--site-header-height",`${header.getBoundingClientRect().height}px`);
+ if(window.ResizeObserver)new ResizeObserver(measure).observe(header);
+ window.addEventListener("resize",measure);measure();
  if(document.fonts)document.fonts.ready.then(measure);
 })();
 function openCheckout(){closeCart();renderPowerAddons();renderCheckout();$("#checkoutDialog").showModal()}

@@ -19,3 +19,12 @@ document.addEventListener("click", async event => {
     source.select?.();
   }
 });
+
+// Keep in-page navigation clear of the sticky account/admin header.
+(()=>{
+ const header=document.querySelector(".site-header");if(!header)return;
+ const measure=()=>document.documentElement.style.setProperty("--site-header-height",`${header.getBoundingClientRect().height}px`);
+ if(window.ResizeObserver)new ResizeObserver(measure).observe(header);
+ window.addEventListener("resize",measure);measure();
+ if(document.fonts)document.fonts.ready.then(measure);
+})();
