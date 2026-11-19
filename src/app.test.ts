@@ -3,7 +3,7 @@
 // test-env must stay the first import: it points Prisma at the test database.
 import "./test-env.js";
 import * as webPush from "web-push";
-import { deliverAdminPushNotifications } from "./admin-push.js";
+import { deliverAdminPushNotifications, queueAdminSignupNotices } from "./admin-push.js";
 import { inventoryNow } from "./availability.js";
 import { deliverEstimateEmails, renderEstimatePdf, estimateSnapshot, type EstimateSnapshot } from "./estimates.js";
 import {deliverReceiptEmails} from "./receipts.js";
@@ -397,6 +397,31 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal((await req('/admin/push/unsubscribe',{cookie:customer,json:{endpoint:sub.endpoint}})).status,403);assert.equal(await prisma.adminPushSubscription.count(),1);
     await req('/admin/push/unsubscribe',{cookie:admin,json:{endpoint:sub.endpoint}});assert.equal(await prisma.adminPushSubscription.count(),0);
   });
+  test("verified signups queue one private admin push and share badge counts with bookings",async()=>{
+    const admin=await makeAdmin(),a=await prisma.user.findFirstOrThrow({where:{role:'ADMIN'}}),keys=webPush.generateVAPIDKeys();
+    await prisma.adminPushSubscription.create({data:{adminId:a.id,endpoint:'https://web.push.apple.com/signup-test',p256dh:keys.publicKey,auth:Buffer.alloc(16).toString('base64url')}});
+    const emails=captureEmails();
+    const registration=await req('/account/signup',{form:{name:'Private Customer',email:'private-push@example.com',phone:'3455550193',password:'longenough1'}});
+    const customer=await prisma.user.findUniqueOrThrow({where:{email:'private-push@example.com'}});
+    await prisma.$transaction(tx=>queueAdminSignupNotices(tx,customer.id));
+    assert.equal(await prisma.adminBookingNotice.count(),0,'no signup push before email verification');
+    const link=confirmPath(emails[0].text);await req(link);
+    assert.equal(await prisma.adminBookingNotice.count(),1);assert.equal(await prisma.adminPushDelivery.count(),1);
+    await prisma.$transaction(tx=>queueAdminSignupNotices(tx,customer.id));
+    assert.equal((await req(link)).status,400);assert.equal(await prisma.adminBookingNotice.count(),1);assert.equal(await prisma.adminPushDelivery.count(),1);
+    process.env.WEB_PUSH_PUBLIC_KEY=keys.publicKey;process.env.WEB_PUSH_PRIVATE_KEY=keys.privateKey;
+    const bodies:string[]=[];const sender=(async(_sub:unknown,body:unknown)=>{bodies.push(String(body));return{statusCode:201,body:'',headers:{}};})as unknown as typeof webPush.sendNotification;
+    await deliverAdminPushNotifications(sender);
+    assert.equal(bodies.length,1);const payload=JSON.parse(bodies[0]);assert.equal(payload.kind,'customer-signup');assert.equal(payload.url,`/admin/customers/${customer.id}`);assert.equal(payload.unreadCount,1);assert.ok(!bodies[0].includes(customer.email));assert.ok(!bodies[0].includes(customer.name));
+    delete process.env.WEB_PUSH_PUBLIC_KEY;delete process.env.WEB_PUSH_PRIVATE_KEY;
+    await req('/api/bookings',{cookie:sessionCookie(registration),json:booking});
+    assert.equal((await(await req('/admin/push/state',{cookie:admin})).json()).unreadCount,2);
+    assert.match(await(await req(`/admin/customers/${customer.id}`,{cookie:admin})).text(),new RegExp(`data-read-customers="${customer.id}"`));
+    await req('/admin/push/seen',{cookie:admin,json:{customerIds:[customer.id]}});
+    assert.equal((await(await req('/admin/push/state',{cookie:admin})).json()).unreadCount,1);
+    assert.equal((await prisma.adminBookingNotice.findFirstOrThrow({where:{bookingId:{not:null}}})).readAt,null);
+  });
+
   test("new bookings queue durable admin push, retry without duplicate jobs, and viewing clears only that admin's unread badge",async()=>{
     const customer=await signup(),admin=await makeAdmin();const a=await prisma.user.findFirstOrThrow({where:{role:'ADMIN'}}),keys=webPush.generateVAPIDKeys();
     await prisma.adminPushSubscription.create({data:{adminId:a.id,endpoint:'https://web.push.apple.com/test-device',p256dh:keys.publicKey,auth:Buffer.alloc(16).toString('base64url')}});

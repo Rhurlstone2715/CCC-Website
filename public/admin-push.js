@@ -3,10 +3,10 @@
  let registration,state,enabled=false;
  const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
  const standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
- const json=async(path,body)=>{const r=await fetch('/admin/push/'+path,{method:body?'POST':'GET',credentials:'same-origin',headers:body?{'content-type':'application/json'}:{},body:body?JSON.stringify(body):undefined,cache:'no-store'});if(!r.ok)throw Error(r.status===401||r.status===403?'Sign in as an admin to enable booking alerts.':'The notification setting could not be saved. Try again.');return r.json();};
+ const json=async(path,body)=>{const r=await fetch('/admin/push/'+path,{method:body?'POST':'GET',credentials:'same-origin',headers:body?{'content-type':'application/json'}:{},body:body?JSON.stringify(body):undefined,cache:'no-store'});if(!r.ok)throw Error(r.status===401||r.status===403?'Sign in as an admin to enable admin alerts.':'The notification setting could not be saved. Try again.');return r.json();};
  const badge=async(count)=>{try{if(!enabled||!count)await navigator.clearAppBadge?.();else await navigator.setAppBadge?.(count);}catch{}};
- async function refresh(markSeen=false){state=await json('state');const ids=(document.querySelector('[data-read-bookings]')?.dataset.readBookings||'').split(',').filter(Boolean).map(Number);if(markSeen&&ids.length){const result=await json('seen',{bookingIds:ids});state.unreadCount=result.unreadCount;}await badge(state.unreadCount);}
- function show(on){enabled=on;enable.hidden=on;disable.hidden=!on;status.textContent=on?'Enabled on this device. New bookings show an alert and an unread badge. Viewing a booking clears its unread count.':'Booking alerts are off on this device.';}
+ async function refresh(markSeen=false){state=await json('state');const ids=(document.querySelector('[data-read-bookings]')?.dataset.readBookings||'').split(',').filter(Boolean).map(Number);const customerIds=(document.querySelector('[data-read-customers]')?.dataset.readCustomers||'').split(',').filter(Boolean).map(Number);if(markSeen&&(ids.length||customerIds.length)){const result=await json('seen',{bookingIds:ids,customerIds});state.unreadCount=result.unreadCount;}await badge(state.unreadCount);}
+ function show(on){enabled=on;enable.hidden=on;disable.hidden=!on;status.textContent=on?'Enabled on this device. New bookings and verified customer signups show an alert and unread badge. Viewing a booking or customer clears its unread count.':'Admin alerts are off on this device.';}
  const decode=key=>Uint8Array.from(atob(key.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
  async function turnOff(){const sub=await registration?.pushManager.getSubscription();if(sub){await sub.unsubscribe();try{await json('unsubscribe',{endpoint:sub.endpoint});}catch{}}localStorage.removeItem('ccc-admin-push-owner');show(false);await badge(0);}
  enable.onclick=async()=>{
@@ -21,9 +21,9 @@
   try{
    await refresh(true);
    if(ios&&!standalone){install.hidden=false;status.textContent='Open CCC Admin from its home-screen web app to enable iPhone alerts.';return;}
-   if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window)){install.hidden=false;status.textContent='This browser cannot enable booking alerts. Use a supported home-screen web app on iOS 16.4 or later.';return;}
+   if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window)){install.hidden=false;status.textContent='This browser cannot enable admin alerts. Use a supported home-screen web app on iOS 16.4 or later.';return;}
    registration=await navigator.serviceWorker.register('/admin-sw.js',{scope:'/',updateViaCache:'none'});await navigator.serviceWorker.ready;
-   if(!state.configured){status.textContent='Booking notifications are being configured. Refresh shortly.';return;}
+   if(!state.configured){status.textContent='Admin notifications are being configured. Refresh shortly.';return;}
    const sub=await registration.pushManager.getSubscription();if(sub&&Notification.permission==='granted'){
     await json('subscribe',sub.toJSON());localStorage.setItem('ccc-admin-push-owner',String(state.adminId));show(true);await badge(state.unreadCount);
    }else show(false);

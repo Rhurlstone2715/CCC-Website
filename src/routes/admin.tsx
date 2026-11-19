@@ -742,6 +742,7 @@ admin.get("/customers", async c => {
   const customerRewards = new Map(await Promise.all(customers.map(async u => [u.id, await rewardsForUser(u.id)] as const)));
   return c.html(
     <AdminPage title="Customers" user={user} pending={pending} active="customers">
+      <span hidden data-read-customers={customers.filter(c=>c.emailVerifiedAt).map(c=>c.id).join(",")} />
       <p><a href="/admin/companies">Manage company loyalty accounts</a></p>
       {notice ? <Notice tone={notice.tone}>{notice.text}</Notice> : null}
       <div class="page-head">
@@ -842,6 +843,7 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { profi
 
   return c.html(
     <AdminPage title={customer.name} user={user} pending={pending} active="customers">
+      <span hidden data-read-customers={customer.emailVerifiedAt?String(customer.id):""} />
       {notice ? <Notice tone={notice.tone}>{notice.text}</Notice> : null}
       <p class="back-link">
         <a class="text-link" href="/admin/customers">

@@ -26,7 +26,8 @@ enum Role {
 // rewardCreditCents lets an admin credit spend made outside the site.
 model User {
   adminPushSubscriptions AdminPushSubscription[]
-  adminBookingNotices AdminBookingNotice[]
+  adminBookingNotices AdminBookingNotice[] @relation("AdminNotices")
+  signupNotices AdminBookingNotice[] @relation("SignupCustomer")
   id                 Int                 @id @default(autoincrement())
   email              String              @unique
   passwordHash       String
@@ -339,13 +340,16 @@ model AdminPushSubscription {
 model AdminBookingNotice {
   id Int @id @default(autoincrement())
   adminId Int
-  admin User @relation(fields:[adminId],references:[id],onDelete:Cascade)
-  bookingId Int
-  booking Booking @relation(fields:[bookingId],references:[id],onDelete:Cascade)
+  admin User @relation("AdminNotices", fields:[adminId],references:[id],onDelete:Cascade)
+  bookingId Int?
+  booking Booking? @relation(fields:[bookingId],references:[id],onDelete:Cascade)
+  customerId Int?
+  customer User? @relation("SignupCustomer", fields:[customerId],references:[id],onDelete:Cascade)
   readAt DateTime?
   createdAt DateTime @default(now())
   deliveries AdminPushDelivery[]
   @@unique([adminId,bookingId])
+  @@unique([adminId,customerId])
   @@index([adminId,readAt])
 }
 model AdminPushDelivery {

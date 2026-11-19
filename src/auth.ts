@@ -1,3 +1,4 @@
+import {queueAdminSignupNotices,deliverAdminPushNotifications} from "./admin-push.js";
 import { createHash, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import type { Context, MiddlewareHandler } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
@@ -208,17 +209,19 @@ export async function createConfirmLink(c: Context, user: { id: number; email: s
 
 // A link only counts while the account still has the address it was sent to.
 export async function useConfirmLink(token: string): Promise<number | null> {
-  const record = await prisma.emailVerification.findUnique({ where: { id: hashToken(token) }, include: { user: { select: { email: true } } } });
+  const record = await prisma.emailVerification.findUnique({ where: { id: hashToken(token) }, include: { user: { select: { email: true, emailVerifiedAt: true } } } });
   if (!record || record.expiresAt.getTime() <= Date.now() || record.user.email !== record.email) return null;
   const confirmed = await prisma.$transaction(async tx => {
     const claimed = await tx.emailVerification.deleteMany({ where: { id: record.id, expiresAt: { gt: new Date() } } });
     if (claimed.count !== 1) return false;
     const updated = await tx.user.updateMany({ where: { id: record.userId, email: record.email }, data: { emailVerifiedAt: new Date() } });
     if (updated.count !== 1) return false;
+    if (!record.user.emailVerifiedAt) await queueAdminSignupNotices(tx,record.userId);
     await tx.emailVerification.deleteMany({ where: { userId: record.userId } });
     return true;
   });
   if (!confirmed) return null;
+  void deliverAdminPushNotifications();
   await syncCompanyMembership(record.userId);
   const verifiedUser = await prisma.user.findUniqueOrThrow({where:{id:record.userId}});
   await queueSignupAlert(verifiedUser, publicUrlForEmail());

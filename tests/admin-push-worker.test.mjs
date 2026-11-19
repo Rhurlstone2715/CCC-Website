@@ -6,6 +6,15 @@ test('background booking push always shows a visible notification and updates th
  assert.equal(shown.length,1);assert.equal(shown[0][0],'New CCC booking');assert.equal(shown[0][1].data.url,'/admin/bookings/12');assert.deepEqual(badges,[3]);assert.equal(messages[0].type,'ccc-booking-alert');
  handlers.push({data:{json:()=>({unreadCount:0,url:'https://attacker.example'})},waitUntil:p=>pending=p});await pending;assert.equal(shown.length,2);assert.equal(shown[1][1].data.url,'/admin/bookings');assert.equal(badges.at(-1),0);
 });
+test('verified customer pushes show a signup alert and open only local customer pages',async()=>{
+ const handlers={},shown=[],opened=[],badges=[];
+ const self={location:{origin:'https://www.caymancrane.com'},addEventListener:(type,fn)=>handlers[type]=fn,navigator:{setAppBadge:async n=>badges.push(n)},registration:{showNotification:async(...args)=>shown.push(args)},clients:{matchAll:async()=>[],openWindow:async url=>opened.push(url)}};
+ runInNewContext(code,{self,URL,Promise});let pending;
+ handlers.push({data:{json:()=>({kind:'customer-signup',unreadCount:2,url:'/admin/customers/17',tag:'ccc-customer-17'})},waitUntil:p=>pending=p});await pending;
+ assert.equal(shown[0][0],'New verified CCC customer');assert.equal(shown[0][1].data.url,'/admin/customers/17');assert.deepEqual(badges,[2]);
+ handlers.notificationclick({notification:{close(){},data:shown[0][1].data},waitUntil:p=>pending=p});await pending;assert.deepEqual(opened,['/admin/customers/17']);
+ handlers.notificationclick({notification:{close(){},data:{url:'https://attacker.example/admin/customers/17'}},waitUntil:p=>pending=p});await pending;assert.equal(opened.at(-1),'/admin/bookings');
+});
 test('admin manifest keeps login in scope and starts at bookings',()=>{
  const m=JSON.parse(readFileSync(new URL('../public/admin.webmanifest',import.meta.url),'utf8'));assert.equal(m.display,'standalone');assert.equal(m.scope,'/');assert.match(m.start_url,/^\/admin\/bookings/);assert.equal(m.icons.length,2);
 });
