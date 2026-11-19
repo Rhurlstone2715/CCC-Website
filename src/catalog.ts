@@ -1,3 +1,4 @@
+import {loyaltyDiscountCents} from "./loyalty-tiers.js";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { prisma } from "./db.js";
@@ -190,8 +191,8 @@ export async function priceItems(items: CartItem[], discountPercent: number): Pr
     return { id: item.id, name, term: item.term, qty: item.qty, rate, amount, operator, ...(periods>1?{periods}:{}), ...(product?.fuelType && !/crane|boom.?truck/i.test(product.category) ? { fuelType: product.fuelType } : {}) };
   });
 
-  // Round the combined equipment discount once to a whole CI dollar.
-  const discountCents = Math.round(equipmentCents * discountPercent / 10_000) * 100;
+  // Round the combined equipment discount once to the nearest KYD $5.
+  const discountCents = loyaltyDiscountCents(equipmentCents,discountPercent);
   const estimateCents = anyPriced ? equipmentCents - discountCents + operatorCents : null;
   return { lines, estimateCents };
 }

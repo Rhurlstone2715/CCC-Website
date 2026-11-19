@@ -336,10 +336,10 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   test("admins grant booking-only tier discounts without changing earned points or future eligibility",async()=>{
     const cookie=await signup(),admin=await makeAdmin();const user=await prisma.user.findUniqueOrThrow({where:{email:'kim@example.com'}});
     const form={userId:String(user.id),customerName:user.name,customerEmail:user.email,startDate:'2034-04-01',startTime:'08:00',area:'George Town',siteAddress:'Courtesy discount job',discountChoice:'Silver',tierDiscountReason:'Goodwill discount authorized by admin',items:JSON.stringify([{id:'rt40',term:'daily',qty:1,periods:1,rate:985},{id:'telehandler-operator',term:'hourly',qty:2,periods:1,rate:35}])};
-    assert.match((await req('/admin/bookings/new',{cookie:admin,form})).headers.get('location')!,/booking-created/);let b=await prisma.booking.findFirstOrThrow();assert.equal(b.discountPercent,5);assert.equal(b.rewardTier,'Silver');assert.equal(b.estimateCents,100600);
-    let e=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}}),s=e.snapshot as unknown as EstimateSnapshot;assert.equal(s.discountCents,4900);assert.equal(s.totalCents,115600);assert.match((await prisma.bookingRevision.findFirstOrThrow()).reason,/Booking-only Silver tier \(5%\).*Goodwill/);
+    assert.match((await req('/admin/bookings/new',{cookie:admin,form})).headers.get('location')!,/booking-created/);let b=await prisma.booking.findFirstOrThrow();assert.equal(b.discountPercent,5);assert.equal(b.rewardTier,'Silver');assert.equal(b.estimateCents,100500);
+    let e=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}}),s=e.snapshot as unknown as EstimateSnapshot;assert.equal(s.discountCents,5000);assert.equal(s.totalCents,115500);assert.match((await prisma.bookingRevision.findFirstOrThrow()).reason,/Booking-only Silver tier \(5%\).*Goodwill/);
     assert.equal((await rewardsForUser(user.id)).tier,'Member');assert.equal((await rewardsForUser(user.id)).points,0);assert.equal((await prisma.user.findUniqueOrThrow({where:{id:user.id}})).rewardCreditCents,0);
-    const edit={...form,version:b.updatedAt.toISOString(),reason:'Additional goodwill discount',discountChoice:'Platinum',tierDiscountReason:'Manager approved Platinum for this booking'};assert.match((await req(`/admin/bookings/${b.id}/edit`,{cookie:admin,form:edit})).headers.get('location')!,/booking-edited/);b=await prisma.booking.findUniqueOrThrow({where:{id:b.id}});assert.equal(b.discountPercent,15);assert.equal(b.rewardTier,'Platinum');e=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}});s=e.snapshot as unknown as EstimateSnapshot;assert.equal(s.discountCents,14800);assert.equal(e.totalCents,105700);assert.equal(s.rows.at(-1)!.item,'Loyalty');assert.ok(await prisma.estimateArchive.findFirst({where:{bookingId:b.id}}));
+    const edit={...form,version:b.updatedAt.toISOString(),reason:'Additional goodwill discount',discountChoice:'Platinum',tierDiscountReason:'Manager approved Platinum for this booking'};assert.match((await req(`/admin/bookings/${b.id}/edit`,{cookie:admin,form:edit})).headers.get('location')!,/booking-edited/);b=await prisma.booking.findUniqueOrThrow({where:{id:b.id}});assert.equal(b.discountPercent,15);assert.equal(b.rewardTier,'Platinum');e=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}});s=e.snapshot as unknown as EstimateSnapshot;assert.equal(s.discountCents,15000);assert.equal(e.totalCents,105500);assert.equal(s.rows.at(-1)!.item,'Loyalty');assert.ok(await prisma.estimateArchive.findFirst({where:{bookingId:b.id}}));
     const earned={...form,version:b.updatedAt.toISOString(),reason:'Return to earned account tier',discountChoice:'earned',tierDiscountReason:''};assert.match((await req(`/admin/bookings/${b.id}/edit`,{cookie:admin,form:earned})).headers.get('location')!,/booking-edited/);b=await prisma.booking.findUniqueOrThrow({where:{id:b.id}});assert.equal(b.discountPercent,0);assert.equal(b.rewardTier,'Member');assert.equal((await rewardsForUser(user.id)).points,0);
     await req('/api/bookings',{cookie,json:{...booking,discountChoice:'Platinum',discountPercent:15,rewardTier:'Platinum'}});const later=await prisma.booking.findFirstOrThrow({where:{id:{not:b.id}}});assert.equal(later.discountPercent,0);assert.equal(later.rewardTier,'Member');
   });
@@ -546,7 +546,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const response=await req("/api/bookings",{cookie:customer,json:{...booking,customerEmail:"wrong@example.com",details:{billingAddress:"123 Customer Road, George Town",jobDetails:"Lift roof materials",phone:"345 555 0100",company:"Customer Company",startDate:"2030-05-15",startTime:"08:00",area:"7 Mile Beach",siteAddress:"50 Job Site Road",items:[{id:"rt40",term:"daily",qty:1}]}}});
     const body=await response.json();assert.equal(body.estimateNumber,524);assert.equal(body.estimateUrl,"/account/bookings/1/estimate.pdf");
     const estimate=await prisma.estimate.findUniqueOrThrow({where:{number:524}});const snapshot=estimate.snapshot as unknown as EstimateSnapshot;
-    assert.equal(estimate.emailRecipient,"kim@example.com");assert.equal(snapshot.rows.at(-1)?.item,"Loyalty");assert.equal(snapshot.discountCents,4900);assert.equal(snapshot.deliveryCents,20000);assert.equal(estimate.totalCents,113600);
+    assert.equal(estimate.emailRecipient,"kim@example.com");assert.equal(snapshot.rows.at(-1)?.item,"Loyalty");assert.equal(snapshot.discountCents,5000);assert.equal(snapshot.deliveryCents,20000);assert.equal(estimate.totalCents,113500);
     assert.equal(snapshot.billingAddress,"123 Customer Road, George Town");assert.equal(snapshot.requestedStart,"15 May 2030 at 08:00 (Cayman time)");assert.equal(snapshot.location,"50 Job Site Road, 7 Mile Beach");assert.equal(snapshot.jobDetails,"Lift roof materials");
     assert.equal(snapshot.date,estimate.createdAt.toLocaleDateString("en-GB",{timeZone:"America/Cayman",day:"numeric",month:"short",year:"numeric"}));
     const pdf=await PDFDocument.load(estimate.pdf);assert.equal(pdf.getTitle(),"Cayman Crane Estimate 524");assert.ok(pdf.getPageCount()>=1);
@@ -1510,15 +1510,26 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.ok(!body.includes("</"), "angle brackets are escaped");
   });
 
-  test("new bookings round the total equipment discount to whole dollars and keep earlier estimates unchanged", async () => {
+  test("all admin loyalty tiers round a KYD 2330 rental discount to the nearest five dollars",async()=>{
+    await signup();const admin=await makeAdmin();
+    const u=await prisma.user.findUniqueOrThrow({where:{email:'kim@example.com'}});
+    for(const [tier,percent,discount,total,date] of [['Silver',5,115,2215,'2034-06-01'],['Gold',10,235,2095,'2034-06-04'],['Platinum',15,350,1980,'2034-06-07']] as const){
+      const form={userId:String(u.id),customerName:u.name,customerEmail:u.email,startDate:date,startTime:'08:00',rentalCollection:'pickup',discountChoice:tier,tierDiscountReason:`Approved ${tier} tier`,items:JSON.stringify([{id:'palletjacks',term:'daily',qty:1,periods:1,rate:2330}])};
+      const result=await req('/admin/bookings/new',{cookie:admin,form});assert.match(result.headers.get('location')||'',/booking-created/);
+      const e=await prisma.estimate.findFirstOrThrow({orderBy:{number:'desc'}}),snapshot=e.snapshot as unknown as EstimateSnapshot;
+      assert.equal(snapshot.discountCents,discount*100);assert.equal(e.totalCents,total*100);assert.equal(snapshot.rows.at(-1)?.total,`-${discount.toFixed(2)}`);
+      const b=await prisma.booking.findUniqueOrThrow({where:{id:e.bookingId}});assert.equal(b.discountPercent,percent);assert.equal(b.estimateCents,total*100);
+    }
+  });
+  test("new bookings round the total equipment discount to the nearest $5 and keep earlier estimates unchanged", async () => {
     const customer=await signup();await prisma.user.update({where:{email:"kim@example.com"},data:{rewardCreditCents:500000}});
     await prisma.product.update({where:{id:"rt40"},data:{rates:{daily:985}}});
     await req("/api/bookings",{cookie:customer,json:{...booking,details:{items:[{id:"rt40",term:"daily",qty:1}]}}});
-    const first=await prisma.booking.findFirstOrThrow();assert.equal(first.discountPercent,5);assert.equal(first.estimateCents,93600);
+    const first=await prisma.booking.findFirstOrThrow();assert.equal(first.discountPercent,5);assert.equal(first.estimateCents,93500);
     await prisma.product.update({where:{id:"rt40"},data:{rates:{daily:990}}});
     await req("/api/bookings",{cookie:customer,json:{...booking,details:{items:[{id:"rt40",term:"daily",qty:1}]}}});
     const second=await prisma.booking.findFirstOrThrow({orderBy:{id:"desc"}});assert.equal(second.estimateCents,94000);
-    assert.equal((await prisma.booking.findUniqueOrThrow({where:{id:first.id}})).estimateCents,93600);
+    assert.equal((await prisma.booking.findUniqueOrThrow({where:{id:first.id}})).estimateCents,93500);
   });
 
   test("bookings are priced on the server, with the tier discount on equipment only", async () => {
@@ -1537,7 +1548,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const lines = saved.items as { id: string; amount: number | null; operator: boolean; name: string }[];
     assert.deepEqual(lines.map(l => l.amount), [580, 140, 50, null]);
     assert.equal(lines[2].name, "Lifting Beams — 10′ × 8″");
-    assert.equal(saved.estimateCents, (580 + 50 - 32) * 100 + 140 * 100);
+    assert.equal(saved.estimateCents, (580 + 50 - 30) * 100 + 140 * 100);
     assert.equal(saved.startDate?.toISOString().slice(0, 10), "2030-05-15");
     assert.equal(saved.area, "George Town");
     const page = await (await req(`/admin/bookings/${saved.id}`, { cookie: admin })).text();
