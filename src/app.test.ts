@@ -8,6 +8,7 @@ import { inventoryNow } from "./availability.js";
 import { deliverEstimateEmails, renderEstimatePdf, estimateSnapshot, type EstimateSnapshot } from "./estimates.js";
 import {deliverReceiptEmails} from "./receipts.js";
 import {brandedEmailHtml} from "./email.js";
+import {correctJRDocuments} from "./booking-document-correction.js";
 import {runBookingTransportRepair} from "./booking-transport-repair.js";
 import { PDFDocument } from "pdf-lib";
 
@@ -591,6 +592,25 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const standalone=await (await req('/api/bookings',{cookie,json:{...booking,details:{area:'7 Mile Beach',rentalCollection:'delivery',items:[{id:'bucket',term:'daily',qty:1}]}}})).json();
     assert.equal((await prisma.estimate.findUniqueOrThrow({where:{number:standalone.estimateNumber}})).totalCents!==null,true);
     const s=(await prisma.estimate.findUniqueOrThrow({where:{number:standalone.estimateNumber}})).snapshot as unknown as EstimateSnapshot;assert.equal(s.deliveryCents,40000);
+  });
+  test("authorized J&R document correction preserves payment, document numbers, original files and email history",async()=>{
+    const cookie=await signup();await req('/api/bookings',{cookie,json:{...booking,details:{items:[{id:'rt40',term:'daily',qty:1}]}}});
+    let b=await prisma.booking.findFirstOrThrow();const paidAt=new Date('2030-05-16T12:00:00Z'),sentAt=new Date('2030-05-16T12:05:00Z');
+    b=await prisma.booking.update({where:{id:b.id},data:{company:'J&R Construction',area:'West Bay',rentalCollection:'delivery',status:'PAID',discountPercent:5,rewardTier:'Silver',amountPaidCents:221500,paidAt,estimateCents:197600,items:[{id:'rt40',name:'Terex RT40',term:'daily',qty:1,periods:1,rate:2080,amount:2080,operator:false}]}});
+    const e=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}}),fresh=await prisma.$transaction(tx=>estimateSnapshot(tx,b,e.number));
+    const old:EstimateSnapshot={...fresh,discountCents:10400,pricedSubtotalCents:197600,totalCents:222600,rows:fresh.rows.filter(r=>r.item!=='Loyalty').concat({item:'Loyalty',description:'Silver 5%',qty:'',rate:'',total:'-104.00'})};
+    const oldPdf=await renderEstimatePdf(old),oldReceipt=await renderEstimatePdf(old,false,{number:'R-000001',amountPaidCents:221500,paidDate:'16 May 2030'});
+    await prisma.estimate.update({where:{number:e.number},data:{snapshot:old as any,totalCents:222600,pdf:new Uint8Array(oldPdf),emailSentAt:sentAt}});
+    const r=await prisma.paymentReceipt.create({data:{bookingId:b.id,key:randomUUID(),amountPaidCents:221500,paidAt,snapshot:old as any,pdf:new Uint8Array(oldReceipt),emailRecipient:b.customerEmail,emailSentAt:sentAt}});
+    const target={bookingId:b.id,estimateNumber:e.number,receiptId:r.id,expectedDiscountCents:10400,expectedTotalCents:222600};
+    await assert.rejects(correctJRDocuments({...target,expectedTotalCents:222500}));
+    assert.equal((await correctJRDocuments(target)).status,'corrected');assert.equal((await correctJRDocuments(target)).status,'already-correct');
+    const changed=await prisma.booking.findUniqueOrThrow({where:{id:b.id}}),estimate=await prisma.estimate.findUniqueOrThrow({where:{number:e.number}}),receipt=await prisma.paymentReceipt.findUniqueOrThrow({where:{id:r.id}});
+    for(const document of [estimate,receipt]){const snapshot=document.snapshot as unknown as EstimateSnapshot;assert.equal(snapshot.discountCents,11500);assert.equal(snapshot.totalCents,221500);assert.equal(snapshot.rows.at(-1)?.total,'-115.00');assert.equal(document.emailSentAt?.getTime(),sentAt.getTime());assert.ok((await PDFDocument.load(document.pdf)).getPageCount());}
+    assert.equal(changed.amountPaidCents,221500);assert.equal(changed.paidAt?.getTime(),paidAt.getTime());assert.equal(changed.loyaltyDiscountOverrideCents,11500);assert.equal(changed.estimateCents,196500);
+    assert.equal((await prisma.$transaction(tx=>estimateSnapshot(tx,changed,e.number))).totalCents,221500);
+    assert.deepEqual(Buffer.from((await prisma.estimateArchive.findUniqueOrThrow({where:{number:e.number}})).pdf),Buffer.from(oldPdf));
+    const revision=await prisma.bookingRevision.findFirstOrThrow();assert.equal((revision.before as any).receipt.pdfBase64,Buffer.from(oldReceipt).toString('base64'));assert.equal(await prisma.bookingRevision.count(),1);
   });
   test("admin-authorized repair inspects and corrects the exact Ric/Paragon booking without changing payments or prices",async()=>{
     const cookie=await signup();await req('/api/bookings',{cookie,json:{...booking,details:{startDate:'2036-03-01',startTime:'08:00',area:'7 Mile Beach',siteAddress:'Repair fixture',items:[{id:'rt40',term:'daily',qty:1},{id:'bucket',term:'daily',qty:1}]}}});

@@ -124,6 +124,7 @@ model Booking {
   user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   rewardTier      String?
   discountPercent Int           @default(0)
+  loyaltyDiscountOverrideCents Int?
   adminNote       String?
   approvedAt      DateTime?
   contractSentAt  DateTime?

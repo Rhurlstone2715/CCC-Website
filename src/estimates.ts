@@ -63,7 +63,7 @@ export async function estimateSnapshot(tx:Prisma.TransactionClient,b:Booking,num
  }
  const equipment=lines.filter(l=>!l.operator).reduce((sum,l)=>sum+Math.round((l.amount||0)*100),0);
  const operator=lines.filter(l=>l.operator).reduce((sum,l)=>sum+Math.round((l.amount||0)*100),0);
- const discountCents=loyaltyDiscountCents(equipment,b.discountPercent);
+ const discountCents=b.loyaltyDiscountOverrideCents??loyaltyDiscountCents(equipment,b.discountPercent);
  const pricedSubtotalCents=equipment+operator-discountCents;
  const complete=lines.length>0&&lines.every(l=>l.amount!==null)&&deliveryCents!==null;
  const totalCents=complete?pricedSubtotalCents+(deliveryCents||0):null;
@@ -84,7 +84,7 @@ export async function estimateSnapshot(tx:Prisma.TransactionClient,b:Booking,num
  if(!rows.length)rows.push({item:'Rental',description:'Equipment and rental pricing to be confirmed. Refer to the booking request.',qty:'',rate:'TBC',total:'TBC'});
  rows.push(...deliveryRows);
  if(!complete)rows.push({item:'Pricing',description:`Priced subtotal: CI$${currency(pricedSubtotalCents+(deliveryCents||0))}. Items marked TBC require manual pricing; this is not the final total.`,qty:'',rate:'',total:''});
- if(discountCents)rows.push({item:'Loyalty',description:`${b.rewardTier||'Loyalty'} discount (${b.discountPercent}%) — equipment only; rounded to the nearest KYD $5`,qty:'',rate:'',total:'-'+currency(discountCents)});
+ if(discountCents)rows.push({item:'Loyalty',description:b.loyaltyDiscountOverrideCents!==null?`${b.rewardTier||'Loyalty'} discount — admin-approved amount`:`${b.rewardTier||'Loyalty'} discount (${b.discountPercent}%) — equipment only; rounded to the nearest KYD $5`,qty:'',rate:'',total:'-'+currency(discountCents)});
  return {number,bookingRef:bookingRef(b.id),date:b.createdAt.toLocaleDateString('en-GB',{timeZone:'America/Cayman',day:'numeric',month:'short',year:'numeric'}),customerName:b.customerName,company:b.company,billingAddress:b.billingAddress,email:b.customerEmail,phone:b.phone,location:[b.siteAddress,b.area].filter(Boolean).join(', ')|| (b.rentalCollection==='pickup'?'Customer pickup':'To be confirmed'),requestedStart,jobDetails,rows,discountCents,deliveryCents,pricedSubtotalCents,totalCents};
 }
 let templateFiles:Promise<Buffer[]>|undefined;
