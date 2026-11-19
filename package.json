@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "node --env-file-if-exists=.env dist/server.js",
-    "build": "prisma generate && tsc && node scripts/render-welcome-preview.mjs",
+    "build": "prisma generate && tsc && node scripts/render-welcome-preview.mjs && node scripts/copy-pdf-viewer.mjs",
     "start": "prisma migrate deploy && node dist/server.js",
     "typecheck": "tsc --noEmit",
     "test:delivery": "node --test tests/delivery.test.mjs",
@@ -32,6 +32,7 @@
     "free-email-domains": "^1.16.0",
     "hono": "^4.13.13",
     "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.5.438",
     "prisma": "^7.10.0",
     "sharp": "^0.35.5",
     "tldts": "^7.4.21",

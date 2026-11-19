@@ -5,3 +5,5 @@ src/generated
 .DS_Store
 
 work/
+
+/public/vendor/pdfjs/

@@ -55,7 +55,7 @@ async function editor(c:Context<AppEnv>,booking:Booking|null,values:Record<strin
    {booking?.status==='PAID'?<><label>Confirmed amount paid (KYD)<input name="paidAmount" type="number" min="0" step="0.01" value={String(initial.paidAmount)} required /></label><p class="hint">Enter the actual payment retained after any extra charge or refund. Rewards use this confirmed payment, not the estimate.</p></>:null}
    <button type="submit" class="button primary">{booking?'Save changes & email revised estimate':'Create booking & email estimate'}</button></section>
   </form><script id="adminBookingData" type="application/json">{raw(data)}</script><script src="/admin-booking-editor.js" defer></script>
-  {archives.length?<section class="card"><h2>Previous estimates</h2>{archives.map(e=><p><a href={`/admin/bookings/${booking!.id}/estimates/${e.number}.pdf`}>Download estimate #{e.number} (replaced)</a></p>)}</section>:null}
+  {archives.length?<section class="card"><h2>Previous estimates</h2>{archives.map(e=><p><a href={`/admin/bookings/${booking!.id}/documents/estimate-${e.number}`}>View estimate #{e.number} (replaced)</a></p>)}</section>:null}
   {revisions.length?<section class="card"><h2>Change history</h2>{revisions.map(r=><p><b>{r.actorName}</b> · {r.createdAt.toLocaleString('en-US',{timeZone:'America/Cayman'})}<br/>{r.reason}</p>)}</section>:null}
  </AdminPage>,status);
 }

@@ -580,8 +580,8 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
               </form>
             ) : null}
           </section>
-          {booking.status==='PAID'&&booking.paymentReceipts.length?<p><a class="button secondary" href={`/account/bookings/${booking.id}/receipt.pdf`}>Download paid receipt PDF</a></p>:null}
-          {booking.estimate ? <section class="card"><h2>Customer estimate #{booking.estimate.number}</h2><p>{booking.estimate.totalCents === null ? "Total awaits manual pricing confirmation." : `Estimated total including delivery: ${money(booking.estimate.totalCents)}`}</p><a class="button secondary small" href={`/account/bookings/${booking.id}/estimate.pdf`}>Download estimate PDF</a><p class="hint">{booking.estimate.emailSentAt ? `Emailed ${caymanDate(booking.estimate.emailSentAt)}.` : "Email copy queued. The PDF is available to download now."}</p></section> : null}
+          {booking.status==='PAID'&&booking.paymentReceipts.length?<p><a class="button secondary" href={`/admin/bookings/${booking.id}/documents/receipt`}>View paid receipt PDF</a></p>:null}
+          {booking.estimate ? <section class="card"><h2>Customer estimate #{booking.estimate.number}</h2><p>{booking.estimate.totalCents === null ? "Total awaits manual pricing confirmation." : `Estimated total including delivery: ${money(booking.estimate.totalCents)}`}</p><a class="button secondary small" href={`/admin/bookings/${booking.id}/documents/estimate`}>View estimate PDF</a><p class="hint">{booking.estimate.emailSentAt ? `Emailed ${caymanDate(booking.estimate.emailSentAt)}.` : "Email copy queued. The PDF is available to download now."}</p></section> : null}
           <section class="card" id="payment-proofs">
             <h2>Proof of payment</h2>
             <PaymentProofSection bookingId={booking.id} proofs={booking.paymentProofs} />

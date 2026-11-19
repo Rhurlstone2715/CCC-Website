@@ -1,3 +1,4 @@
+import {adminDocuments} from "./routes/admin-documents.js";
 import { phoneProblem, phoneConflict } from "./phone.js";
 import { adminBookingEditor } from "./routes/admin-booking-editor.js";
 import { adminPush, queueAdminBookingNotices, deliverAdminPushNotifications } from "./admin-push.js";
@@ -112,6 +113,7 @@ app.get("/uploads/:id{[a-z0-9]+}", async c => {
 
 app.route("/admin/push",adminPush);
 app.route("/admin/bookings",adminBookingEditor);
+app.route("/admin/bookings",adminDocuments);
 app.route("/company-logos",companyLogos);
 app.route("/account/bookings", estimates);
 app.route("/account/bookings", paymentProofs);

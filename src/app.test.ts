@@ -6,7 +6,7 @@ import * as webPush from "web-push";
 import { deliverAdminPushNotifications, queueAdminSignupNotices } from "./admin-push.js";
 import { inventoryNow } from "./availability.js";
 import { deliverEstimateEmails, renderEstimatePdf, estimateSnapshot, type EstimateSnapshot } from "./estimates.js";
-import {deliverReceiptEmails} from "./receipts.js";
+import {deliverReceiptEmails,queuePaidReceipt} from "./receipts.js";
 import {brandedEmailHtml} from "./email.js";
 import {correctJRDocuments} from "./booking-document-correction.js";
 import {runBookingTransportRepair} from "./booking-transport-repair.js";
@@ -556,6 +556,22 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const other=await signup("other@example.com");assert.equal((await req(body.estimateUrl,{cookie:other})).status,404);assert.equal((await req(body.estimateUrl)).status,302);
     const admin=await makeAdmin();assert.equal((await req(body.estimateUrl,{cookie:admin})).status,200);
     assert.match(await (await req("/account/profile",{cookie:customer})).text(),/Download estimate #524/);
+  });
+
+  test("admin PDF viewers keep a booking back link and protect estimates, receipts and archives",async()=>{
+    const customer=await signup(),admin=await makeAdmin();
+    await req('/api/bookings',{cookie:customer,json:booking});let b=await prisma.booking.findFirstOrThrow();
+    b=await prisma.booking.update({where:{id:b.id},data:{status:'PAID',amountPaidCents:10000,paidAt:new Date()}});await prisma.$transaction(tx=>queuePaidReceipt(tx,b));
+    const e=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}});
+    await prisma.estimateArchive.create({data:{number:e.number,bookingId:b.id,snapshot:e.snapshot as any,totalCents:e.totalCents,pdf:e.pdf,emailRecipient:e.emailRecipient,originalCreatedAt:e.createdAt}});
+    for(const kind of ['estimate','receipt',`estimate-${e.number}`]){
+      const path=`/admin/bookings/${b.id}/documents/${kind}`;
+      for(const suffix of ['', '/pdf']){assert.equal((await req(path+suffix)).status,302);assert.equal((await req(path+suffix,{cookie:customer})).status,302);}
+      const page=await req(path,{cookie:admin});assert.equal(page.status,200);const html=await page.text();assert.match(html,/Back to booking/);assert.ok(html.includes(`href="/admin/bookings/${b.id}"`));assert.match(html,/admin-document-viewer.js/);assert.doesNotMatch(html,/<iframe|<embed/);
+      const pdf=await req(path+'/pdf',{cookie:admin});assert.equal(pdf.status,200);assert.equal(pdf.headers.get('content-type'),'application/pdf');assert.match(pdf.headers.get('cache-control')||'',/private, no-store/);assert.ok((await PDFDocument.load(await pdf.arrayBuffer())).getPageCount());
+    }
+    assert.equal((await req(`/admin/bookings/${b.id}/documents/estimate-999999`,{cookie:admin})).status,404);
+    assert.match(await(await req(`/admin/bookings/${b.id}`,{cookie:admin})).text(),new RegExp(`/admin/bookings/${b.id}/documents/receipt`));
   });
 
   test("concurrent checkouts allocate consecutive estimate numbers and never reuse deleted numbers", async () => {
