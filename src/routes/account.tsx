@@ -1,3 +1,4 @@
+import {memberSinceDate} from "../views/layout.js";
 import { phoneProblem, phoneConflict } from "../phone.js";
 import { rewardsBrand, type RewardsBrand } from "../company-logos.js";
 import { estimateMetadata } from "../estimates.js";
@@ -372,7 +373,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
     pendingRewardsForUser(user.id),
   ]);
   const notice = state.notice ? NOTICES[state.notice] : undefined;
-  const membership = await prisma.user.findUnique({ where: { id: user.id }, select: { subCompanyId: true, subCompany: { select: { name: true } } } });
+  const membership = await prisma.user.findUnique({ where: { id: user.id }, select: { createdAt: true, subCompanyId: true, subCompany: { select: { name: true } } } });
   const details = state.detailsValues ?? { ...user, subCompanyId: membership?.subCompanyId ?? null };
   const companyId = await verifiedCompanyId(user.id);
   const firstName = user.name.split(/\s+/)[0];
@@ -384,6 +385,8 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
       <section class="page-head account-welcome" aria-labelledby="welcome-title">
         <p class="eyebrow">Your account</p>
         <h1 id="welcome-title">Welcome back, {firstName}</h1>
+        <p class="member-profile-name">{user.name}{user.company?` (${user.company})`:''}</p>
+        {membership?<p class="member-since"><time dateTime={membership.createdAt.toISOString()}>Member since {memberSinceDate(membership.createdAt)}</time></p>:null}
       </section>
       <div class="grid-2">
         <div class="stack">

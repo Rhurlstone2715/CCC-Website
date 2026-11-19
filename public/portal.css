@@ -1289,3 +1289,6 @@ hr.divider {
 .admin-equipment-row input[type="datetime-local"],#adminBookingEditor input[type="time"]{box-sizing:border-box;width:100%;min-height:44px;padding:10px 12px;border:1px solid #b9bfc8;border-radius:5px;background:#fff;color:inherit;font:inherit}
 
 html { scroll-padding-top: calc(var(--site-header-height, 100px) + 12px); }
+
+/* Company identity and membership dates in customer profiles. */
+.admin-customer-identity{display:flex;align-items:center;gap:14px;min-width:0}.admin-customer-identity>div{min-width:0}.admin-company-logo{display:flex;align-items:center;justify-content:center;flex:0 0 104px;min-height:64px;padding:7px;background:#fff;border:1px solid #e5e5e5;border-radius:9px}.admin-company-logo img{display:block;width:100%;height:54px;object-fit:contain}.admin-company-initials{font-size:21px;color:#777;font-weight:700}.admin-customer-identity h1{overflow-wrap:anywhere}.admin-customer-identity .lede{margin-bottom:0}.member-profile-name{overflow-wrap:anywhere;margin:8px 0 4px;color:var(--ink,#222);font-weight:600}.member-since{margin:0;color:var(--muted,#666);font-size:14px}@media(max-width:480px){.admin-company-logo{flex-basis:76px;min-height:54px}.admin-company-logo img{height:44px}.admin-customer-identity{gap:10px}.admin-customer-identity h1{font-size:24px}}

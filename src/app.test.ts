@@ -24,6 +24,7 @@ import { prisma } from "./db.js";
 import { deliverAccountEmails, queueWelcomeEmail } from "./account-emails.js";
 import { companyEmailDomain, syncCompanyMembership } from "./companies.js";
 import { pendingRewardsForUser, pendingBookingPoints, rewardsForUser, rewardsForSpend } from "./rewards.js";
+import {memberSinceDate} from "./views/layout.js";
 import { csvCell } from "./routes/admin.js";
 import { parseAmount } from "./views/admin-page.js";
 import { readFileSync } from "node:fs";
@@ -64,6 +65,10 @@ describe("rewards tiers", () => {
 });
 
 describe("passwords and redirects", () => {
+  test("member since dates use Cayman time and correct ordinal day suffixes",()=>{
+    for(const [day,suffix]of [[1,'st'],[2,'nd'],[3,'rd'],[5,'th'],[11,'th'],[12,'th'],[13,'th'],[21,'st'],[22,'nd'],[23,'rd'],[30,'th']] as const)assert.equal(memberSinceDate(new Date(`2026-09-${String(day).padStart(2,'0')}T17:00:00Z`)),`${day}${suffix} September 2026`);
+    assert.equal(memberSinceDate(new Date('2026-09-06T01:00:00Z')),'5th September 2026');
+  });
   test("hash round trip", async () => {
     const hash = await hashPassword("correct horse");
     assert.match(hash, /^scrypt\$/);
@@ -438,6 +443,16 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     await req('/admin/push/seen',{cookie:admin,json:{bookingIds:[1]}});assert.equal((await (await req('/admin/push/state',{cookie:admin})).json()).unreadCount,0);
   });
 
+  test("admin customer list and profiles display company logos and the actual member since date",async()=>{
+    const cookie=await signup('ric@paragon-brand-test.ky');
+    const co=await prisma.company.create({data:{name:'Paragon Builders',nameKey:'paragonbuilders',domain:'paragon-brand-test.ky'}});
+    const u=await prisma.user.update({where:{email:'ric@paragon-brand-test.ky'},data:{name:'Ric Hurlstone',company:co.name,companyAccountId:co.id,createdAt:new Date('2026-09-05T17:00:00Z')}});
+    await prisma.companyLogo.create({data:{key:`company:${co.id}`,data:new Uint8Array([1,2,3]),manual:true}});
+    const admin=await makeAdmin();
+    for(const path of ['/admin/customers',`/admin/customers/${u.id}`]){const page=await(await req(path,{cookie:admin})).text();assert.match(page,/Paragon Builders logo/);assert.match(page,/company%3A/);assert.match(page,/Member since 5th September 2026/);assert.match(page,/Ric Hurlstone/);}
+    const profile=await(await req('/account/profile',{cookie})).text();assert.match(profile,/Ric Hurlstone \(Paragon Builders\)/);assert.match(profile,/Member since 5th September 2026/);
+    await prisma.companyLogo.deleteMany();const noLogo=await(await req('/admin/customers',{cookie:admin})).text();assert.match(noLogo,/admin-company-initials/);assert.doesNotMatch(noLogo,/Paragon Builders logo/);
+  });
   test("verified staff see their own company logo on the rewards badge without changing points",async()=>{
     const cookie=await signup('kim@brand-example.ky');
     const co=await prisma.company.create({data:{name:'Brand Example Ltd',nameKey:'brandexample',domain:'brand-example.ky',rewardCreditCents:500000}});

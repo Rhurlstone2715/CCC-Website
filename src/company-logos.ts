@@ -42,3 +42,20 @@ export async function refreshCompanyLogos(){
  }catch{console.error('Company logo refresh paused; rewards remain available.');}finally{busy=false;}
 }
 export function startCompanyLogoRefresh(){void refreshCompanyLogos();return setInterval(()=>void refreshCompanyLogos(),30000).unref();}
+
+// Bulk lookup for the admin list: no per-customer logo queries or website fetches.
+export async function adminCustomerBrands(userIds:number[]):Promise<Map<number,RewardsBrand>>{
+ const users=await prisma.user.findMany({where:{id:{in:userIds}},select:{id:true,companyAccount:{select:{id:true,name:true,domain:true}},subCompany:{select:{id:true,name:true,domain:true}}}});
+ const candidates=users.flatMap(u=>{
+  const company=u.companyAccount;if(!company)return[];const sub=u.subCompany;
+  const keys=[...new Set([...(sub?[`subcompany:${sub.id}`,...(sub.domain?[`domain:${sub.domain}`]:[])]:[]),`company:${company.id}`,...[sub?.domain,company.domain].filter(Boolean).map(d=>`domain:${d}`)])];
+  return[{id:u.id,name:sub?.name??company.name,parentName:sub?company.name:null,keys}];
+ });
+ const logos=await prisma.companyLogo.findMany({where:{key:{in:[...new Set(candidates.flatMap(c=>c.keys))]},data:{not:null}},select:{key:true,checkedAt:true}});
+ const cached=new Map(logos.map(l=>[l.key,l.checkedAt]));
+ return new Map(candidates.map(c=>{
+  let logoUrl:string|null=null;
+  for(const key of c.keys){const checked=cached.get(key);if(checked){logoUrl=`/company-logos/${encodeURIComponent(key)}?v=${checked.getTime()}`;break;}if(key.startsWith('domain:')){const asset=researchedCompanyLogos()[key.slice(7)];if(asset){logoUrl=asset.path;break;}}}
+  return[c.id,{name:c.name,parentName:c.parentName,initials:c.name.split(/\s+/).filter(w=>/[a-z0-9]/i.test(w)).slice(0,2).map(w=>w[0]).join('').toUpperCase(),logoUrl}];
+ }));
+}

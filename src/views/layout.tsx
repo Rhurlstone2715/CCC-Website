@@ -16,6 +16,13 @@ export function caymanDate(date: Date, withTime = true): string {
   return date.toLocaleString("en-US", { timeZone: "America/Cayman", dateStyle: "medium", ...(withTime ? { timeStyle: "short" } : {}) });
 }
 
+export function memberSinceDate(date: Date): string {
+  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'America/Cayman',day:'numeric',month:'long',year:'numeric'}).formatToParts(date);
+  const part=(type:string)=>parts.find(p=>p.type===type)!.value;
+  const day=Number(part('day')),suffix=day%100>=11&&day%100<=13?'th':({1:'st',2:'nd',3:'rd'}[day%10]??'th');
+  return `${day}${suffix} ${part('month')} ${part('year')}`;
+}
+
 export const STATUS_LABELS: Record<BookingStatus, { customer: string; admin: string }> = {
   PENDING: { customer: "Waiting for review", admin: "Pending" },
   APPROVED: { customer: "Approved", admin: "Approved" },

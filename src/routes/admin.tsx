@@ -1,3 +1,5 @@
+import {adminCustomerBrands,type RewardsBrand} from "../company-logos.js";
+import {memberSinceDate} from "../views/layout.js";
 import { phoneProblem } from "../phone.js";
 import {sessionLabel} from '../booking-sessions.js';
 import {queuePaidReceipt,deliverReceiptEmails} from '../receipts.js';
@@ -740,6 +742,7 @@ admin.get("/customers", async c => {
   const notice = noticeFrom(c);
 
   const customerRewards = new Map(await Promise.all(customers.map(async u => [u.id, await rewardsForUser(u.id)] as const)));
+  const customerBrands=await adminCustomerBrands(customers.map(u=>u.id));
   return c.html(
     <AdminPage title="Customers" user={user} pending={pending} active="customers">
       <span hidden data-read-customers={customers.filter(c=>c.emailVerifiedAt).map(c=>c.id).join(",")} />
@@ -781,14 +784,12 @@ admin.get("/customers", async c => {
                 return (
                   <tr>
                     <td data-label="Customer">
-                      <a href={`/admin/customers/${u.id}`}>{u.name}</a>
+                      <div class="admin-customer-identity"><AdminCompanyLogo brand={customerBrands.get(u.id)}/><div><a href={`/admin/customers/${u.id}`}>{u.name}</a>{u.company?<span class="sub">{u.company}</span>:null}<time class="sub" dateTime={u.createdAt.toISOString()}>Member since {memberSinceDate(u.createdAt)}</time></div></div>
                       {u.role === "ADMIN" ? <span class="sub">Admin</span> : null}
-                      <span class="sub">Joined {caymanDate(u.createdAt, false)}</span>
                     </td>
                     <td data-label="Contact">
                       {u.email}
                       {u.phone ? <span class="sub">{u.phone}</span> : null}
-                      {u.company ? <span class="sub">{u.company}</span> : null}
                       {u.emailVerifiedAt ? null : <span class="sub">Email not confirmed</span>}
                       {u.marketingOptIn ? <span class="sub">Agreed to offers</span> : null}
                     </td>
@@ -829,6 +830,11 @@ admin.get("/customers/marketing.csv", async c => {
   return c.body(csv);
 });
 
+function AdminCompanyLogo({brand}:{brand:RewardsBrand|undefined}){
+ if(!brand)return null;
+ return <span class="admin-company-logo">{brand.logoUrl?<img src={brand.logoUrl} alt={`${brand.name} logo`} width="104" height="64" loading="lazy"/>:<span class="admin-company-initials" title={`Logo not available for ${brand.name}`}>{brand.initials}</span>}</span>;
+}
+
 async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { profileError?: string } = {}) {
   const user = (await currentUser(c))!;
   const [pending, rewards, bookings] = await Promise.all([
@@ -840,6 +846,7 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { profi
   const loyaltyCompany = companyId ? await prisma.company.findUnique({ where: { id: companyId } }) : null;
   const loyaltySubCompany = loyaltyCompany && !loyaltyCompany.poolSubcompanyRewards && customer.subCompanyId ? await prisma.subCompany.findFirst({ where: { id: customer.subCompanyId, companyId: loyaltyCompany.id } }) : null;
   const notice = noticeFrom(c);
+  const brand=(await adminCustomerBrands([customer.id])).get(customer.id);
 
   return c.html(
     <AdminPage title={customer.name} user={user} pending={pending} active="customers">
@@ -852,8 +859,7 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { profi
       </p>
       <div class="page-head">
         <p class="eyebrow">{customer.role === "ADMIN" ? "Admin account" : "Customer"}</p>
-        <h1>{customer.name}</h1>
-        <p class="lede">Joined {caymanDate(customer.createdAt, false)}</p>
+        <div class="admin-customer-identity"><AdminCompanyLogo brand={brand}/><div><h1>{customer.name}{customer.company?` (${customer.company})`:''}</h1><p class="lede"><time dateTime={customer.createdAt.toISOString()}>Member since {memberSinceDate(customer.createdAt)}</time></p></div></div>
       </div>
       <div class="grid-2">
         <div class="stack">
