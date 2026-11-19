@@ -1,3 +1,4 @@
+import {runConfiguredDocumentCorrection} from "./booking-document-correction.js";
 import {runConfiguredTransportRepair} from './booking-transport-repair.js';
 import {startReceiptEmailDelivery} from './receipts.js';
 import { startAdminPushDelivery } from "./admin-push.js";
@@ -12,6 +13,7 @@ import { prisma } from "./db.js";
 
 await ensureCatalogSeeded();
 await runConfiguredTransportRepair();
+await runConfiguredDocumentCorrection();
 const googleCalendarTimer = startGoogleCalendarSync();
 const accountEmailTimer = startAccountEmailDelivery();
 const estimateEmailTimer = startEstimateEmailDelivery();
