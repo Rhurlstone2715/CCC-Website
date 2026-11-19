@@ -59,3 +59,18 @@ export async function adminCustomerBrands(userIds:number[]):Promise<Map<number,R
   return[c.id,{name:c.name,parentName:c.parentName,initials:c.name.split(/\s+/).filter(w=>/[a-z0-9]/i.test(w)).slice(0,2).map(w=>w[0]).join('').toUpperCase(),logoUrl}];
  }));
 }
+
+export async function registeredCompanyLogoUrls(companies:{id:number;domain:string|null;subCompanies:{id:number;domain:string|null}[]}[]){
+ const candidates=companies.flatMap(co=>{
+  const parent=[`company:${co.id}`,...(co.domain?[`domain:${co.domain}`]:[])];
+  return[{key:`company:${co.id}`,keys:parent},...co.subCompanies.map(sub=>({key:`subcompany:${sub.id}`,keys:[`subcompany:${sub.id}`,...(sub.domain?[`domain:${sub.domain}`]:[]),...parent]}))];
+ });
+ const saved=await prisma.companyLogo.findMany({where:{key:{in:[...new Set(candidates.flatMap(c=>c.keys))]},data:{not:null}},select:{key:true,checkedAt:true}});
+ const cached=new Map(saved.map(logo=>[logo.key,logo.checkedAt]));
+ const urls=new Map<string,string>();
+ for(const candidate of candidates)for(const key of candidate.keys){
+  const date=cached.get(key);if(date){urls.set(candidate.key,`/company-logos/${encodeURIComponent(key)}?v=${date.getTime()}`);break;}
+  if(key.startsWith('domain:')){const asset=researchedCompanyLogos()[key.slice(7)];if(asset){urls.set(candidate.key,asset.path);break;}}
+ }
+ return urls;
+}

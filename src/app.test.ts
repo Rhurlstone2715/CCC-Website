@@ -443,6 +443,15 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     await req('/admin/push/seen',{cookie:admin,json:{bookingIds:[1]}});assert.equal((await (await req('/admin/push/state',{cookie:admin})).json()).unreadCount,0);
   });
 
+  test("registered company loyalty accounts show saved logos above company and department names",async()=>{
+    const admin=await makeAdmin();const co=await prisma.company.create({data:{name:'Logo Builders',nameKey:'logobuilders',domain:'logo-builders.ky'}});
+    const sub=await prisma.subCompany.create({data:{companyId:co.id,name:'Logo Department',nameKey:'logodepartment',group:'Departments'}});
+    await prisma.companyLogo.createMany({data:[{key:`company:${co.id}`,data:new Uint8Array([1,2,3]),manual:true},{key:`subcompany:${sub.id}`,data:new Uint8Array([4,5,6]),manual:true}]});
+    const page=await(await req('/admin/companies',{cookie:admin})).text();
+    assert.match(page,/alt="Logo Builders logo"[^>]*>[\s\S]*?<h3>Logo Builders<\/h3>/);assert.match(page,/alt="Logo Department logo"[^>]*>[\s\S]*?<h4>Logo Department<\/h4>/);
+    assert.ok(page.includes(`company%3A${co.id}`));assert.ok(page.includes(`subcompany%3A${sub.id}`));
+    assert.equal((await req('/admin/companies')).status,302);
+  });
   test("admin customer list and profiles display company logos and the actual member since date",async()=>{
     const cookie=await signup('ric@paragon-brand-test.ky');
     const co=await prisma.company.create({data:{name:'Paragon Builders',nameKey:'paragonbuilders',domain:'paragon-brand-test.ky'}});
