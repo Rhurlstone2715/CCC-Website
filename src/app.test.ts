@@ -452,6 +452,15 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.ok(page.includes(`company%3A${co.id}`));assert.ok(page.includes(`subcompany%3A${sub.id}`));
     assert.equal((await req('/admin/companies')).status,302);
   });
+  test("rental rewards API supplies verified company badge, membership date and real tier progress",async()=>{
+    const cookie=await signup('member@badge-test.ky');
+    const company=await prisma.company.create({data:{name:'Badge Builders',nameKey:'badgebuilders',domain:'badge-test.ky',rewardCreditCents:1600000}});
+    await prisma.user.update({where:{email:'member@badge-test.ky'},data:{company:company.name,companyAccountId:company.id,createdAt:new Date('2026-09-05T17:00:00Z')}});
+    await prisma.companyLogo.create({data:{key:`company:${company.id}`,data:new Uint8Array([1,2,3]),manual:true}});
+    const response=await req('/api/rewards',{cookie}),data=await response.json();assert.equal(response.status,200);assert.match(response.headers.get('cache-control')||'',/no-store/);
+    assert.equal(data.profile.memberSince,'5th September 2026');assert.equal(data.profile.companyDisplayName,'Badge Builders');assert.equal(data.brand.name,'Badge Builders');assert.match(data.brand.logoUrl,/company%3A/);
+    assert.equal(data.rewards.points,16000);assert.equal(data.rewards.tier,'Gold');assert.equal(data.rewards.progressPercent,10);assert.equal(data.rewards.nextTier,'Platinum');assert.equal(data.rewards.amountToNextCents,900000);assert.equal(data.rewards.pendingPoints,0);
+  });
   test("admin customer list and profiles display company logos and the actual member since date",async()=>{
     const cookie=await signup('ric@paragon-brand-test.ky');
     const co=await prisma.company.create({data:{name:'Paragon Builders',nameKey:'paragonbuilders',domain:'paragon-brand-test.ky'}});

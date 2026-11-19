@@ -1,0 +1,12 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import{readFileSync}from'node:fs';import{runInNewContext}from'node:vm';
+const source=readFileSync(new URL('../public/rental-member-badge.js',import.meta.url),'utf8');
+function fixture(){const node=()=>({hidden:false,id:'',textContent:'',dataset:{},style:{},attributes:{},setAttribute(k,v){this.attributes[k]=v;}}),nodes=new Map();const get=id=>{if(!nodes.has(id))nodes.set(id,node());return nodes.get(id);};const badge=get('badge');badge.hidden=true;badge.querySelector=()=>get('card');const document={querySelector:q=>q==='#memberRewards'?badge:q==='[data-public-rewards]'?get('guest'):get('process'),getElementById:get};const window={};runInNewContext(source,{document,window,requestAnimationFrame:fn=>fn()});return{render:window.CCCMemberBadge.render,get};}
+test('signed-in member badge replaces guest sections and uses confirmed progress at each tier',()=>{
+ for(const[tier,points,next,remaining,progress]of [['Member',0,'Silver',500000,0],['Silver',10000,'Gold',500000,50],['Gold',20000,'Platinum',500000,50],['Platinum',25000,null,0,100]]){
+  const{render,get}=fixture();render({profile:{name:'Ric Hurlstone',company:'Paragon Builders',memberSince:'5th September 2026'},rewards:{tier,points,nextTier:next,amountToNextCents:remaining,progressPercent:progress,pendingPoints:3000}});
+  assert.equal(get('badge').hidden,false);assert.equal(get('guest').hidden,true);assert.equal(get('process').hidden,true);assert.equal(get('badge').id,'rewards');assert.equal(get('memberRewardsName').textContent,'Paragon Builders');assert.equal(get('memberSince').textContent,'Member since 5th September 2026');assert.equal(get('memberProgressFill').style.width,`${progress}%`);assert.equal(get('memberProgress').attributes['aria-valuenow'],String(progress));assert.match(get('memberPendingPoints').textContent,/3,000 points pending/);assert.match(get('memberNextTier').textContent,next?new RegExp(next):/highest rewards tier/);
+ }
+});
+test('signed-out visitors and admins retain public sections, with no saved customer badge',()=>{
+ const{render,get}=fixture();render({profile:{name:'Customer'},rewards:{tier:'Member'}});render(null);assert.equal(get('badge').hidden,true);assert.equal(get('guest').hidden,false);assert.equal(get('process').hidden,false);render({admin:true,profile:{name:'Admin'}});assert.equal(get('badge').hidden,true);
+});

@@ -1,3 +1,5 @@
+import {rewardsBrand} from "./company-logos.js";
+import {memberSinceDate} from "./views/layout.js";
 import {adminDocuments} from "./routes/admin-documents.js";
 import { phoneProblem, phoneConflict } from "./phone.js";
 import { adminBookingEditor } from "./routes/admin-booking-editor.js";
@@ -19,7 +21,7 @@ import { verifiedCompanyMembership } from "./companies.js";
 import { prisma } from "./db.js";
 import type { Prisma } from "./generated/prisma/client.js";
 import { clientIp, createLimiter } from "./ratelimit.js";
-import { rewardsForUser } from "./rewards.js";
+import { rewardsForUser, pendingRewardsForUser } from "./rewards.js";
 import { account } from "./routes/account.js";
 import { adminCompanies } from "./routes/admin-companies.js";
 import { admin } from "./routes/admin.js";
@@ -132,7 +134,7 @@ app.get("/api/rewards", async c => {
   const user = await currentUser(c);
   if (!user) return c.json({ error: "Sign in to view rewards." }, 401);
   const rewards = await rewardsForUser(user.id);
-  const department = await prisma.user.findUnique({ where: { id: user.id }, select: { subCompany: { select: { name: true } } } });
+  const [department,brand,pending]=await Promise.all([prisma.user.findUnique({ where: { id: user.id }, select: { createdAt:true, subCompany: { select: { name: true } } } }),rewardsBrand(user.id),pendingRewardsForUser(user.id)]);
   return c.json({
     rewards: {
       tier: rewards.tier,
@@ -140,8 +142,11 @@ app.get("/api/rewards", async c => {
       nextTier: rewards.nextTier,
       amountToNextCents: rewards.amountToNextCents,
       points: rewards.points,
+      progressPercent:rewards.progressPercent,
+      pendingPoints:pending.points,
     },
-    profile: { name: user.name, email: user.email, phone: user.phone, billingAddress: user.billingAddress, company: user.company, companyDisplayName: department?.subCompany ? `${user.company} / ${department.subCompany.name}` : user.company, emailConfirmed: !mustConfirmEmail(user) },
+    brand,
+    profile: { name: user.name, memberSince:department?memberSinceDate(department.createdAt):null, email: user.email, phone: user.phone, billingAddress: user.billingAddress, company: user.company, companyDisplayName: department?.subCompany ? `${user.company} / ${department.subCompany.name}` : user.company, emailConfirmed: !mustConfirmEmail(user) },
     admin: user.role === "ADMIN",
   });
 });
