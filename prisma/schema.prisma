@@ -32,6 +32,7 @@ model User {
   passwordHash       String
   name               String
   phone              String?
+  phoneKey           String?             @unique
   billingAddress     String?
   company            String?
   companyAccountId   Int?
@@ -40,7 +41,7 @@ model User {
   subCompany SubCompany? @relation(fields: [subCompanyId], references: [id], onDelete: SetNull)
   role               Role                @default(CUSTOMER)
   rewardCreditCents  Int                 @default(0)
-  // Set when the customer clicks the link in their confirmation email (or an admin confirms it).
+  // Pending registration only until the customer confirms their email.
   emailVerifiedAt    DateTime?
   // Agreed at sign-up or on their profile to get offers and news; the date is when they agreed.
   marketingOptIn     Boolean             @default(false)

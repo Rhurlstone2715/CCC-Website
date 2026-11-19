@@ -140,6 +140,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   });
 
   beforeEach(async () => {
+    signupPhone=100;
     await prisma.$executeRawUnsafe('TRUNCATE "CompanyLogo", "AccountEmail", "Booking", "Session", "PasswordReset", "EmailVerification", "User", "Company", "Product", "RiggingOption", "Upload" RESTART IDENTITY CASCADE');
     await ensureCatalogSeeded();
     globalThis.fetch = realFetch;
@@ -154,6 +155,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
 
   // Each call gets its own IP unless one is given, so rate limits don't leak between tests.
   let fixtureDay=0;
+  let signupPhone=100;
   async function req(path: string, opts: { method?: string; form?: Record<string, string>; json?: unknown; cookie?: string; ip?: string; origin?: string } = {}) {
     const headers: Record<string, string> = { "x-real-ip": opts.ip ?? randomUUID() };
     let body: string | undefined;
@@ -182,7 +184,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   }
 
   async function signup(email = "kim@example.com", password = "longenough1") {
-    const res = await req("/account/signup", { form: { name: "Kim Ebanks", email, phone: "345 555 0100", company: "", password } });
+    const res = await req("/account/signup", { form: { name: "Kim Ebanks", email, phone: `345 555 ${String(signupPhone++).padStart(4,"0")}`, company: "", password } });
     assert.equal(res.status, 302);
     // Most tests use an already-verified fixture; verification flows test raw signup directly.
     await prisma.user.update({ where: { email: email.trim().toLowerCase() }, data: { emailVerifiedAt: new Date() } });
@@ -632,8 +634,8 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal((await req(`/account/bookings/${saved.id+1}/payment-proofs/${proof.id}`,{cookie:owner})).status,404);
     assert.equal((await uploadProof(saved.id,owner,receiptFile(),"https://attacker.example")).status,403);
     await prisma.user.updateMany({where:{email:"kim@example.com"},data:{emailVerifiedAt:null}});
-    assert.equal((await req(path,{cookie:owner})).status,403);
-    assert.match((await uploadProof(saved.id,owner,receiptFile())).headers.get("location")!,/proof-confirm-email/);
+    assert.equal((await req(path,{cookie:owner})).status,302);
+    assert.match((await uploadProof(saved.id,owner,receiptFile())).headers.get("location")!,/account\?next=/);
   });
 
   test("pickup is charged once for every CCC-collected rental order except pure cranes, boom trucks and telehandlers", async () => {
@@ -862,6 +864,37 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     return url.pathname + url.search;
   };
 
+  test("phone uniqueness covers formatting, concurrent signup and customer profile changes", async () => {
+    const cookie=await signup();
+    for(const phone of ['345-555-0100','+1 (345) 555-0100','5550100','0013455550100']) {
+      const response=await req('/account/signup',{form:{name:'Duplicate',email:`duplicate${phone.replace(/\D/g,'')}@example.com`,phone,password:'longenough1'}});
+      assert.equal(response.status,409);assert.match(await response.text(),/phone number is already registered/);
+    }
+    const responses=await Promise.all(['race1@example.com','race2@example.com'].map(email=>req('/account/signup',{form:{name:'Race',email,phone:'+1 345 555 0199',password:'longenough1'}})));
+    assert.deepEqual(responses.map(r=>r.status).sort(),[302,409]);
+    const other=await signup('other@example.com');
+    assert.equal((await req('/account/profile',{cookie:other,form:{name:'Other',email:'other@example.com',phone:'+1 345 555 0100'}})).status,409);
+    assert.equal((await prisma.user.findUniqueOrThrow({where:{email:'kim@example.com'}})).phone,'345 555 0100');
+    await assert.rejects(prisma.user.create({data:{name:'Direct',email:'direct@example.com',phone:'555-0100',passwordHash:'unused'}}));
+    assert.equal((await req('/account/profile',{cookie})).status,200);
+  });
+  test("pending registrations have no account access or admin signup acknowledgement", async () => {
+    const sent=captureEmails();
+    const response=await req('/account/signup',{form:{name:'Pending Person',email:'pending@example.com',phone:'3455550198',password:'longenough1'}});
+    const cookie=sessionCookie(response);
+    for(const path of ['/api/rewards','/account/profile','/account/bookings']) {
+      const blocked=await req(path,{cookie});assert.notEqual(blocked.status,200,path);
+    }
+    assert.equal(await prisma.accountEmail.count(),0);
+    const admin=await makeAdmin();
+    assert.doesNotMatch(await(await req('/admin/customers',{cookie:admin})).text(),/pending@example.com/);
+    const login=await req('/account/login',{form:{email:'pending@example.com',password:'longenough1'}});
+    assert.equal(login.headers.get('location'),'/account/verify');
+    const loginCookie=sessionCookie(login);assert.equal((await req('/api/rewards',{cookie:loginCookie})).status,401);
+    await req(confirmPath(sent[0].text),{cookie});
+    assert.equal((await req('/api/rewards',{cookie})).status,200);
+    assert.equal(sent.filter(m=>m.subject.startsWith('New customer signup')).length,1);
+  });
   test("new customers confirm their email before booking", async () => {
     const sent = captureEmails();
     const res = await req("/account/signup", {
@@ -874,10 +907,12 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const link = confirmPath(sent[0].text);
     assert.match(link, /next=%2Frentals%3Fcheckout%3D1/);
 
-    assert.equal((await (await req("/api/rewards", { cookie })).json()).profile.emailConfirmed, false);
+    assert.equal((await req("/api/rewards", { cookie })).status, 401);
+    assert.equal((await (await req("/api/rewards", { cookie })).json()).profile, undefined);
+    assert.equal((await req("/account/profile", {cookie})).status,302);
+    assert.equal(await prisma.accountEmail.count(),0);
     const blocked = await req("/api/bookings", { json: booking, cookie });
-    assert.equal(blocked.status, 403);
-    assert.equal((await blocked.json()).confirmEmail, true);
+    assert.equal(blocked.status, 401);
     assert.match(await (await req("/account/verify?next=%2Frentals%3Fcheckout%3D1", { cookie })).text(), /Check the inbox for <b>kim@example.com<\/b>/);
 
     const confirmed = await req(link, { cookie });
@@ -893,6 +928,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(signupRes.headers.get("location"), "/account/verify");
     const cookie = sessionCookie(signupRes);
     const oldLink = confirmPath(sent[0].text);
+    await req(oldLink,{cookie});
     const changed = await req("/account/profile", { form: { name: "Kim Ebanks", email: "kim.new@example.com", phone: "345 555 0100" }, cookie });
     assert.equal(changed.headers.get("location"), "/account/profile?notice=email-changed");
     assert.equal(sent.at(-1)!.to[0], "kim.new@example.com");
@@ -908,6 +944,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     await signup();
     const lee = await req("/account/signup", { form: { name: "Lee Bodden", email: "lee@example.com", phone: "345 555 0101", password: "longenough1", marketing: "on" } });
     const leeCookie = sessionCookie(lee);
+    await prisma.user.update({where:{email:"lee@example.com"},data:{emailVerifiedAt:new Date()}});
     const leeUser = await prisma.user.findUniqueOrThrow({ where: { email: "lee@example.com" } });
     assert.equal(leeUser.marketingOptIn, true);
     assert.ok(leeUser.marketingOptInAt);
@@ -947,7 +984,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     captureEmails();
     const res = await req("/account/signup", { form: { name: "Kim Ebanks", email: "kim@example.com", phone: "345 555 0100", password: "longenough1" } });
     const cookie = sessionCookie(res);
-    assert.equal((await req("/api/bookings", { json: booking, cookie })).status, 403);
+    assert.equal((await req("/api/bookings", { json: booking, cookie })).status, 401);
     const admin = await makeAdmin();
     const page = await (await req("/admin/customers/1", { cookie: admin })).text();
     assert.doesNotMatch(page, /action="[^"]*confirm-email/);
@@ -1766,7 +1803,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(changed.status, 302);
     const moved = await prisma.user.findUniqueOrThrow({ where: { id: firstUser.id } });
     assert.equal(moved.companyAccountId, null);assert.equal(moved.emailVerifiedAt, null);
-    assert.equal((await req("/api/bookings", { cookie: sessionCookie(first), json: booking })).status, 403, "changed work email must be verified before booking");
+    assert.equal((await req("/api/bookings", { cookie: sessionCookie(first), json: booking })).status, 401, "changed work email must be verified before booking");
     const remaining = await (await req("/api/rewards", { cookie: sessionCookie(second) })).json();
     assert.equal(remaining.rewards.points, 6000, "company spend remains with the original company when staff leave");
   });
@@ -1814,7 +1851,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   test("unverified personal accounts cannot bypass confirmation when email delivery is unavailable", async () => {
     const response = await req("/account/signup", { form: { name: "New Customer", email: "new@gmail.com", phone: "345 555 0100", password: "longenough1" } });
     assert.equal(response.headers.get("location"), "/account/verify?notice=send-failed");
-    assert.equal((await req("/api/bookings", { json: booking, cookie: sessionCookie(response) })).status, 403);
+    assert.equal((await req("/api/bookings", { json: booking, cookie: sessionCookie(response) })).status, 401);
     const page = await (await req("/account")).text();assert.match(page, /Forgot username or password/);assert.match(page, /email address is your username/);
   });
 
@@ -1874,12 +1911,14 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const sent = captureEmails();
     const signup = await req("/account/signup", { form: { name: "Alex Customer", email: "alex@gmail.com", phone: "345 555 0100", company: "Alex Repairs", password: "secret-pass123" } });
     assert.equal(signup.status, 302);
-    const admin = sent.find(m => m.subject.startsWith("New customer signup"))!;assert.ok(admin);assert.equal(admin.to[0],"caymancrane@gmail.com");
-    for (const detail of ["Alex Customer", "alex@gmail.com", "345 555 0100", "Alex Repairs", "pending"]) assert.ok(admin.text.includes(detail));
-    assert.doesNotMatch(admin.text,/secret-pass123|token=/);
+    assert.equal(sent.filter(m=>m.subject.startsWith("New customer signup")).length,0);
     assert.equal(sent.filter(m => m.subject.startsWith("Welcome")).length, 0);
     const verify = confirmPath(sent.find(m => m.to.includes("alex@gmail.com"))!.text);
     await req(verify);
+    const admin = sent.find(m => m.subject.startsWith("New customer signup"))!;
+    assert.ok(admin);assert.equal(admin.to[0],"caymancrane@gmail.com");
+    for (const detail of ["Alex Customer", "alex@gmail.com", "345 555 0100", "Alex Repairs", "confirmed"]) assert.ok(admin.text.includes(detail));
+    assert.doesNotMatch(admin.text,/secret-pass123|token=/);
     const welcome = sent.filter(m => m.subject.startsWith("Welcome"));assert.equal(welcome.length,1);
     assert.equal(welcome[0].to[0],"alex@gmail.com");assert.match(welcome[0].text,/1 loyalty point/);
     for (const tier of ["Silver", "Gold", "Platinum", "CI$5,000", "CI$15,000", "CI$25,000"]) assert.ok(welcome[0].html!.includes(tier));
@@ -2036,7 +2075,8 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   });
   test("government loyalty and credits stay with each sub-company and bookings keep their original department", async () => {
     const root=await seedGovernment();const pwd=root.subCompanies.find(s=>s.name==="Public Works Department (PWD)")!,planning=root.subCompanies.find(s=>s.name==="Department of Planning")!;
-    const staff=async(email:string,id:number)=>{const response=await req("/account/signup",{form:{name:"Gov Staff",email,phone:"345 555 0111",password:"longenough1",company:root.name,subCompanyId:String(id)}});assert.equal(response.status,302);const user=await prisma.user.update({where:{email},data:{emailVerifiedAt:new Date()}});await syncCompanyMembership(user.id);return{user,cookie:sessionCookie(response)}};
+    let staffPhone=111;
+    const staff=async(email:string,id:number)=>{const response=await req("/account/signup",{form:{name:"Gov Staff",email,phone:`345 555 ${String(staffPhone++).padStart(4,"0")}`,password:"longenough1",company:root.name,subCompanyId:String(id)}});assert.equal(response.status,302);const user=await prisma.user.update({where:{email},data:{emailVerifiedAt:new Date()}});await syncCompanyMembership(user.id);return{user,cookie:sessionCookie(response)}};
     const one=await staff("one@gov.ky",pwd.id),two=await staff("two@gov.ky",pwd.id),other=await staff("other@gov.ky",planning.id);
     const historical=(userId:number,subCompanyId:number,amountPaidCents:number)=>prisma.booking.create({data:{customerName:"Gov Staff",customerEmail:"staff@gov.ky",requestText:"Old request",termsText:"Terms",signature:"Gov Staff",initials:"GS",agreedToTerms:true,paymentAck:true,userId,companyAccountId:root.id,subCompanyId,status:"PAID",amountPaidCents}});
     await queueWelcomeEmail(one.user.id,"http://localhost");const welcome=await prisma.accountEmail.findUniqueOrThrow({where:{key:`welcome-${one.user.id}`}});assert.equal((welcome.payload as {companyMode:string}).companyMode,"sub-company");assert.match((welcome.payload as {company:string}).company,/Public Works Department/);

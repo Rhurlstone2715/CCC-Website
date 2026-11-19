@@ -1,3 +1,4 @@
+import { phoneProblem } from "../phone.js";
 import {sessionLabel} from '../booking-sessions.js';
 import {queuePaidReceipt,deliverReceiptEmails} from '../receipts.js';
 import { assertAvailability, AvailabilityError, lockInventory } from "../availability.js";
@@ -733,8 +734,8 @@ admin.get("/customers", async c => {
     : {};
   const [pending, customers, optedIn] = await Promise.all([
     pendingCount(),
-    prisma.user.findMany({ where, orderBy: { createdAt: "desc" }, take: 200, include: { _count: { select: { bookings: true } } } }),
-    prisma.user.count({ where: { marketingOptIn: true } }),
+    prisma.user.findMany({ where: {AND:[where,{OR:[{emailVerifiedAt:{not:null}},{role:"ADMIN"}]}]}, orderBy: { createdAt: "desc" }, take: 200, include: { _count: { select: { bookings: true } } } }),
+    prisma.user.count({ where: { marketingOptIn: true, emailVerifiedAt: {not:null} } }),
   ]);
   const notice = noticeFrom(c);
 
@@ -812,7 +813,7 @@ admin.get("/customers", async c => {
 
 // Only customers who ticked "offers and news" are listed, with the date they agreed.
 admin.get("/customers/marketing.csv", async c => {
-  const people = await prisma.user.findMany({ where: { marketingOptIn: true }, orderBy: { marketingOptInAt: "asc" } });
+  const people = await prisma.user.findMany({ where: { marketingOptIn: true, emailVerifiedAt: {not:null} }, orderBy: { marketingOptInAt: "asc" } });
   const links = await Promise.all(people.map(async u => {
     const saved = u.marketingUnsubscribeToken ? u : await prisma.user.update({ where: { id: u.id }, data: { marketingUnsubscribeToken: newToken().token } });
     return `${publicUrl(c)}/account/unsubscribe?token=${saved.marketingUnsubscribeToken}`;
@@ -1036,6 +1037,8 @@ admin.post("/customers/:id{[0-9]+}/:action", async c => {
       }
       const companyIssue = await validateCompany(profile.email, profile.company, profile.subCompanyId);
       if (companyIssue) return renderCustomer(c, customer, { profileError: companyIssue });
+      const phoneIssue = profile.phone ? await phoneProblem(profile.phone, id) : null;
+      if (phoneIssue) return renderCustomer(c, customer, {profileError:phoneIssue});
       // A changed address has to be confirmed again by the customer.
       await prisma.user.update({ where: { id }, data: { ...profile, companyAccountId: null, ...(profile.email !== customer.email ? { emailVerifiedAt: null } : {}) } });
       await syncCompanyMembership(id);

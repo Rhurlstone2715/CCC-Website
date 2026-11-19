@@ -1,3 +1,4 @@
+import { phoneProblem, phoneConflict } from "./phone.js";
 import { adminBookingEditor } from "./routes/admin-booking-editor.js";
 import { adminPush, queueAdminBookingNotices, deliverAdminPushNotifications } from "./admin-push.js";
 import { LIFTING_CATEGORIES } from "./delivery-policy.js";
@@ -166,12 +167,18 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
   // Lines are priced from the catalog here, not taken from the page, so the
   // stored estimate reflects the prices in effect when the booking was made.
   const { details, ...fields } = input;
+  if (!user.phone && details.phone) {
+    const issue = await phoneProblem(details.phone, user.id);
+    if (issue) return c.json({error:issue},409);
+  }
   const priced = details.items.length ? await priceItems(details.items, discountPercent) : null;
   const fuelConditions = priced?.lines.filter(line => line.fuelType).map(line => `${line.name}: Return with a full tank of ${line.fuelType === "diesel" ? "diesel fuel" : "gasoline"}.`) ?? [];
   const membership = await verifiedCompanyMembership(user.id);
   const companyAccountId = membership?.companyAccountId ?? null;
   const deliveryOnly=await prisma.product.count({where:{id:{in:details.items.map(i=>i.id)},category:{in:LIFTING_CATEGORIES}}})>0;
   const outcome = await prisma.$transaction(async tx => {
+  const missing = { ...(!user.phone && details.phone ? { phone: details.phone } : {}), ...(!user.billingAddress && details.billingAddress ? {billingAddress: details.billingAddress} : {}) };
+  if (Object.keys(missing).length) await tx.user.update({where:{id:user.id},data:missing});
   await lockInventory(tx);
   await assertAvailability(tx,details.items,{startDate:details.startDate,startTime:details.startTime,scheduleStart:null,scheduleEnd:null});
   const booking = await tx.booking.create({
@@ -201,17 +208,14 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
   const estimate = await createBookingEstimate(tx, booking);
   await queueAdminBookingNotices(tx,booking.id);
   return { booking, estimate };
-  }, { timeout: 30_000, maxWait: 15_000 }).catch(error=>{if(error instanceof AvailabilityError)return error;throw error;});
+  }, { timeout: 30_000, maxWait: 15_000 }).catch(error=>{if(error instanceof AvailabilityError)return error;if(phoneConflict(error))return {phoneConflict:true as const};throw error;});
   if(outcome instanceof AvailabilityError)return c.json(outcome.result,outcome.status);
+  if("phoneConflict" in outcome)return c.json({error:"This phone number is already registered. Use your existing account."},409);
   const {booking,estimate}=outcome;
   void deliverAdminPushNotifications();
   const ref = bookingRef(booking.id);
   const estimateInfo = { estimateNumber: estimate.number, estimateUrl: `/account/bookings/${booking.id}/estimate.pdf` };
   await deliverEstimateEmails(estimate.number);
-
-  // Accounts made before a phone number was required pick theirs up from checkout.
-  const missing = { ...(!user.phone && details.phone ? { phone: details.phone } : {}), ...(!user.billingAddress && details.billingAddress ? {billingAddress: details.billingAddress} : {}) };
-  if (Object.keys(missing).length) await prisma.user.update({ where: { id: user.id }, data: missing });
 
   // The page only shows "booking sent" on a 2xx. If Cayman Crane can't be
   // alerted, answer 503 so the customer is offered the prepared email instead.

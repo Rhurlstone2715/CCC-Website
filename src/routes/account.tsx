@@ -1,3 +1,4 @@
+import { phoneProblem, phoneConflict } from "../phone.js";
 import { rewardsBrand, type RewardsBrand } from "../company-logos.js";
 import { estimateMetadata } from "../estimates.js";
 import { PaymentProofSection, paymentProofMetadata } from "../payment-proofs.js";
@@ -31,7 +32,6 @@ import { bookingRef } from "../bookings.js";
 import { prisma } from "../db.js";
 import { customerEmailsEnabled, sendEmail } from "../email.js";
 import { clientIp, createLimiter } from "../ratelimit.js";
-import { queueSignupAlert, deliverAccountEmails } from "../account-emails.js";
 import { companyEmailDomain, validateCompany, syncCompanyMembership, verifiedCompanyId } from "../companies.js";
 import { TIERS, rewardsForUser, pendingRewardsForUser, pendingBookingPoints, type Rewards } from "../rewards.js";
 import { Field, Layout, Notice, PHONE_DISPLAY, PHONE_LINK, StatusBadge, WHATSAPP_LINK, caymanDate, money } from "../views/layout.js";
@@ -199,13 +199,13 @@ const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupE
       </section>
       <section class="card" aria-labelledby="signup-title">
         <h2 id="signup-title">Create an account</h2>
-        <p class="muted">Earn one point for every CI$1 of paid rentals. Silver unlocks 5% off at CI$5,000.</p>
+        <p class="muted">Confirm your email to activate your account. Earn one point for every CI$1 of paid rentals. Silver unlocks 5% off at CI$5,000.</p>
         <form class="form" method="post" action="/account/signup">
           {signupError ? <Notice tone="error">{signupError}</Notice> : null}
           <input type="hidden" name="next" value={next} />
           <Field label="Full name" name="name" value={signup?.name} required autocomplete="name" maxlength={120} />
           <Field label="Email" name="email" type="email" value={signup?.email} required autocomplete="email" maxlength={254} />
-          <Field label="Phone" name="phone" type="tel" value={signup?.phone} required autocomplete="tel" maxlength={40} />
+          <Field label="Phone" name="phone" type="tel" value={signup?.phone} required autocomplete="tel" maxlength={40} hint="Use your own phone number. Each number can be registered to one account only." />
           <Field label="Billing address" name="billingAddress" value={signup?.billingAddress} required autocomplete="billing street-address" maxlength={500} hint="Your personal or company billing address, saved for checkout and estimates." />
           <Field label="Company" name="company" value={signup?.company} autocomplete="organization" maxlength={120} hint="Use a matching work email for shared company rewards, or register a new company with this email as its only login. Email verification is required." />
           <input type="hidden" name="subCompanyId" value={signup?.subCompanyId ?? ""} /><script src="/company-signup.js" defer></script>
@@ -221,7 +221,7 @@ const AuthPage: FC<AuthState> = ({ next, loginEmail, loginError, signup, signupE
           <MarketingChoice checked={signup?.marketing} />
           <div class="form-actions">
             <button class="button primary" type="submit">
-              Create account
+              Send confirmation email
             </button>
           </div>
           <p class="hint flush">
@@ -253,7 +253,7 @@ account.post("/login", async c => {
   const email = text(body.email);
   const result = await attemptLogin(c, email, typeof body.password === "string" ? body.password : "");
   if ("error" in result) return c.html(<AuthPage next={next} loginEmail={email} loginError={result.error} />, 401);
-  return c.redirect(next || homeFor(result.user));
+  return c.redirect(mustConfirmEmail(result.user) ? `/account/verify${next ? `?next=${encodeURIComponent(next)}` : ""}` : next || homeFor(result.user));
 });
 
 account.get("/company-suggestion", async c => {
@@ -280,21 +280,26 @@ account.post("/signup", async c => {
   const problem = passwordProblem(password);
   if (problem) return fail(problem, profile);
   if (await prisma.user.findUnique({ where: { email: profile.email } })) {
-    return fail("There's already an account with that email. Log in, or reset your password if you've forgotten it.", profile, 409);
+    return fail("This email has already been submitted. Confirm your email first, or sign in to resend the confirmation link. Verified customers can use account recovery.", profile, 409);
   }
 
   const companyIssue = await validateCompany(profile.email, profile.company, profile.subCompanyId);
   if (companyIssue) return fail(companyIssue, profile);
+  const phoneIssue = await phoneProblem(profile.phone);
+  if (phoneIssue) return fail(phoneIssue, profile, 409);
   const passwordHash = await hashPassword(password);
-  const user = await prisma.$transaction(async tx => {
+  let user;
+  try { user = await prisma.$transaction(async tx => {
     const created = await tx.user.create({ data: { ...profile, ...marketingChange(false, marketing), passwordHash } });
-    await queueSignupAlert(created, publicUrl(c), tx);
     return created;
-  });
+  }); } catch (error) {
+    if (phoneConflict(error)) return fail("This phone number is already registered. Use your existing account.", profile, 409);
+    if (String(error).includes("Unique constraint")) return fail("This email is already registered. Log in or use account recovery.", profile, 409);
+    throw error;
+  }
   await startSession(c, user.id);
   if (mustConfirmEmail(user)) {
     const sent = await sendConfirmEmail(c, user, next);
-    await deliverAccountEmails();
     return c.redirect(`/account/verify?${next ? `next=${encodeURIComponent(next)}&` : ""}${sent ? "" : "notice=send-failed"}`.replace(/[?&]$/, ""));
   }
   return c.redirect(next || "/account/profile?notice=welcome");
@@ -495,11 +500,17 @@ account.post("/profile", requireCustomer, async c => {
   if (emailChanged && (await prisma.user.findUnique({ where: { email: profile.email } }))) {
     return renderProfile(c, user, { detailsError: "Another account already uses that email.", detailsValues: profile }, 409);
   }
-  // A new address has to be confirmed again before the next booking.
-  const updated = await prisma.user.update({
+  const phoneIssue = await phoneProblem(profile.phone, user.id);
+  if (phoneIssue) return renderProfile(c, user, {detailsError:phoneIssue,detailsValues:profile},409);
+  // A new address has to be confirmed again before account access.
+  let updated;
+  try { updated = await prisma.user.update({
     where: { id: user.id },
     data: { ...profile, companyAccountId: null, ...marketingChange(user.marketingOptIn, body.marketing === "on"), ...(emailChanged ? { emailVerifiedAt: null } : {}) },
-  });
+  }); } catch (error) {
+    if (phoneConflict(error)) return renderProfile(c,user,{detailsError:"This phone number is already registered. Use your existing account.",detailsValues:profile},409);
+    throw error;
+  }
   await syncCompanyMembership(updated.id);
   if (emailChanged && mustConfirmEmail(updated)) {
     await sendConfirmEmail(c, updated, "");
@@ -552,7 +563,7 @@ const ConfirmReminder: FC<{ email: string; next: string }> = ({ email, next }) =
 const CheckEmailPage: FC<{ user: SessionUser; next: string; notice?: string }> = ({ user, next, notice }) => {
   const shown = notice ? CONFIRM_NOTICES[notice] : undefined;
   return (
-    <Layout title="Confirm your email" area="account" user={user}>
+    <Layout title="Confirm your email" area="account">
       <div class="narrow">
         <div class="page-head">
           <p class="eyebrow">One more step</p>
@@ -561,14 +572,14 @@ const CheckEmailPage: FC<{ user: SessionUser; next: string; notice?: string }> =
         <section class="card stack">
           {shown ? <Notice tone={shown.tone}>{shown.text}</Notice> : null}
           <p>
-            Check the inbox for <b>{user.email}</b>. Open the confirmation link to activate your account and book.
+            Check the inbox for <b>{user.email}</b>. Your registration is pending. You cannot log in to your account or book until you confirm this email address.
             {next.startsWith("/rentals") ? " Your cart is saved, and checkout opens again when you click the link on this device." : null}
           </p>
           <p class="muted">The link works for 48 hours. Can't find it? Check your spam or junk folder.</p>
           <div class="actions-row">
             <ResendForm next={next} label="Send a new link" />
-            <a class="text-link" href="/account/profile">
-              Wrong email? Change it on your account
+            <a class="text-link" href={PHONE_LINK}>
+              Wrong email? Contact us to correct your pending registration
             </a>
           </div>
         </section>
@@ -679,7 +690,7 @@ account.post("/forgot", async c => {
   if (forgotByIp(clientIp(c))) return c.html(<ForgotPage error="Too many requests. Wait 15 minutes and try again." />, 429);
   const email = normalizeEmail(text((await c.req.parseBody()).email));
   const user = email ? await prisma.user.findUnique({ where: { email } }) : null;
-  if (user) {
+  if (user && !mustConfirmEmail(user)) {
     const link = await createResetLink(c, user.id, 1);
     await sendEmail({
       to: user.email,

@@ -5,6 +5,7 @@ import type { User } from "./generated/prisma/client.js";
 
 type Details = { name: string; email: string; phone?: string | null; billingAddress?: string | null; company?: string | null; companyMode?: string | null; marketing?: boolean; createdAt?: string; baseUrl: string };
 export async function queueSignupAlert(user: User, baseUrl: string, client: Pick<typeof prisma, "accountEmail" | "subCompany"> = prisma) {
+  if (!user.emailVerifiedAt) return;
   const subCompany = user.subCompanyId ? await client.subCompany.findUnique({ where: { id: user.subCompanyId }, select: { name: true } }) : null;
   await client.accountEmail.upsert({ where: { key: `signup-${user.id}` }, update: {}, create: {
     key: `signup-${user.id}`, kind: "SIGNUP", userId: user.id, recipient: COMPANY_EMAIL,
@@ -33,7 +34,7 @@ export async function deliverAccountEmails() {
         text: [
           "NEW CUSTOMER SIGNUP", "", `Customer ID: ${job.userId}`, `Name: ${d.name}`, `Email: ${d.email}`,
           `Phone: ${d.phone || "Not provided"}`, `Billing address: ${d.billingAddress || "Not provided"}`, `Company requested: ${d.company || "Individual account"}`,
-          "Email verification: pending — the customer must confirm their own email.",
+          "Email verification: confirmed by the customer.",
           `Marketing emails: ${d.marketing ? "Opted in" : "Not opted in"}`,
           `Registered: ${new Date(d.createdAt!).toLocaleString("en-US", { timeZone: "America/Cayman" })} (Cayman time)`,
           "", `Customer details: ${d.baseUrl}/admin/customers/${job.userId}`,
