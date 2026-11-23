@@ -70,3 +70,17 @@
 .signature-pad canvas{display:block;width:100%;height:auto;aspect-ratio:10/3;background:#fff;border:2px solid #777;border-radius:8px;touch-action:none;cursor:crosshair}.signature-pad canvas:focus{outline:3px solid #b00008;outline-offset:3px}.signature-pad p{margin:8px 0}.signature-pad button{margin-top:10px}
 
 .rental-quantity-duration{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.rental-quantity-duration label{font-size:13px;font-weight:600}.rental-quantity-duration input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:10px;border:1px solid #aaa;border-radius:5px}
+
+/* Footer bottom bar: copyright left, GR Studio credit truly centred (IK / H2Only / raeganrutty.com pattern). */
+.foot-bottom{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px 24px}
+.foot-copy{justify-self:start}
+.foot-by{position:relative;justify-self:center;display:inline-flex;align-items:center;gap:.42em;color:inherit;text-decoration:none;white-space:nowrap;transition:color .25s ease}
+.foot-by::after{content:'';position:absolute;inset:-13px -8px}
+.foot-bottom a.foot-by:hover,.foot-bottom a.foot-by:focus-visible{color:#fff;text-decoration:none}
+.gr-mark{--gr-h:13.5px;position:relative;display:block;flex:none;width:calc(var(--gr-h) * 1.552);height:var(--gr-h)}
+.gr-mark::before,.gr-mark::after{content:'';position:absolute;inset:0;transition:opacity .25s ease}
+.gr-mark::before{background:currentColor;-webkit-mask:url('assets/gr-mark.webp') center / contain no-repeat;mask:url('assets/gr-mark.webp') center / contain no-repeat}
+.gr-mark::after{background:url('assets/gr-color.webp') center / contain no-repeat;opacity:0}
+.foot-by:hover .gr-mark::before,.foot-by:focus-visible .gr-mark::before{opacity:0}
+.foot-by:hover .gr-mark::after,.foot-by:focus-visible .gr-mark::after{opacity:1}
+@media(max-width:980px){.foot-bottom{grid-template-columns:1fr;justify-items:center;text-align:center;gap:16px}.foot-copy{justify-self:center}.foot-by{order:3}}

@@ -1294,3 +1294,19 @@ html { scroll-padding-top: calc(var(--site-header-height, 100px) + 12px); }
 .admin-customer-identity{display:flex;align-items:center;gap:14px;min-width:0}.admin-customer-identity>div{min-width:0}.admin-company-logo{display:flex;align-items:center;justify-content:center;flex:0 0 104px;min-height:64px;padding:7px;background:#fff;border:1px solid #e5e5e5;border-radius:9px}.admin-company-logo img{display:block;width:100%;height:54px;object-fit:contain}.admin-company-initials{font-size:21px;color:#777;font-weight:700}.admin-customer-identity h1{overflow-wrap:anywhere}.admin-customer-identity .lede{margin-bottom:0}.member-profile-name{overflow-wrap:anywhere;margin:8px 0 4px;color:var(--ink,#222);font-weight:600}.member-since{margin:0;color:var(--muted,#666);font-size:14px}@media(max-width:480px){.admin-company-logo{flex-basis:76px;min-height:54px}.admin-company-logo img{height:44px}.admin-customer-identity{gap:10px}.admin-customer-identity h1{font-size:24px}}
 
 .registered-company-logo{display:block;width:180px;max-width:100%;height:96px;object-fit:contain;object-position:left center;background:#fff;padding:8px;border:1px solid #e5e5e5;border-radius:8px;margin:0 0 12px}
+
+/* Footer bottom bar: copyright left, GR Studio credit truly centred, help line right (IK / H2Only / raeganrutty.com pattern). */
+.portal-footer .wrap.foot-bottom{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px 24px}
+.portal-footer .foot-copy{justify-self:start}
+.portal-footer .foot-help{justify-self:end;text-align:right}
+.foot-by{position:relative;justify-self:center;display:inline-flex;align-items:center;gap:.42em;color:inherit;text-decoration:none;white-space:nowrap;transition:color .25s ease}
+.foot-by::after{content:'';position:absolute;inset:-13px -8px}
+.portal-footer a.foot-by{color:inherit;text-decoration:none}
+.portal-footer a.foot-by:hover,.portal-footer a.foot-by:focus-visible{color:var(--ink)}
+.gr-mark{--gr-h:13.5px;position:relative;display:block;flex:none;width:calc(var(--gr-h) * 1.552);height:var(--gr-h)}
+.gr-mark::before,.gr-mark::after{content:'';position:absolute;inset:0;transition:opacity .25s ease}
+.gr-mark::before{background:currentColor;-webkit-mask:url('assets/gr-mark.webp') center / contain no-repeat;mask:url('assets/gr-mark.webp') center / contain no-repeat}
+.gr-mark::after{background:url('assets/gr-color.webp') center / contain no-repeat;opacity:0}
+.foot-by:hover .gr-mark::before,.foot-by:focus-visible .gr-mark::before{opacity:0}
+.foot-by:hover .gr-mark::after,.foot-by:focus-visible .gr-mark::after{opacity:1}
+@media(max-width:1040px){.portal-footer .wrap.foot-bottom{grid-template-columns:1fr;justify-items:center;text-align:center;gap:16px}.portal-footer .foot-copy,.portal-footer .foot-help{justify-self:center;text-align:center}.portal-footer .foot-by{order:3}}

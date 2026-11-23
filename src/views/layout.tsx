@@ -173,11 +173,14 @@ export const Layout: FC<LayoutProps> = ({ title, area, user, pendingCount, activ
           {children}
         </main>
         <footer class="portal-footer">
-          <div class="wrap">
-            <span>
+          <div class="wrap foot-bottom">
+            <span class="foot-copy">
               © {new Date().getFullYear()} Cayman Crane Company · <a href="/privacy">Privacy</a>
             </span>
-            <span>
+            <a class="foot-by" href="https://gannonrutty.com" rel="noopener">
+              Designed by: <span class="gr-mark" role="img" aria-label="GR Studio"></span>
+            </a>
+            <span class="foot-help">
               Questions? Call <a href={PHONE_LINK}>{PHONE_DISPLAY}</a> or{" "}
               <a href={WHATSAPP_LINK} target="_blank" rel="noopener">
                 message us on WhatsApp
