@@ -96,3 +96,9 @@ test('split hourly and daily work sessions keep their actual Cayman windows in t
  const event=bookingGoogleEvent({...booking,adminEditedAt:new Date(),items:[{id:'national1400',name:'National 1400H',operator:false,term:'hourly',qty:7.5,sessionStart:'2026-11-09T08:00',sessionEnd:'2026-11-09T15:30'},{id:'national1400',name:'National 1400H',operator:false,term:'daily',qty:1,sessionStart:'2026-11-10T07:00',sessionEnd:'2026-11-10T17:00'}]},base);
  assert.equal(event.start.dateTime,'2026-11-09T13:00:00.000Z');assert.equal(event.end.dateTime,'2026-11-10T22:00:00.000Z');assert.match(event.description,/2026-11-09 15:30/);assert.match(event.description,/2026-11-10 07:00/);
 });
+
+test('rigger calendar duration counts time per person rather than multiplying time by headcount',()=>{
+ const event=bookingGoogleEvent({...booking,items:[{id:'rigger-banksman',name:'Rigger/Banksman',term:'hourly',qty:2,periods:4,operator:true}]},base);
+ assert.equal(Date.parse(event.end.dateTime)-Date.parse(event.start.dateTime),4*3600000);
+ assert.match(event.description,/2 riggers × 4 hours per rigger/);
+});

@@ -1,3 +1,4 @@
+import {CREW_SERVICE_IDS} from "./staff-services.js";
 import {sessionWindow,sessionLabel} from './booking-sessions.js';
 import {DURATION_RENTAL_IDS} from './delivery-policy.js';
 import { allocations, rentalHours } from "./availability.js";
@@ -63,11 +64,11 @@ export function bookingGoogleEvent(b: Booking, baseUrl: string) {
   const last = b.scheduleStart ? (b.scheduleEnd ?? start) : start;
   const end = new Date(Math.max(start.getTime(), last.getTime()) + 86400000);
   const items = Array.isArray(b.items) ? b.items as unknown as PricedLine[] : [];
-  const exact=(Boolean(b.adminEditedAt)||items.some(i=>DURATION_RENTAL_IDS.includes(i.id)))&&!b.scheduleStart&&Boolean(b.startTime);
+  const exact=(Boolean(b.adminEditedAt)||items.some(i=>DURATION_RENTAL_IDS.includes(i.id)||CREW_SERVICE_IDS.includes(i.id)))&&!b.scheduleStart&&Boolean(b.startTime);
   let exactStart=exact?new Date(`${date(start)}T${b.startTime}:00-05:00`):null;
-  const hours=items.filter(i=>!i.operator).map(i=>rentalHours(i.term,i.qty)*(i.periods??1));
+  const hours=items.filter(i=>!i.operator||CREW_SERVICE_IDS.includes(i.id)).map(i=>(CREW_SERVICE_IDS.includes(i.id)&&i.term==='hourly'?1:rentalHours(i.term,i.qty))*(i.periods??1));
   let exactEnd=exactStart?new Date(exactStart.getTime()+Math.max(1,...(hours.length?hours:[24]))*3600000):null;
-  if(items.some(i=>sessionWindow(i))){const windows=allocations(items,b,new Map(items.map(i=>[i.id,{id:i.id,operatorService:i.operator}])));if(windows.length){exactStart=new Date(Math.min(...windows.map(w=>w.start)));exactEnd=new Date(Math.max(...windows.map(w=>w.end)));}}
+  if(items.some(i=>sessionWindow(i))){const windows=[...allocations(items,b,new Map(items.map(i=>[i.id,{id:i.id,operatorService:i.operator}]))),...items.filter(i=>CREW_SERVICE_IDS.includes(i.id)).flatMap(i=>{const w=sessionWindow(i);return w?[w]:[];})];if(windows.length){exactStart=new Date(Math.min(...windows.map(w=>w.start)));exactEnd=new Date(Math.max(...windows.map(w=>w.end)));}}
   return {
     summary: `${bookingRef(b.id)} | ${b.customerName}${b.status === "PENDING" ? " | Pending" : ""}`,
     description: [
@@ -80,7 +81,7 @@ export function bookingGoogleEvent(b: Booking, baseUrl: string) {
       ...(b.rentalCollection ? [`Tools / rental-item collection: ${b.rentalCollection === "pickup" ? "Customer pickup" : "Delivery"}`] : []),
       `Description: ${b.jobDetails||serviceDescription(b.requestText)}`,
       "", "EQUIPMENT REQUESTED",
-      ...(items.length ? items.map(i => `• ${i.name}${sessionLabel(i)?` — ${sessionLabel(i)}`:""}${i.operator ? " (operator service)" : ""} — ${TERM_LABELS[i.term] || i.term} × ${i.qty}${(i.periods??1)>1?` × ${i.periods} periods`:""}`) : ["See booking for equipment details."]),
+      ...(items.length ? items.map(i => `• ${i.name}${sessionLabel(i)?` — ${sessionLabel(i)}`:""}${i.operator ? " (operator service)" : ""} — ${TERM_LABELS[i.term] || i.term} × ${i.qty}${CREW_SERVICE_IDS.includes(i.id)?` ${i.qty===1?'rigger':'riggers'} × ${i.periods??1} ${i.term==='hourly'?'hour':'day'}${(i.periods??1)===1?'':'s'} per rigger`:''}${!CREW_SERVICE_IDS.includes(i.id)&&(i.periods??1)>1?` × ${i.periods} periods`:""}`) : ["See booking for equipment details."]),
       ...(items.some(i => i.fuelType) ? ["", "FUEL RETURN", ...items.filter(i => i.fuelType).map(i => `${i.name}: Return with a full tank of ${i.fuelType === "diesel" ? "diesel fuel" : "gasoline"}.`)] : []),
       "", "CLIENT CONTACT", `Email: ${b.customerEmail}`, ...(b.phone ? [`Phone: ${b.phone}`] : []),
       "", "VIEW BOOKING", `${baseUrl.replace(/\/$/, "")}/admin/bookings/${b.id}`,

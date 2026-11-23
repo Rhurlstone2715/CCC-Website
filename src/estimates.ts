@@ -1,3 +1,4 @@
+import {CREW_SERVICE_IDS} from "./staff-services.js";
 import {loyaltyDiscountCents} from "./loyalty-tiers.js";
 import {watermarkPdf} from './pdf-watermarks.js';
 import {sessionLabel} from './booking-sessions.js';
@@ -79,7 +80,7 @@ export async function estimateSnapshot(tx:Prisma.TransactionClient,b:Booking,num
   grouped.forEach(j=>consumed.add(j));
   const all=[line,...grouped.map(j=>lines[j])];const amount=all.every(l=>l.amount!==null)?all.reduce((sum,l)=>sum+Math.round(l.amount!*100),0):null;
   const name=grouped.length?`${line.name} complete set — ${grouped.map(j=>lines[j].name).join('; ')}`:line.name;
-  rows.push({item:line.id,description:`${name}${sessionLabel(line)?`\n${sessionLabel(line)}`:""}${line.amountOverride?"\nAgreed line price":""}\n${term(line.term)}${(line.periods??1)>1?` × ${line.periods} periods`:''}${line.fuelType?`\nReturn with a full tank of ${line.fuelType==='diesel'?'diesel fuel':'gasoline'}.`:''}`,qty:String(line.qty),rate:grouped.length?(amount===null?'TBC':currency(Math.round(amount/(line.qty*(line.periods??1))))):line.rate===null?'TBC':currency(Math.round(line.rate*100)),total:amount===null?'TBC':currency(amount)});
+  rows.push({item:line.id,description:`${name}${sessionLabel(line)?`\n${sessionLabel(line)}`:""}${line.amountOverride?"\nAgreed line price":""}\n${term(line.term)}${CREW_SERVICE_IDS.includes(line.id)?` — ${line.qty} ${line.qty===1?'rigger':'riggers'} × ${line.periods??1} ${line.term==='hourly'?'hour':'day'}${(line.periods??1)===1?'':'s'} per rigger`:''}${!CREW_SERVICE_IDS.includes(line.id)&&(line.periods??1)>1?` × ${line.periods} periods`:''}${line.fuelType?`\nReturn with a full tank of ${line.fuelType==='diesel'?'diesel fuel':'gasoline'}.`:''}`,qty:String(line.qty),rate:grouped.length?(amount===null?'TBC':currency(Math.round(amount/(line.qty*(line.periods??1))))):line.rate===null?'TBC':currency(Math.round(line.rate*100)),total:amount===null?'TBC':currency(amount)});
  }
  if(!rows.length)rows.push({item:'Rental',description:'Equipment and rental pricing to be confirmed. Refer to the booking request.',qty:'',rate:'TBC',total:'TBC'});
  rows.push(...deliveryRows);

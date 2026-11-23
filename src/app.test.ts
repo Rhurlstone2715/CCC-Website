@@ -1590,6 +1590,20 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
       const b=await prisma.booking.findUniqueOrThrow({where:{id:e.bookingId}});assert.equal(b.discountPercent,percent);assert.equal(b.estimateCents,total*100);
     }
   });
+  test("rigger headcount and hourly or daily duration price consistently through checkout, PDFs and admin edits",async()=>{
+    const cookie=await signup(),admin=await makeAdmin();
+    const crew=await prisma.product.findUniqueOrThrow({where:{id:'rigger-banksman'}});assert.deepEqual(crew.rates,{hourly:50,daily:315});assert.equal(crew.operatorService,true);
+    for(const [term,periods,total]of [['daily',1,630],['daily',3,1890],['hourly',4,400]] as const){
+      const response=await req('/api/bookings',{cookie,json:{...booking,details:{items:[{id:'rigger-banksman',term,qty:2,periods}]}}});assert.equal(response.status,503,await response.clone().text());
+      let b=await prisma.booking.findFirstOrThrow({orderBy:{id:'desc'}});assert.equal(b.estimateCents,total*100);const line=(b.items as any)[0];assert.equal(line.qty,2);assert.equal(line.periods??1,periods);assert.equal(line.amount,total);assert.equal(line.operator,true);
+      const e=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}}),snapshot=e.snapshot as unknown as EstimateSnapshot;assert.equal(snapshot.totalCents,total*100);assert.match(snapshot.rows[0].description,new RegExp(`2 riggers × ${periods} ${term==='hourly'?'hour':'day'}${periods===1?'':'s'}`));
+      if(term==='hourly'){
+        const form={version:b.updatedAt.toISOString(),userId:String(b.userId),customerName:b.customerName,customerEmail:b.customerEmail,startDate:'2035-12-01',startTime:'08:00',area:'George Town',siteAddress:'Rigger job',rentalCollection:'delivery',reason:'Extend crew work to six hours',items:JSON.stringify([{id:'rigger-banksman',term:'hourly',qty:2,periods:6}])};
+        const edit=await req(`/admin/bookings/${b.id}/edit`,{cookie:admin,form});assert.match(edit.headers.get('location')||'',/booking-edited/);b=await prisma.booking.findUniqueOrThrow({where:{id:b.id}});assert.equal(b.estimateCents,60000);
+      }
+    }
+    for(const periods of [0,1.5,8785])assert.equal((await req('/api/bookings',{cookie,json:{...booking,details:{items:[{id:'rigger-banksman',term:'hourly',qty:2,periods}]}}})).status,400);
+  });
   test("new bookings round the total equipment discount to the nearest $5 and keep earlier estimates unchanged", async () => {
     const customer=await signup();await prisma.user.update({where:{email:"kim@example.com"},data:{rewardCreditCents:500000}});
     await prisma.product.update({where:{id:"rt40"},data:{rates:{daily:985}}});

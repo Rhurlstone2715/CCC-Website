@@ -1,3 +1,4 @@
+import {CREW_SERVICE_IDS} from "./staff-services.js";
 import {loyaltyDiscountCents} from "./loyalty-tiers.js";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -181,14 +182,14 @@ export async function priceItems(items: CartItem[], discountPercent: number): Pr
       operator = product.operatorService;
       rate = orderedRates(product.rates)[item.term as Term] ?? null;
     }
-    const periods=item.term==="hourly"?1:Math.max(1,item.periods??1);
+    const periods=item.term==="hourly"&&!CREW_SERVICE_IDS.includes(item.id)?1:Math.max(1,item.periods??1);
     const amount = rate === null ? null : toCents(rate * item.qty * periods) / 100;
     if (amount !== null) {
       anyPriced = true;
       if (operator) operatorCents += toCents(amount);
       else equipmentCents += toCents(amount);
     }
-    return { id: item.id, name, term: item.term, qty: item.qty, rate, amount, operator, ...(periods>1?{periods}:{}), ...(product?.fuelType && !/crane|boom.?truck/i.test(product.category) ? { fuelType: product.fuelType } : {}) };
+    return { id: item.id, name, term: item.term, qty: item.qty, rate, amount, operator, ...(periods>1||CREW_SERVICE_IDS.includes(item.id)?{periods}:{}), ...(product?.fuelType && !/crane|boom.?truck/i.test(product.category) ? { fuelType: product.fuelType } : {}) };
   });
 
   // Round the combined equipment discount once to the nearest KYD $5.
