@@ -15,7 +15,10 @@
   label(30,59,`Main boom ${length} ft · chart radius ${match.radiusFt} ft`,{'font-size':15});
   const truck=match.category==='Boom Trucks'||/Altec|National/i.test(match.name);
   const red='#df351c',dark=truck?'#b41d13':'#08090b',metal='#303238',ink=truck?red:'#08090b';
+  const national=match.id==='national1400'||/National/i.test(match.name);
+  const paint=national?{body:'#f7f7f7',shade:'#d7dde2',highlight:'#ffffff',edge:'#89939d',boom:'#d9dde1',mid:'#e1e4e7',tip:'#cbd1d6',boomEdge:'#89939d',mount:'#b7bfc7'}:{body:red,shade:'#cb281b',highlight:'#f26036',edge:dark,boom:'#ffffff',mid:'#f5f5f5',tip:'#e8ebee',boomEdge:'#929aa3',mount:dark};
   svg.setAttribute('data-equipment-design',truck?'red-boom-truck':'black-rt-crane');
+  if(truck){svg.setAttribute('data-truck-colour',national?'white':'red');svg.setAttribute('data-boom-colour',national?'light-grey':'white');}
   const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   add(svg,'line',{x1:30,y1:375,x2:690,y2:375,stroke:'#ccd1d6','stroke-width':2});
   // Articulated vector recreation of the supplied red truck / black RT references.
@@ -28,25 +31,25 @@
   if(truck){
    px=177;py=273;direction=1;
    // Long flat deck, red bonnet cab, twin rear axles and deployed stabilizers.
-   add(svg,'path',{d:'M76 343 L76 322 Q76 303 96 299 L124 296 V277 Q125 267 137 267 H155 Q168 267 168 282 V341 Z',fill:red,stroke:dark,'stroke-width':2});
+   add(svg,'path',{d:'M76 343 L76 322 Q76 303 96 299 L124 296 V277 Q125 267 137 267 H155 Q168 267 168 282 V341 Z',fill:paint.body,stroke:paint.edge,'stroke-width':2});
    add(svg,'path',{d:'M128 279 Q128 274 137 274 H153 Q160 274 160 282 V302 H127 Z',fill:'#237d8b',stroke:'#176371','stroke-width':2});
    add(svg,'line',{x1:140,y1:275,x2:138,y2:302,stroke:'#81b7be','stroke-width':2});
-   add(svg,'path',{d:'M124 306 H160 V337 H124 Z',fill:'#cb281b'});
-   add(svg,'rect',{x:148,y:310,width:9,height:3,rx:1,fill:dark});
-   add(svg,'path',{d:'M79 321 L91 313 H114 V324 H79 Z',fill:'#f26036'});
+   add(svg,'path',{d:'M124 306 H160 V337 H124 Z',fill:paint.shade});
+   add(svg,'rect',{x:148,y:310,width:9,height:3,rx:1,fill:paint.edge});
+   add(svg,'path',{d:'M79 321 L91 313 H114 V324 H79 Z',fill:paint.highlight});
    add(svg,'rect',{x:77,y:331,width:8,height:10,fill:'#151515'});
    add(svg,'path',{d:'M77 342 H390 V352 H76 Q70 352 70 345 Z',fill:'#18191b'});
-   add(svg,'rect',{x:165,y:328,width:222,height:9,fill:red});
+   add(svg,'rect',{x:165,y:328,width:222,height:9,fill:paint.body,stroke:paint.edge,'stroke-width':1});
    add(svg,'rect',{x:167,y:337,width:220,height:7,fill:'#222'});
    for(let x=191;x<385;x+=27)add(svg,'rect',{x,y:330,width:12,height:2,fill:'#fff'});
    add(svg,'rect',{x:217,y:348,width:48,height:18,fill:'#8d8f90',stroke:'#505154'});
    add(svg,'line',{x1:240,y1:349,x2:240,y2:365,stroke:'#c6c7c8'});
    wheel(104,350,23);wheel(292,350,23);wheel(341,350,23);
-   for(const x of [172,373]){add(svg,'rect',{x:x-4,y:337,width:9,height:35,fill:red});add(svg,'rect',{x:x-9,y:371,width:19,height:4,rx:2,fill:'#46413d'});}
-   add(svg,'rect',{x:166,y:282,width:21,height:46,fill:dark});
-   add(svg,'path',{d:'M171 279 L157 266 Q151 258 158 252 L167 249 L193 273 Q197 280 190 284 Z',fill:dark});
+   for(const x of [172,373]){add(svg,'rect',{x:x-4,y:337,width:9,height:35,fill:paint.body,stroke:paint.edge,'stroke-width':1});add(svg,'rect',{x:x-9,y:371,width:19,height:4,rx:2,fill:'#46413d'});}
+   add(svg,'rect',{x:166,y:282,width:21,height:46,fill:paint.mount});
+   add(svg,'path',{d:'M171 279 L157 266 Q151 258 158 252 L167 249 L193 273 Q197 280 190 284 Z',fill:paint.mount});
    add(svg,'rect',{x:382,y:278,width:3,height:50,fill:'#111'});
-   add(svg,'rect',{x:381,y:274,width:5,height:6,fill:dark});
+   add(svg,'rect',{x:381,y:274,width:5,height:6,fill:paint.edge});
   }else{
    px=370;py=280;direction=-1;
    // Two large treaded wheels, high cab and counterweight from the RT silhouette.
@@ -63,16 +66,16 @@
   const boom=add(boomBase,'g',{transform:`rotate(${-angle})`,'data-chart-angle':angle});
   if(!reduced)add(boom,'animateTransform',{attributeName:'transform',type:'rotate',from:'-8',to:-angle,dur:'1.3s',fill:'freeze',calcMode:'spline',keySplines:'.2 .65 .3 1',keyTimes:'0;1'});
   // Telescopic stages slide inside one another while maintaining a continuous boom.
-  add(boom,'path',{d:'M-7 -11 Q-13 0 -7 11 H111 V-11 Z',fill:ink});
-  for(const [x,width,height,fill,start]of [[80,100,16,truck?'#191b1d':ink,15],[166,84,11,truck?'#202224':ink,70]]){
-   const stage=add(boom,'rect',{x,y:-height/2,width,height,rx:2,fill});
+  add(boom,'path',{d:'M-7 -11 Q-13 0 -7 11 H111 V-11 Z',fill:truck?paint.boom:ink,stroke:truck?paint.boomEdge:ink,'stroke-width':1});
+  for(const [x,width,height,fill,start]of [[80,100,16,truck?paint.mid:ink,15],[166,84,11,truck?paint.tip:ink,70]]){
+   const stage=add(boom,'rect',{x,y:-height/2,width,height,rx:2,fill,stroke:truck?paint.boomEdge:ink,'stroke-width':1});
    if(!reduced)add(stage,'animate',{attributeName:'x',from:start,to:x,dur:'1.3s',fill:'freeze'});
    add(stage,'title',{},'Telescopic main boom');
   }
-  for(const x of [107,175])add(boom,'path',{d:`M${x} -12 v24`,stroke:truck?'#5d5f61':'#fff','stroke-width':2});
-  add(boom,'path',{d:'M0 10 L55 17 L92 5',stroke:truck?'#9d130f':ink,'stroke-width':7,fill:'none'});
+  for(const x of [107,175])add(boom,'path',{d:`M${x} -12 v24`,stroke:truck?paint.boomEdge:'#fff','stroke-width':2});
+  add(boom,'path',{d:'M0 10 L55 17 L92 5',stroke:truck?paint.boomEdge:ink,'stroke-width':7,fill:'none'});
   add(boom,'path',{d:'M53 17 L83 8',stroke:truck?'#bcc0c3':'#42454a','stroke-width':3});
-  add(boom,'circle',{cx:0,cy:0,r:6,fill:truck?'#64231e':'#222'});
+  add(boom,'circle',{cx:0,cy:0,r:6,fill:truck?paint.mount:'#222'});
   const head=add(boom,'rect',{x:244,y:-13,width:10,height:26,rx:3,fill:truck?'#626466':ink});
   if(!reduced)add(head,'animate',{attributeName:'x',from:148,to:244,dur:'1.3s',fill:'freeze'});
   const arc=44,ax=px+direction*arc*Math.cos(radians),ay=py-arc*Math.sin(radians);
