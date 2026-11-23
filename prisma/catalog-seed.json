@@ -1504,7 +1504,7 @@
   {
    "id": "rigger-banksman",
    "name": "Rigger/Banksman",
-   "category": "Operator Service",
+   "category": "Rigging Services",
    "spec": "Hourly or daily labour service",
    "desc": "Rigger/banksman service for lifting work.",
    "image": "assets/catalog/rigger-banksman.jpg",

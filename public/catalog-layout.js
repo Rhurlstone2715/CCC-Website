@@ -14,9 +14,9 @@ window.CCC_BROWSE=(()=>{
   {id:'heavy-hauling',name:'Heavy Hauling',description:'Trailer heads, dump trucks & heavy transport',hero:'lowboy'},
   {id:'attachments',name:'Attachments',description:'Buckets, forks, baskets & equipment attachments',hero:'blockforks'},
   {id:'rigging-gear',name:'Lifting/Rigging Gear',description:'Lifting clamps, beams & spreader gear',hero:'karryton-vertical-plate-clamp'},
+  {id:'rigging-services',name:'Rigging Services',description:'Rigger and banksman labour for lifting work',hero:'rigger-banksman'},
   {id:'handling',name:'Material Handling',description:'Pallet jacks & roller skids',hero:'palletjacks'},
   {id:'ground',name:'Ground Protection',description:'Mats for site access & surface protection',hero:'mats'},
-  {id:'operator-service',name:'Operator Service',description:'Riggers & banksmen for lifting work',hero:'rigger-banksman'},
   {id:'compaction',name:'Compaction Equipment',description:'Compactors, rollers & rammers',image:'/assets/categories/compaction.jpg'},
   {id:'lighting',name:'Construction Lighting',description:'Lighting for work areas & jobsites',image:'/assets/categories/lighting.jpg'},
   {id:'floor',name:'Floor Care Equipment',description:'Floor cleaning & surface preparation',image:'/assets/categories/floor.jpg'},
@@ -40,7 +40,7 @@ window.CCC_BROWSE=(()=>{
   'air':['compressor','impactgun','socket-axle-3','socket-axle-3-1-8','socket-axle-3-1-4','socket-axle-3-3-8','socket-axle-3-1-2','socket-axle-3-3-4','socket-axle-4','socket-deep-17mm','socket-deep-19mm','socket-deep-21mm','socket-deep-22mm','socket-deep-24mm','socket-deep-27mm','socket-deep-30mm','socket-deep-32mm','socket-deep-34mm','socket-deep-36mm','socket-deep-38mm','socket-deep-41mm','socket-deep-46mm','socket-deep-50mm','socket-deep-55mm'],'power-generation':['mini-welder','mini-plasma'],
   'hydraulic':['fs600','fr800c','handheld-rebar'],'handling':['palletjacks','rollers']
  };
- const standardGroups={'Rough Terrain Cranes':'cranes','Boom Trucks':'boom-trucks','Telehandlers':'telehandlers','Heavy Hauling':'heavy-hauling','Power Generation':'power-generation','Attachments':'attachments','Ground Protection':'ground','Operator Service':'operator-service'};
+ const standardGroups={'Rough Terrain Cranes':'cranes','Boom Trucks':'boom-trucks','Telehandlers':'telehandlers','Heavy Hauling':'heavy-hauling','Power Generation':'power-generation','Attachments':'attachments','Ground Protection':'ground','Rigging Services':'rigging-services'};
  function categoryId(p){
   if(productGroups['rigging-gear'].includes(p.rigging?.family||p.id))return 'rigging-gear';
   if(standardGroups[p.category])return standardGroups[p.category];

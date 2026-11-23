@@ -20,15 +20,15 @@ test('new admin equipment stays discoverable and backend categories remain uncha
  assert.equal(layout.categoryId(p),'other');assert.ok(layout.visibleCategories(products).some(c=>c.id==='other'));assert.equal(layout.itemsFor(products,'other')[0],p);assert.equal(p.category,'Tools');
  assert.equal(layout.categoryId({...p,name:'New crane',category:'Rough Terrain Cranes'}),'cranes');
 });
-test('Rigger/Banksman is a visible, bookable Operator Service item with hourly and daily rates',()=>{
- const p=seed.find(p=>p.id==='rigger-banksman');assert.ok(p);assert.equal(p.name,'Rigger/Banksman');assert.equal(p.category,'Operator Service');
+test('Rigger/Banksman is a visible, bookable Rigging Services item with hourly and daily rates',()=>{
+ const p=seed.find(p=>p.id==='rigger-banksman');assert.ok(p);assert.equal(p.name,'Rigger/Banksman');assert.equal(p.category,'Rigging Services');
  assert.deepEqual(p.rates,{hourly:50,daily:315});assert.equal(p.operatorService,true);assert.ok(!p.hidden);assert.ok(!p.delivery);assert.equal(p.availableQuantity,undefined);assert.equal(p.image,'assets/catalog/rigger-banksman.jpg');
- assert.equal(layout.categoryId(p),'operator-service');assert.deepEqual(Array.from(layout.itemsFor(seed,'operator-service'),p=>p.id),['rigger-banksman']);
- assert.equal(layout.categories.find(c=>c.id==='operator-service').hero,'rigger-banksman');assert.ok(!layout.itemsFor(seed,'other').some(p=>p.id==='rigger-banksman'));
+ assert.equal(layout.categoryId(p),'rigging-services');assert.deepEqual(Array.from(layout.itemsFor(seed,'rigging-services'),p=>p.id),['rigger-banksman']);
+ assert.equal(layout.categories.find(c=>c.id==='rigging-services').name,'Rigging Services');assert.equal(layout.categories.find(c=>c.id==='rigging-services').hero,'rigger-banksman');assert.ok(!layout.categories.some(c=>c.id==='operator-service'));assert.ok(!layout.itemsFor(seed,'other').some(p=>p.id==='rigger-banksman'));
  const operator=seed.find(p=>p.id==='telehandler-operator');assert.ok(operator.hidden);assert.deepEqual(operator.rates,{hourly:35,daily:315});assert.ok(!layout.visibleCategories(seed).some(c=>layout.itemsFor(seed,c.id).includes(operator)));
 });
 test('Rigger/Banksman migration adds the item without overwriting admin-edited catalogs',()=>{
  const sql=readFileSync(new URL('../prisma/migrations/20261123090000_rigger_banksman/migration.sql',import.meta.url),'utf8');
- assert.match(sql,/INSERT INTO "Product"/);assert.match(sql,/'rigger-banksman', 'Rigger\/Banksman', 'Operator Service'/);assert.match(sql,/'\{"hourly":50,"daily":315\}'::jsonb/);
+ assert.match(sql,/INSERT INTO "Product"/);assert.match(sql,/'rigger-banksman', 'Rigger\/Banksman', 'Rigging Services'/);assert.match(sql,/'\{"hourly":50,"daily":315\}'::jsonb/);
  assert.match(sql,/HAVING COUNT\(\*\)>0/);assert.match(sql,/ON CONFLICT \("id"\) DO NOTHING/);assert.doesNotMatch(sql,/\b(UPDATE|DELETE|DROP|TRUNCATE)\b/i);
 });
