@@ -165,13 +165,25 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.match(response.headers.get('cache-control')??'',/no-store/);
     const data=await response.json();assert.equal(data.limitPercent,60);assert.equal(data.loadLb,10000);
     assert.ok(data.matches.some((m:{id:string})=>m.id==='rt890e'));for(const m of data.matches){assert.equal(m.riggingLb,m.id.startsWith('rt')?800:500);assert.equal(m.totalLb,10000+m.riggingLb);assert.ok(m.totalLb<=m.allowedGrossLb);}
-    assert.ok(data.matches[0].hourlyRate>0);assert.ok(data.excluded.some((p:{id:string})=>p.id==='rt40'));
+    assert.ok(data.matches[0].hourlyRate>0);assert.ok(!data.excluded.some((p:{id:string})=>p.id==='rt40'));assert.ok(data.matches.some((m:{id:string,name:string})=>m.id==='rt40'&&m.name==='P&H Omega 40'));
     const excessive=await(await req('/api/crane-selector',{json:{loadLb:500000,liftHeightFt:50}})).json();assert.equal(excessive.matches.length,0);
     assert.equal((await req('/api/crane-selector',{json:{...input,loadLb:-1}})).status,400);
     assert.equal((await req('/api/crane-selector',{json:{...input,padding:'x'.repeat(9000)}})).status,413);
     await prisma.product.update({where:{id:'rt890e'},data:{chart:'assets/load-charts/other.pdf'}});
     const changed=await(await req('/api/crane-selector',{json:input})).json();assert.ok(!changed.matches.some((m:{id:string})=>m.id==='rt890e'));
     assert.equal(await prisma.booking.count(),0);assert.equal(await prisma.accountEmail.count(),0);
+  });
+
+  test("Omega 40 correction preserves prices and stock and serves the uploaded chart",async()=>{
+    const before=await prisma.product.findUniqueOrThrow({where:{id:'rt40'}});
+    await prisma.product.update({where:{id:'rt40'},data:{name:'Terex RT40',chart:'assets/load-charts/terex-rt40.pdf'}});
+    const sql=readFileSync('prisma/migrations/20261123190000_omega_40_chart/migration.sql','utf8');
+    await prisma.$executeRawUnsafe(sql);await prisma.$executeRawUnsafe(sql);
+    const after=await prisma.product.findUniqueOrThrow({where:{id:'rt40'}});
+    assert.equal(after.name,'P&H Omega 40');assert.deepEqual(after.rates,before.rates);assert.equal(after.availableQuantity,before.availableQuantity);
+    const old=await req('/assets/load-charts/terex-rt40.pdf');assert.equal(old.status,301);assert.equal(old.headers.get('location'),'/assets/load-charts/ph-omega-40.pdf');
+    const pdf=await req('/assets/load-charts/ph-omega-40.pdf');assert.equal(pdf.status,200);assert.match(pdf.headers.get('content-type')??'',/pdf/);
+    assert.equal((await pdf.arrayBuffer()).byteLength,3194775);
   });
 
   // Each call gets its own IP unless one is given, so rate limits don't leak between tests.
@@ -1867,7 +1879,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.match(row, /^"CCC-00001",/);
     assert.match(row, /"'=HYPERLINK\(""x""\)"/);
     assert.match(row, /"'\+1 345 555 0100"/);
-    assert.match(row, /"Terex RT40 \(Hourly × 4\)",580,551,/);
+    assert.match(row, /"P&H Omega 40 \(Hourly × 4\)",580,551,/);
     const none = await (await req("/admin/bookings/export.csv?status=declined", { cookie: admin })).text();
     assert.equal(none.replace(/^\uFEFF/, "").trim().split("\r\n").length, 1);
   });

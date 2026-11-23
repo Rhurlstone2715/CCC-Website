@@ -4,7 +4,7 @@ This is a preliminary customer planning aid, never a lift plan or operating char
 
 ## Sources and transcription
 
-Reviewed all pages of the six PDFs linked by the current fleet catalog, including capacity tables, deductions, reeving, range diagrams and notes. Used vector text extraction for Grove/National cells and visual transcription of the scanned Terex/Altec tables. Only populated positive-angle main-boom cells are included. Exact source SHA-256 hashes, chart codes, PDF page numbers and setup notes accompany the 482 cells in `data/crane-selector-charts.json`. PDF page numbers are one-based, not printed page labels.
+Reviewed all pages of the six PDFs linked by the current fleet catalog, including capacity tables, deductions, reeving, range diagrams and notes. Used vector text extraction for Grove/National cells and visual transcription of the scanned Terex/Altec/P&H tables. Only populated positive-angle main-boom cells are included. Exact source SHA-256 hashes, chart codes, PDF page numbers and setup notes accompany the 556 cells in `data/crane-selector-charts.json`. PDF page numbers are one-based, not printed page labels.
 
 | Fleet model | PDF pages reviewed | Capacity page used | Required setup | Cells |
 | --- | --- | --- | --- | --- |
@@ -13,12 +13,13 @@ Reviewed all pages of the six PDFs linked by the current fleet catalog, includin
 | Grove RT635C | 22 | 7 | 5,787 lb counterweight, 100% outriggers, 360° | 103 |
 | National 1400H | 12 | 8 | Series 14127H, 127 ft boom, 24 ft 6 in full span; forward lifts require front stabilizer | 68 |
 | Altec AC25-95B | 4 | 3 | 95 ft boom, 18 ft 6 in main/auxiliary outrigger span; 360° requires front bumper outrigger | 74 |
-| Catalog Terex RT40 | 8 | Excluded | Linked file identifies Voltas VRT40; a model-matched, unit-confirmed chart is required | 0 |
+| P&H Omega 40 (existing rt40 ID) | 5 | 5 | Full 22 ft outriggers, 360° main boom, powered sections extended equally | 74 |
 
 Files are under `public/assets/load-charts/`. The selector also checks the catalog model name and chart path. Changed/unmatched/missing PDFs fail closed. Source hashes are verified once per process startup; publish updated data and restart when replacing a PDF. No nominal-capacity fallback exists.
 
 ## Deductions
 
+- P&H Omega 40: owner confirmed the listing previously named Terex RT40 is this machine. Uploaded P&H brochure replaces the mismatched Voltas PDF. Use only page 5 main-boom **360°** capacities (not higher front-only values); omit lattice extension, jib and on-rubber tables. Main-boom columns 32.5–81.5 ft have manual section retracted; 106 ft has manual section extended. The 32.5 ft setting requires telescope cylinders fully retracted against stops. The 800 lb rigging allowance includes the 730 lb four-sheave block on page 4, not a second deduction of that same block. Actual additional accessories/unused hooks require CCC review. Preserve product ID, rates, inventory and historical booking/document snapshots; redirect the former chart URL to the uploaded PDF.
 - RT890E: conservatively deduct 133 lb auxiliary nose weight. The 800 lb planning allowance is added separately; actual block, slings, rope and accessories require CCC verification. Erected jibs excluded.
 - RT175: chart notes say other deductions are included; the fixed 800 lb handling allowance still counts. Do not take optional 150 lb auxiliary-head removal add-back. Erected-extension setups excluded.
 - RT635C: use larger 641 lb stowed telescopic-jib deduction plus 143 lb auxiliary nose = 784 lb. This is conservative versus the 421 lb fixed-jib deduction. The 58 ft column has the specified inner-mid extended / outer-mid and fly retracted configuration.

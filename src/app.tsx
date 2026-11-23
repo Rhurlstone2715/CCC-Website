@@ -114,6 +114,7 @@ app.get("/uploads/:id{[a-z0-9]+}", async c => {
   return c.body(new Uint8Array(upload.data));
 });
 
+app.get("/assets/load-charts/terex-rt40.pdf", c => c.redirect("/assets/load-charts/ph-omega-40.pdf", 301));
 app.route("/api/crane-selector",craneSelector);
 app.route("/admin/push",adminPush);
 app.route("/admin/bookings",adminBookingEditor);

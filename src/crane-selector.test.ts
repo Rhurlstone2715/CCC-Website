@@ -2,16 +2,16 @@ import assert from 'node:assert/strict';import{test}from'node:test';
 import{craneChartData,screenLift,chartSourceMatches,type ChartProfile}from'./crane-selector.js';
 const base={loadLb:10000,liftHeightFt:50};
 test('reviewed chart data matches exact source files, imperial units and populated main-boom cells',()=>{
- assert.equal(craneChartData.profiles.length,5);assert.equal(craneChartData.profiles.reduce((n,p)=>n+p.cells.length,0),482);
+ assert.equal(craneChartData.profiles.length,6);assert.equal(craneChartData.profiles.reduce((n,p)=>n+p.cells.length,0),556);
  for(const p of craneChartData.profiles){assert.ok(chartSourceMatches(p),p.id);const unique=new Set();for(const c of p.cells){assert.ok(c.ratedLb>c.deductionLb);assert.ok(c.boomFt>0&&c.radiusFt>0&&c.angleDeg>0&&c.angleDeg<=90);const key=`${c.radiusFt}:${c.boomFt}`;assert.ok(!unique.has(key));unique.add(key);}}
- assert.ok(craneChartData.excluded.some(p=>p.id==='rt40'));assert.ok(!chartSourceMatches({...craneChartData.profiles[0],sha256:'incorrect'}));
- const reference=[['rt890e',50,102.8,21950],['rt175',50,85,21200],['rt635c',50,100,11300],['national1400',50,127,5500],['altec2595',50,95,4150]] as const;
+ assert.ok(!craneChartData.excluded.some(p=>p.id==='rt40'));assert.ok(!chartSourceMatches({...craneChartData.profiles[0],sha256:'incorrect'}));
+ const reference=[['rt890e',50,102.8,21950],['rt175',50,85,21200],['rt635c',50,100,11300],['national1400',50,127,5500],['altec2595',50,95,4150],['rt40',40,48,17700]] as const;
  for(const[id,radius,boom,capacity]of reference)assert.equal(craneChartData.profiles.find(p=>p.id===id)!.cells.find(c=>c.radiusFt===radius&&c.boomFt===boom)!.ratedLb,capacity);
 });
 test('maximum radius includes the correct fixed rigging for each type',()=>{
- const result=screenLift(base);assert.equal(result.status,'matches');
+ const result=screenLift(base);assert.equal(result.status,'matches');const omega=result.matches.find(m=>m.id==='rt40')!;assert.equal(omega.radiusFt,35);assert.equal(omega.boomFt,72);assert.equal(omega.angleDeg,58);assert.equal(omega.totalLb,10800);assert.equal(omega.allowedGrossLb,12000);
  for(const m of result.matches){assert.equal(m.riggingLb,m.id.startsWith('rt')?800:500);assert.equal(m.totalLb,10000+m.riggingLb);assert.ok(m.totalLb<=m.allowedGrossLb);assert.ok(m.chartUtilizationPercent<=60);}
- const light=screenLift({loadLb:100,liftHeightFt:5});assert.equal(light.matches.length,5);
+ const light=screenLift({loadLb:100,liftHeightFt:5});assert.equal(light.matches.length,6);
  for(const m of light.matches){const p=craneChartData.profiles.find(p=>p.id===m.id)!;for(const c of p.cells.filter(c=>c.radiusFt>m.radiusFt)){const reach=Math.max(0,Math.floor((c.boomFt*Math.sin(c.angleDeg*Math.PI/180)-10)/5)*5);assert.ok((100+m.riggingLb)*100>(c.ratedLb-c.deductionLb)*60||reach<5);}}
 });
 test('60% boundary includes server rigging and rejects one hundredth over',()=>{

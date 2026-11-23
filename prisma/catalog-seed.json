@@ -59,12 +59,12 @@
   {
    "id": "rt40",
    "availableQuantity": 2,
-   "name": "Terex RT40",
+   "name": "P&H Omega 40",
    "category": "Rough Terrain Cranes",
-   "spec": "40 ton • 82.5' main boom • 115' with jib",
+   "spec": "40 ton • 106' main boom",
    "desc": "Compact rough terrain crane suited to active jobsites and restricted setup areas.",
    "image": "assets/catalog/07-terex-rt40.png",
-   "chart": "assets/load-charts/terex-rt40.pdf",
+   "chart": "assets/load-charts/ph-omega-40.pdf",
    "photo": true,
    "delivery": true,
    "rates": {
