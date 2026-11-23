@@ -55,16 +55,10 @@
         <p class="selector-scope">Main boom only · fully extended outriggers · stationary lifts. Recommendations need CCC lift-team confirmation before booking or lifting.</p>
         <form id="craneSelectorForm"><div class="selector-fields">
           <label>Item weight (lb)<input name="loadLb" type="number" min="0.01" max="500000" step="0.01" required placeholder="e.g. 10000"></label>
-          <label>Hook block, slings &amp; lifting accessories (lb)<input name="handlingLb" type="number" min="0" max="100000" step="0.01" required placeholder="Include all suspended handling gear"></label>
-          <label>Maximum loaded radius (ft)<input name="radiusFt" type="number" min="0.01" max="500" step="0.01" required placeholder="e.g. 50"><small>Crane rotation centre to the load centre at the furthest point of the lift.</small></label>
-          <label>Lift height above crane setup ground (ft)<input name="liftHeightFt" type="number" min="0.01" max="500" step="0.01" required placeholder="Highest load attachment point"></label>
-          <label>Vertical rigging &amp; hook headroom (ft)<input name="headroomFt" type="number" min="0.01" max="100" step="0.01" required placeholder="Above the load attachment point"></label>
+          <label>Approximate lifting height (ft)<input name="liftHeightFt" type="number" min="0.01" max="500" step="0.01" required placeholder="e.g. 50"></label>
         </div>
-        <label class="selector-check"><input type="checkbox" name="unknownHandling"> I need help confirming the hook/rigging weight.</label>
-        <label class="selector-check"><input type="checkbox" name="fullOutriggers"> Full outriggers can be accommodated for a stationary, level setup, subject to CCC site review.</label>
-        <label class="selector-check"><input type="checkbox" name="specialLift"> Special conditions: wind-sensitive load, power lines, personnel lift, tandem lift, restricted setup or other uncertainty.</label>
-        <p class="selector-method">Capacity is checked at the next larger chart radius, with listed attachment deductions applied before the 60% limit. Height uses a conservative geometry screen, not a verified working-range or clearance assessment. The operator must confirm the actual unit’s chart, counterweight, reeving and lift plan.</p>
-        <button class="button primary" type="submit">Find preliminary matches</button><p id="craneSelectorStatus" role="status"></p></form>
+        <p class="selector-method">Includes standard rigging: <strong>500 lb for boom trucks</strong> and <strong>800 lb for RT cranes</strong>. Shows the maximum qualifying chart radius for your weight and approximate height, at the 60% planning limit after chart deductions. Main boom, stationary lifts and full outriggers only. Height and actual rigging require CCC confirmation.</p>
+        <button class="button primary" type="submit">Calculate maximum radius</button><p id="craneSelectorStatus" role="status"></p></form>
         <div id="craneSelectorResults" aria-live="polite"></div>
       </details>
     </div></section>

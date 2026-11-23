@@ -19,8 +19,8 @@ Files are under `public/assets/load-charts/`. The selector also checks the catal
 
 ## Deductions
 
-- RT890E: conservatively deduct 133 lb auxiliary nose weight. Customer separately enters actual block, slings, extra suspended rope and lifting accessories. Erected jibs excluded.
-- RT175: chart notes say other deductions are included; hook/handling weight still counts. Do not take optional 150 lb auxiliary-head removal add-back. Erected-extension setups excluded.
+- RT890E: conservatively deduct 133 lb auxiliary nose weight. The 800 lb planning allowance is added separately; actual block, slings, rope and accessories require CCC verification. Erected jibs excluded.
+- RT175: chart notes say other deductions are included; the fixed 800 lb handling allowance still counts. Do not take optional 150 lb auxiliary-head removal add-back. Erected-extension setups excluded.
 - RT635C: use larger 641 lb stowed telescopic-jib deduction plus 143 lb auxiliary nose = 784 lb. This is conservative versus the 421 lb fixed-jib deduction. The 58 ft column has the specified inner-mid extended / outer-mid and fly retracted configuration.
 - National: retain published stowed-jib ratings; do not use the no-jib add-backs.
 - Altec: stowed-jib deductions by 30/43/56/69/82/95 ft column are 825/550/425/350/300/250 lb. Use 95 ft maximum from the chart, regardless of conflicting catalog prose.
@@ -29,17 +29,15 @@ These assumptions must be checked against each actual unit, including counterwei
 
 ## Algorithm and limits
 
-Total suspended load = entered item + all hook/block/rigging/accessory weight. Unknown or zero handling weight, unconfirmed full-outrigger space or special conditions produce manual review only. Compare integer hundredths of a pound against `(published cell capacity − listed deduction) × 60`, avoiding rounding a load down into eligibility. No percentage override.
+The customer enters only item weight and approximate lifting height. Server allowances are fixed at 800 lb for RT cranes and 500 lb for boom trucks; per-machine total suspended weight is item weight plus that allowance. They are planning assumptions: CCC must verify actual handling gear before approving a lift. User-supplied handling weights, radii, headroom or setup flags are not calculation inputs.
 
-Within each exact documented boom-length column, use the next larger radius. Never extrapolate beyond that column, interpolate capacities, fill blank cells or use nominal tonnage. Reject radii below the column's smallest documented radius as well. Choose the shortest surviving documented boom column per model. Sort models by current published hourly rate; this is not a total-job-cost optimization or an availability check.
+Compare integer hundredths of a pound against `(published cell capacity − listed deduction) × 60`, avoiding rounding a load down into eligibility. No percentage override. Evaluate every populated chart cell and return the **largest documented radius** passing both the capacity and height screens for each machine. At equal radius, choose the shorter qualifying boom column. Never interpolate or extrapolate beyond reviewed cells. Sort machines by current published hourly rate, not total job cost or availability.
 
-Height is only a geometry pre-screen: `floor((boom length × sin(published loaded angle) − 10 ft) / 5) × 5`. Positive boom-pin elevation is omitted, 10 ft is reserved and height rounded down to 5 ft. Require entered lift attachment height plus hook/rigging headroom below that screen. **This formula is an implementation planning approximation, not a manufacturer working-range validation or a proven clearance guarantee.** Approximate loaded angles, boom deflection, obstacle geometry and actual hook clearance require CCC review. No lift can be approved or automatically booked by this tool.
-
-Example: 10,000 lb item + 2,000 lb handling, 50 ft radius, 50 ft attachment height + 10 ft headroom yields RT890E preliminary match at the 89.8 ft column: 20,550 − 133 = 20,417 lb adjusted chart capacity; 60% = 12,250.20 lb, greater than 12,000 lb gross. The RT635C does not qualify at this radius despite its nominal tonnage. These are test inputs, not an approved lift.
+Height is only a geometry pre-screen: `floor((boom length × sin(published loaded angle) − 10 ft) / 5) × 5`. Positive boom-pin elevation is omitted, 10 ft is reserved and height rounded down to 5 ft. Require the entered approximate lifting height below that screen. **This formula is an implementation planning approximation, not manufacturer working-range validation or a clearance guarantee.** The customer no longer enters hook/rigging headroom. Actual headroom, deflection, obstacles and rigging must be confirmed by CCC. Scope remains main-boom stationary lifts on fully extended outriggers; removing the checkboxes does not approve other setups.
 
 ## Verification
 
-Unit tests cover exact file hashes, all cell counts and unique coordinates, reference cells, 60% cent-boundaries, outer-radius lookup, no extrapolation, missing weights, impossible reach and excluded setups. API integration verifies public read-only calculation, no-store, input/body validation, fail-closed catalog changes and no booking/email creation. Browser QA covers desktop/mobile, form submission and manual-review flow.
+Unit tests cover exact file hashes, all cell counts, unique coordinates, reference cells, fixed rigging allowances for each machine type, 60% cent boundaries, maximum qualifying radius, height constraints and invalid inputs. API integration verifies public read-only calculation, no-store, input/body validation, fail-closed catalog changes and no booking/email creation. Browser QA covers two-field desktop/mobile entry, chart angle rendering and no-match results.
 
 ## Animated vector
 

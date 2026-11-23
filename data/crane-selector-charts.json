@@ -883,7 +883,7 @@
       "page": 8,
       "setup": "4-section boom; 15,200 lb total counterweight; full outriggers; 360\u00b0; LMI code 04",
       "chartCode": "RT175 Rev00 charts 1 and 2",
-      "deductionNote": "No 150 lb auxiliary-head add-back used. Hook/block/slings must be included in the entered handling weight (page 14).",
+      "deductionNote": "No 150 lb auxiliary-head add-back used. Hook/block/slings count as suspended load (page 14); the standard rigging allowance is included and actual gear needs CCC confirmation.",
       "cells": [
         {
           "radiusFt": 10.0,
