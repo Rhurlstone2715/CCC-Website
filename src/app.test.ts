@@ -159,6 +159,23 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     globalThis.fetch = realFetch;
   });
 
+  test("crane selector is read-only, enforces 60% and excludes unverified catalog charts", async () => {
+    const input={loadLb:10000,handlingLb:2000,radiusFt:50,liftHeightFt:50,headroomFt:10,fullOutriggers:true};
+    const response=await req('/api/crane-selector',{json:input});assert.equal(response.status,200);
+    assert.match(response.headers.get('cache-control')??'',/no-store/);
+    const data=await response.json();assert.equal(data.limitPercent,60);assert.equal(data.totalLb,12000);
+    assert.deepEqual(data.matches.map((m:{id:string})=>m.id),['rt890e']);assert.equal(data.matches[0].deductionLb,133);
+    assert.ok(data.matches[0].hourlyRate>0);assert.ok(data.excluded.some((p:{id:string})=>p.id==='rt40'));
+    for(const change of [{specialLift:true},{unknownHandling:true},{fullOutriggers:false}]){
+      const manual=await(await req('/api/crane-selector',{json:{...input,...change}})).json();assert.equal(manual.status,'manual-review');assert.equal(manual.matches.length,0);
+    }
+    assert.equal((await req('/api/crane-selector',{json:{...input,loadLb:-1}})).status,400);
+    assert.equal((await req('/api/crane-selector',{json:{...input,padding:'x'.repeat(9000)}})).status,413);
+    await prisma.product.update({where:{id:'rt890e'},data:{chart:'assets/load-charts/other.pdf'}});
+    const changed=await(await req('/api/crane-selector',{json:input})).json();assert.equal(changed.matches.length,0);
+    assert.equal(await prisma.booking.count(),0);assert.equal(await prisma.accountEmail.count(),0);
+  });
+
   // Each call gets its own IP unless one is given, so rate limits don't leak between tests.
   let fixtureDay=0;
   let signupPhone=100;
@@ -823,7 +840,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   });
 
   test("checkout has one agreement checkbox with estimate acknowledgement inside the terms", async () => {
-    const html=await (await req('/rentals')).text();assert.equal((html.match(/type="checkbox"/g)||[]).length,1);assert.match(html,/name="agreement" required/);assert.doesNotMatch(html,/name="payment_ack"/);assert.match(html,/By accepting these terms, I understand that the displayed total is an estimate/);
+    const html=await (await req('/rentals')).text();assert.equal((html.slice(html.indexOf('<form id="checkoutForm"')).match(/type="checkbox"/g)||[]).length,1);assert.match(html,/name="agreement" required/);assert.doesNotMatch(html,/name="payment_ack"/);assert.match(html,/By accepting these terms, I understand that the displayed total is an estimate/);
   });
 
   test("drawn checkout signatures are validated, saved privately and shown on admin agreements", async () => {

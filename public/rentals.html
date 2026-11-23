@@ -13,6 +13,7 @@
   <link rel="preload" as="image" href="assets/current-site/two-cranes-homepage.webp">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="rental-member-badge.css">
+  <link rel="stylesheet" href="crane-selector.css">
   <link rel="stylesheet" href="rentals-nav.css">
   <link rel="stylesheet" href="catalog-layout.css?v=categories-1">
 </head>
@@ -48,6 +49,25 @@
         <div class="member-progress-caption"><p id="memberNextTier"></p><p id="memberPendingPoints" hidden></p></div>
       </div></div>
     </section>
+    <section class="crane-selector-section" id="crane-selector"><div class="wrap">
+      <div class="selector-intro"><div><p class="eyebrow red">Crane &amp; boom truck selector</p><h2>Unsure which equipment suits your lift?</h2><p>Enter your lift details for a preliminary recommendation using a maximum of <strong>60% of the applicable chart capacity</strong>.</p></div><span class="selector-limit">60%<small>planning limit</small></span></div>
+      <details class="selector-panel"><summary>Find a crane or boom truck for my job</summary>
+        <p class="selector-scope">Main boom only · fully extended outriggers · stationary lifts. Recommendations need CCC lift-team confirmation before booking or lifting.</p>
+        <form id="craneSelectorForm"><div class="selector-fields">
+          <label>Item weight (lb)<input name="loadLb" type="number" min="0.01" max="500000" step="0.01" required placeholder="e.g. 10000"></label>
+          <label>Hook block, slings &amp; lifting accessories (lb)<input name="handlingLb" type="number" min="0" max="100000" step="0.01" required placeholder="Include all suspended handling gear"></label>
+          <label>Maximum loaded radius (ft)<input name="radiusFt" type="number" min="0.01" max="500" step="0.01" required placeholder="e.g. 50"><small>Crane rotation centre to the load centre at the furthest point of the lift.</small></label>
+          <label>Lift height above crane setup ground (ft)<input name="liftHeightFt" type="number" min="0.01" max="500" step="0.01" required placeholder="Highest load attachment point"></label>
+          <label>Vertical rigging &amp; hook headroom (ft)<input name="headroomFt" type="number" min="0.01" max="100" step="0.01" required placeholder="Above the load attachment point"></label>
+        </div>
+        <label class="selector-check"><input type="checkbox" name="unknownHandling"> I need help confirming the hook/rigging weight.</label>
+        <label class="selector-check"><input type="checkbox" name="fullOutriggers"> Full outriggers can be accommodated for a stationary, level setup, subject to CCC site review.</label>
+        <label class="selector-check"><input type="checkbox" name="specialLift"> Special conditions: wind-sensitive load, power lines, personnel lift, tandem lift, restricted setup or other uncertainty.</label>
+        <p class="selector-method">Capacity is checked at the next larger chart radius, with listed attachment deductions applied before the 60% limit. Height uses a conservative geometry screen, not a verified working-range or clearance assessment. The operator must confirm the actual unit’s chart, counterweight, reeving and lift plan.</p>
+        <button class="button primary" type="submit">Find preliminary matches</button><p id="craneSelectorStatus" role="status"></p></form>
+        <div id="craneSelectorResults" aria-live="polite"></div>
+      </details>
+    </div></section>
     <section class="catalog-section" id="catalog"><div class="wrap">
       <div class="section-heading split"><div><p class="eyebrow red">Services &amp; rental catalog</p><h2 id="catalogTitle">What do you need for the job?</h2><p id="catalogDescription">Choose a category to see equipment, rental rates and details. Rates are in Cayman Islands dollars.</p></div></div>
       <div class="category-breadcrumb" id="categoryBreadcrumb">Browse categories</div><div class="catalog-tools"><div class="catalog-main-row"><label class="search"><span>Search</span><input id="searchInput" type="search" placeholder="Search equipment or categories…" autocomplete="off"></label><div class="filters" id="filters" role="group" aria-label="Main catalog categories"></div></div><div class="subfilters" id="subfilters" role="group" aria-label="Catalog subcategories" hidden></div></div>
@@ -80,6 +100,8 @@
   <script src="catalog.js"></script>
   <script src="signature-pad.js"></script>
   <script src="catalog-layout.js?v=categories-1"></script>
+  <script src="crane-selector-vector.js"></script>
+  <script src="crane-selector.js"></script>
   <script src="rental-member-badge.js"></script>
   <script src="app.js?v=categories-1"></script>
 </body></html>

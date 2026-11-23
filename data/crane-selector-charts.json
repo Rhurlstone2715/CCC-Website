@@ -1,0 +1,3447 @@
+{
+  "reviewDate": "2026-11-23",
+  "limitPercent": 60,
+  "profiles": [
+    {
+      "id": "rt890e",
+      "name": "Grove RT890E",
+      "source": "assets/load-charts/grove-rt890e.pdf",
+      "sha256": "e5520dba33f173498539960584f9b23d65bd28869f657bfb396f23e406a8898a",
+      "page": 10,
+      "setup": "Mode B; 22,000 lb counterweight; full 24 ft outrigger spread; 360\u00b0 main-boom chart",
+      "chartCode": "A6-829-103321A",
+      "deductionNote": "Auxiliary boom nose: 133 lb (page 21). No stowed-jib deduction in this guide.",
+      "cells": [
+        {
+          "radiusFt": 10.0,
+          "boomFt": 37.3,
+          "ratedLb": 180000,
+          "angleDeg": 68.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 10.0,
+          "boomFt": 50.5,
+          "ratedLb": 134000,
+          "angleDeg": 75.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 10.0,
+          "boomFt": 63.7,
+          "ratedLb": 97500,
+          "angleDeg": 78.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 37.3,
+          "ratedLb": 156000,
+          "angleDeg": 65.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 50.5,
+          "ratedLb": 134000,
+          "angleDeg": 72.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 63.7,
+          "ratedLb": 97500,
+          "angleDeg": 76.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 37.3,
+          "ratedLb": 128500,
+          "angleDeg": 59.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 50.5,
+          "ratedLb": 127500,
+          "angleDeg": 69.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 63.7,
+          "ratedLb": 97500,
+          "angleDeg": 74.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 76.7,
+          "ratedLb": 69950,
+          "angleDeg": 77.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 89.8,
+          "ratedLb": 46600,
+          "angleDeg": 78.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 37.3,
+          "ratedLb": 98650,
+          "angleDeg": 49.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 50.5,
+          "ratedLb": 97600,
+          "angleDeg": 62.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 63.7,
+          "ratedLb": 86200,
+          "angleDeg": 69.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 76.7,
+          "ratedLb": 63600,
+          "angleDeg": 73.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 89.8,
+          "ratedLb": 46600,
+          "angleDeg": 76.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 102.8,
+          "ratedLb": 38700,
+          "angleDeg": 78.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 37.3,
+          "ratedLb": 78800,
+          "angleDeg": 36.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 50.5,
+          "ratedLb": 77800,
+          "angleDeg": 55.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 63.7,
+          "ratedLb": 74850,
+          "angleDeg": 64.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 76.7,
+          "ratedLb": 55100,
+          "angleDeg": 69.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 89.8,
+          "ratedLb": 41950,
+          "angleDeg": 73.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 102.8,
+          "ratedLb": 38700,
+          "angleDeg": 75.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 115.8,
+          "ratedLb": 37900,
+          "angleDeg": 78.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 128.8,
+          "ratedLb": 30850,
+          "angleDeg": 78.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 37.3,
+          "ratedLb": 51550,
+          "angleDeg": 12.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 50.5,
+          "ratedLb": 58700,
+          "angleDeg": 47.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 63.7,
+          "ratedLb": 59300,
+          "angleDeg": 58.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 76.7,
+          "ratedLb": 48150,
+          "angleDeg": 65.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 89.8,
+          "ratedLb": 37350,
+          "angleDeg": 69.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 102.8,
+          "ratedLb": 37900,
+          "angleDeg": 72.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 115.8,
+          "ratedLb": 35000,
+          "angleDeg": 75.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 128.8,
+          "ratedLb": 30850,
+          "angleDeg": 77.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 141.7,
+          "ratedLb": 24400,
+          "angleDeg": 78.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 50.5,
+          "ratedLb": 43250,
+          "angleDeg": 38.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 63.7,
+          "ratedLb": 43200,
+          "angleDeg": 52.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 76.7,
+          "ratedLb": 42450,
+          "angleDeg": 60.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 89.8,
+          "ratedLb": 33300,
+          "angleDeg": 66.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 102.8,
+          "ratedLb": 33200,
+          "angleDeg": 69.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 115.8,
+          "ratedLb": 30950,
+          "angleDeg": 72.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 128.8,
+          "ratedLb": 28900,
+          "angleDeg": 75.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 141.7,
+          "ratedLb": 24400,
+          "angleDeg": 77.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 50.5,
+          "ratedLb": 33250,
+          "angleDeg": 26.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 63.7,
+          "ratedLb": 32850,
+          "angleDeg": 46.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 76.7,
+          "ratedLb": 33050,
+          "angleDeg": 56.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 89.8,
+          "ratedLb": 29850,
+          "angleDeg": 62.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 102.8,
+          "ratedLb": 29300,
+          "angleDeg": 66.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 115.8,
+          "ratedLb": 27450,
+          "angleDeg": 70.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 128.8,
+          "ratedLb": 25850,
+          "angleDeg": 72.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 141.7,
+          "ratedLb": 24250,
+          "angleDeg": 75.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 63.7,
+          "ratedLb": 25650,
+          "angleDeg": 39.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 76.7,
+          "ratedLb": 26000,
+          "angleDeg": 51.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 89.8,
+          "ratedLb": 25900,
+          "angleDeg": 58.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 102.8,
+          "ratedLb": 25950,
+          "angleDeg": 63.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 115.8,
+          "ratedLb": 24450,
+          "angleDeg": 67.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 128.8,
+          "ratedLb": 23150,
+          "angleDeg": 70.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 141.7,
+          "ratedLb": 21900,
+          "angleDeg": 73.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 63.7,
+          "ratedLb": 20350,
+          "angleDeg": 30.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 76.7,
+          "ratedLb": 20750,
+          "angleDeg": 45.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 89.8,
+          "ratedLb": 20550,
+          "angleDeg": 54.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 102.8,
+          "ratedLb": 21950,
+          "angleDeg": 60.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 115.8,
+          "ratedLb": 21800,
+          "angleDeg": 64.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 128.8,
+          "ratedLb": 20750,
+          "angleDeg": 67.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 141.7,
+          "ratedLb": 19800,
+          "angleDeg": 70.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 63.7,
+          "ratedLb": 16200,
+          "angleDeg": 16.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 76.7,
+          "ratedLb": 16800,
+          "angleDeg": 39.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 89.8,
+          "ratedLb": 16450,
+          "angleDeg": 50.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 102.8,
+          "ratedLb": 17800,
+          "angleDeg": 56.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 115.8,
+          "ratedLb": 19150,
+          "angleDeg": 61.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 128.8,
+          "ratedLb": 18650,
+          "angleDeg": 65.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 141.7,
+          "ratedLb": 17900,
+          "angleDeg": 68.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 76.7,
+          "ratedLb": 13600,
+          "angleDeg": 33.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 89.8,
+          "ratedLb": 13200,
+          "angleDeg": 45.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 102.8,
+          "ratedLb": 14550,
+          "angleDeg": 53.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 115.8,
+          "ratedLb": 15900,
+          "angleDeg": 58.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 128.8,
+          "ratedLb": 16800,
+          "angleDeg": 62.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 141.7,
+          "ratedLb": 16150,
+          "angleDeg": 66.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 76.7,
+          "ratedLb": 11000,
+          "angleDeg": 23.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 89.8,
+          "ratedLb": 10600,
+          "angleDeg": 40.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 102.8,
+          "ratedLb": 11900,
+          "angleDeg": 49.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 115.8,
+          "ratedLb": 13250,
+          "angleDeg": 55.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 128.8,
+          "ratedLb": 14200,
+          "angleDeg": 60.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 141.7,
+          "ratedLb": 14650,
+          "angleDeg": 64.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 89.8,
+          "ratedLb": 8420,
+          "angleDeg": 34.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 102.8,
+          "ratedLb": 9750,
+          "angleDeg": 45.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 115.8,
+          "ratedLb": 11050,
+          "angleDeg": 52.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 128.8,
+          "ratedLb": 11950,
+          "angleDeg": 57.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 141.7,
+          "ratedLb": 12850,
+          "angleDeg": 61.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 89.8,
+          "ratedLb": 6570,
+          "angleDeg": 28.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 102.8,
+          "ratedLb": 7910,
+          "angleDeg": 40.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 115.8,
+          "ratedLb": 9250,
+          "angleDeg": 48.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 128.8,
+          "ratedLb": 10100,
+          "angleDeg": 54.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 141.7,
+          "ratedLb": 10950,
+          "angleDeg": 59.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 80.0,
+          "boomFt": 89.8,
+          "ratedLb": 4960,
+          "angleDeg": 18.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 80.0,
+          "boomFt": 102.8,
+          "ratedLb": 6340,
+          "angleDeg": 36.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 80.0,
+          "boomFt": 115.8,
+          "ratedLb": 7670,
+          "angleDeg": 45.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 80.0,
+          "boomFt": 128.8,
+          "ratedLb": 8530,
+          "angleDeg": 51.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 80.0,
+          "boomFt": 141.7,
+          "ratedLb": 9380,
+          "angleDeg": 56.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 85.0,
+          "boomFt": 102.8,
+          "ratedLb": 4990,
+          "angleDeg": 30.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 85.0,
+          "boomFt": 115.8,
+          "ratedLb": 6320,
+          "angleDeg": 41.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 85.0,
+          "boomFt": 128.8,
+          "ratedLb": 7150,
+          "angleDeg": 48.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 85.0,
+          "boomFt": 141.7,
+          "ratedLb": 7980,
+          "angleDeg": 54.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 90.0,
+          "boomFt": 102.8,
+          "ratedLb": 3780,
+          "angleDeg": 23.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 90.0,
+          "boomFt": 115.8,
+          "ratedLb": 5140,
+          "angleDeg": 37.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 90.0,
+          "boomFt": 128.8,
+          "ratedLb": 5950,
+          "angleDeg": 45.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 90.0,
+          "boomFt": 141.7,
+          "ratedLb": 6770,
+          "angleDeg": 51.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 95.0,
+          "boomFt": 102.8,
+          "ratedLb": 2710,
+          "angleDeg": 10.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 95.0,
+          "boomFt": 115.8,
+          "ratedLb": 4100,
+          "angleDeg": 32.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 95.0,
+          "boomFt": 128.8,
+          "ratedLb": 4900,
+          "angleDeg": 41.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 95.0,
+          "boomFt": 141.7,
+          "ratedLb": 5700,
+          "angleDeg": 48.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 100.0,
+          "boomFt": 115.8,
+          "ratedLb": 3160,
+          "angleDeg": 26.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 100.0,
+          "boomFt": 128.8,
+          "ratedLb": 3960,
+          "angleDeg": 37.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 100.0,
+          "boomFt": 141.7,
+          "ratedLb": 4750,
+          "angleDeg": 45.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 105.0,
+          "boomFt": 115.8,
+          "ratedLb": 2310,
+          "angleDeg": 18.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 105.0,
+          "boomFt": 128.8,
+          "ratedLb": 3130,
+          "angleDeg": 33.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 105.0,
+          "boomFt": 141.7,
+          "ratedLb": 3910,
+          "angleDeg": 42.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 110.0,
+          "boomFt": 128.8,
+          "ratedLb": 2370,
+          "angleDeg": 28.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 110.0,
+          "boomFt": 141.7,
+          "ratedLb": 3150,
+          "angleDeg": 38.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 115.0,
+          "boomFt": 128.8,
+          "ratedLb": 1680,
+          "angleDeg": 22.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 115.0,
+          "boomFt": 141.7,
+          "ratedLb": 2460,
+          "angleDeg": 35.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 120.0,
+          "boomFt": 128.8,
+          "ratedLb": 1050,
+          "angleDeg": 13.0,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 120.0,
+          "boomFt": 141.7,
+          "ratedLb": 1840,
+          "angleDeg": 30.5,
+          "deductionLb": 133
+        },
+        {
+          "radiusFt": 125,
+          "boomFt": 141.7,
+          "ratedLb": 1250,
+          "angleDeg": 25.5,
+          "deductionLb": 133
+        }
+      ]
+    },
+    {
+      "id": "rt175",
+      "name": "Terex RT175",
+      "source": "assets/load-charts/terex-rt175.pdf",
+      "sha256": "3e66ba60e0c545b85cb94a4bce8c66750f93ca389dc0d8f01410eda3b57ca207",
+      "page": 8,
+      "setup": "4-section boom; 15,200 lb total counterweight; full outriggers; 360\u00b0; LMI code 04",
+      "chartCode": "RT175 Rev00 charts 1 and 2",
+      "deductionNote": "No 150 lb auxiliary-head add-back used. Hook/block/slings must be included in the entered handling weight (page 14).",
+      "cells": [
+        {
+          "radiusFt": 10.0,
+          "boomFt": 40.5,
+          "ratedLb": 150000,
+          "angleDeg": 68.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 10.0,
+          "boomFt": 45,
+          "ratedLb": 102000,
+          "angleDeg": 71.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 10.0,
+          "boomFt": 55,
+          "ratedLb": 95000,
+          "angleDeg": 75.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 40.5,
+          "ratedLb": 116000,
+          "angleDeg": 65.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 45,
+          "ratedLb": 100000,
+          "angleDeg": 68.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 55,
+          "ratedLb": 94700,
+          "angleDeg": 73.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 65,
+          "ratedLb": 80500,
+          "angleDeg": 76.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 40.5,
+          "ratedLb": 92500,
+          "angleDeg": 60.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 45,
+          "ratedLb": 91700,
+          "angleDeg": 64.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 55,
+          "ratedLb": 89000,
+          "angleDeg": 69.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 65,
+          "ratedLb": 73500,
+          "angleDeg": 73.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 75,
+          "ratedLb": 61000,
+          "angleDeg": 76.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 40.5,
+          "ratedLb": 69600,
+          "angleDeg": 52.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 45,
+          "ratedLb": 69500,
+          "angleDeg": 56.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 55,
+          "ratedLb": 69000,
+          "angleDeg": 63.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 65,
+          "ratedLb": 64000,
+          "angleDeg": 68.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 75,
+          "ratedLb": 55700,
+          "angleDeg": 72.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 85,
+          "ratedLb": 48200,
+          "angleDeg": 74.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 95,
+          "ratedLb": 40000,
+          "angleDeg": 76.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 40.5,
+          "ratedLb": 55700,
+          "angleDeg": 41.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 45,
+          "ratedLb": 55200,
+          "angleDeg": 48.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 55,
+          "ratedLb": 54600,
+          "angleDeg": 57.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 65,
+          "ratedLb": 54000,
+          "angleDeg": 63.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 75,
+          "ratedLb": 48500,
+          "angleDeg": 68.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 85,
+          "ratedLb": 42200,
+          "angleDeg": 71.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 95,
+          "ratedLb": 38300,
+          "angleDeg": 73.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 105,
+          "ratedLb": 33500,
+          "angleDeg": 76.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 115,
+          "ratedLb": 32000,
+          "angleDeg": 77.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 40.5,
+          "ratedLb": 46400,
+          "angleDeg": 28.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 45,
+          "ratedLb": 46000,
+          "angleDeg": 38.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 55,
+          "ratedLb": 45300,
+          "angleDeg": 51.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 65,
+          "ratedLb": 45000,
+          "angleDeg": 58.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 75,
+          "ratedLb": 44500,
+          "angleDeg": 63.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 85,
+          "ratedLb": 39000,
+          "angleDeg": 67.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 95,
+          "ratedLb": 34000,
+          "angleDeg": 70.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 105,
+          "ratedLb": 31000,
+          "angleDeg": 73.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 115,
+          "ratedLb": 28500,
+          "angleDeg": 75.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 126,
+          "ratedLb": 26000,
+          "angleDeg": 77.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 45,
+          "ratedLb": 36000,
+          "angleDeg": 25.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 55,
+          "ratedLb": 35800,
+          "angleDeg": 43.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 65,
+          "ratedLb": 35400,
+          "angleDeg": 52.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 75,
+          "ratedLb": 35000,
+          "angleDeg": 59.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 85,
+          "ratedLb": 33400,
+          "angleDeg": 63.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 95,
+          "ratedLb": 30200,
+          "angleDeg": 67.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 105,
+          "ratedLb": 28000,
+          "angleDeg": 70.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 115,
+          "ratedLb": 25000,
+          "angleDeg": 72.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 126,
+          "ratedLb": 22500,
+          "angleDeg": 74.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 55,
+          "ratedLb": 28300,
+          "angleDeg": 34.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 65,
+          "ratedLb": 28000,
+          "angleDeg": 46.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 75,
+          "ratedLb": 27800,
+          "angleDeg": 54.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 85,
+          "ratedLb": 27200,
+          "angleDeg": 59.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 95,
+          "ratedLb": 26900,
+          "angleDeg": 64.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 105,
+          "ratedLb": 24900,
+          "angleDeg": 67.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 115,
+          "ratedLb": 22800,
+          "angleDeg": 70.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 126,
+          "ratedLb": 20800,
+          "angleDeg": 72.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 55,
+          "ratedLb": 24800,
+          "angleDeg": 23.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 65,
+          "ratedLb": 25200,
+          "angleDeg": 40.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 75,
+          "ratedLb": 23100,
+          "angleDeg": 49.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 85,
+          "ratedLb": 22500,
+          "angleDeg": 55.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 95,
+          "ratedLb": 21900,
+          "angleDeg": 60.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 105,
+          "ratedLb": 21100,
+          "angleDeg": 64.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 115,
+          "ratedLb": 20300,
+          "angleDeg": 67.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 126,
+          "ratedLb": 18900,
+          "angleDeg": 70.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 65,
+          "ratedLb": 20700,
+          "angleDeg": 32.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 75,
+          "ratedLb": 21000,
+          "angleDeg": 43.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 85,
+          "ratedLb": 21200,
+          "angleDeg": 51.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 95,
+          "ratedLb": 18900,
+          "angleDeg": 56.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 105,
+          "ratedLb": 18400,
+          "angleDeg": 60.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 115,
+          "ratedLb": 17900,
+          "angleDeg": 64.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 126,
+          "ratedLb": 17100,
+          "angleDeg": 67.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 65,
+          "ratedLb": 17200,
+          "angleDeg": 21.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 75,
+          "ratedLb": 17500,
+          "angleDeg": 37.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 85,
+          "ratedLb": 17700,
+          "angleDeg": 44.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 95,
+          "ratedLb": 17800,
+          "angleDeg": 52.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 105,
+          "ratedLb": 17200,
+          "angleDeg": 57.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 115,
+          "ratedLb": 16000,
+          "angleDeg": 61.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 126,
+          "ratedLb": 15500,
+          "angleDeg": 65.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 75,
+          "ratedLb": 14700,
+          "angleDeg": 30.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 85,
+          "ratedLb": 14900,
+          "angleDeg": 41.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 95,
+          "ratedLb": 15100,
+          "angleDeg": 48.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 105,
+          "ratedLb": 15200,
+          "angleDeg": 54.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 115,
+          "ratedLb": 15300,
+          "angleDeg": 58.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 126,
+          "ratedLb": 14100,
+          "angleDeg": 62.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 75,
+          "ratedLb": 12400,
+          "angleDeg": 20.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 85,
+          "ratedLb": 12600,
+          "angleDeg": 35.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 95,
+          "ratedLb": 12800,
+          "angleDeg": 44.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 105,
+          "ratedLb": 12900,
+          "angleDeg": 50.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 115,
+          "ratedLb": 13100,
+          "angleDeg": 55.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 126,
+          "ratedLb": 13200,
+          "angleDeg": 59.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 85,
+          "ratedLb": 10800,
+          "angleDeg": 28.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 95,
+          "ratedLb": 10900,
+          "angleDeg": 39.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 105,
+          "ratedLb": 11100,
+          "angleDeg": 46.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 115,
+          "ratedLb": 11200,
+          "angleDeg": 51.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 126,
+          "ratedLb": 11300,
+          "angleDeg": 56.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 85,
+          "ratedLb": 9200,
+          "angleDeg": 19.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 95,
+          "ratedLb": 9400,
+          "angleDeg": 33.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 105,
+          "ratedLb": 9500,
+          "angleDeg": 42.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 115,
+          "ratedLb": 9600,
+          "angleDeg": 48.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 126,
+          "ratedLb": 9700,
+          "angleDeg": 53.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 80.0,
+          "boomFt": 95,
+          "ratedLb": 8000,
+          "angleDeg": 27.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 80.0,
+          "boomFt": 105,
+          "ratedLb": 8100,
+          "angleDeg": 37.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 80.0,
+          "boomFt": 115,
+          "ratedLb": 8300,
+          "angleDeg": 44.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 80.0,
+          "boomFt": 126,
+          "ratedLb": 8400,
+          "angleDeg": 50.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 85.0,
+          "boomFt": 95,
+          "ratedLb": 6800,
+          "angleDeg": 18.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 85.0,
+          "boomFt": 105,
+          "ratedLb": 7000,
+          "angleDeg": 32.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 85.0,
+          "boomFt": 115,
+          "ratedLb": 7100,
+          "angleDeg": 40.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 85.0,
+          "boomFt": 126,
+          "ratedLb": 7200,
+          "angleDeg": 47.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 90.0,
+          "boomFt": 105,
+          "ratedLb": 6000,
+          "angleDeg": 26.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 90.0,
+          "boomFt": 115,
+          "ratedLb": 6100,
+          "angleDeg": 36.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 90.0,
+          "boomFt": 126,
+          "ratedLb": 6200,
+          "angleDeg": 43.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 95.0,
+          "boomFt": 115,
+          "ratedLb": 5200,
+          "angleDeg": 31.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 95.0,
+          "boomFt": 126,
+          "ratedLb": 5300,
+          "angleDeg": 39.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 100.0,
+          "boomFt": 126,
+          "ratedLb": 4500,
+          "angleDeg": 35.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 110.0,
+          "boomFt": 126,
+          "ratedLb": 3100,
+          "angleDeg": 25.0,
+          "deductionLb": 0
+        }
+      ]
+    },
+    {
+      "id": "rt635c",
+      "name": "Grove RT635C",
+      "source": "assets/load-charts/grove-rt635c.pdf",
+      "sha256": "f55eb7ff697165c03df780a0d042a77971b6d2021902009f41baad496c25fd06",
+      "page": 7,
+      "setup": "5,787 lb counterweight; 100% outriggers; 360\u00b0 main-boom chart",
+      "chartCode": "A6-829-011360A",
+      "deductionNote": "Conservative 641 lb stowed swingaway plus 143 lb auxiliary head deduction (page 6). 58 ft column requires inner-mid extended, outer-mid and fly retracted.",
+      "cells": [
+        {
+          "radiusFt": 10.0,
+          "boomFt": 34,
+          "ratedLb": 70000,
+          "angleDeg": 66.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 10.0,
+          "boomFt": 40,
+          "ratedLb": 66900,
+          "angleDeg": 70.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 10.0,
+          "boomFt": 50,
+          "ratedLb": 58650,
+          "angleDeg": 74.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 10.0,
+          "boomFt": 58,
+          "ratedLb": 44600,
+          "angleDeg": 76.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 10.0,
+          "boomFt": 60,
+          "ratedLb": 29300,
+          "angleDeg": 77.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 34,
+          "ratedLb": 68050,
+          "angleDeg": 62.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 40,
+          "ratedLb": 64100,
+          "angleDeg": 67.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 50,
+          "ratedLb": 55000,
+          "angleDeg": 72.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 58,
+          "ratedLb": 44600,
+          "angleDeg": 74.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 60,
+          "ratedLb": 29300,
+          "angleDeg": 75.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 70,
+          "ratedLb": 29300,
+          "angleDeg": 78.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 34,
+          "ratedLb": 59150,
+          "angleDeg": 55.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 40,
+          "ratedLb": 57650,
+          "angleDeg": 62.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 50,
+          "ratedLb": 48000,
+          "angleDeg": 68.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 58,
+          "ratedLb": 41500,
+          "angleDeg": 71.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 60,
+          "ratedLb": 29300,
+          "angleDeg": 72.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 70,
+          "ratedLb": 29300,
+          "angleDeg": 75.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 34,
+          "ratedLb": 45900,
+          "angleDeg": 43.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 40,
+          "ratedLb": 45450,
+          "angleDeg": 52.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 50,
+          "ratedLb": 38500,
+          "angleDeg": 61.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 58,
+          "ratedLb": 35900,
+          "angleDeg": 66.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 60,
+          "ratedLb": 29300,
+          "angleDeg": 67.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 70,
+          "ratedLb": 29300,
+          "angleDeg": 72.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 80,
+          "ratedLb": 29300,
+          "angleDeg": 75.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 90,
+          "ratedLb": 27000,
+          "angleDeg": 77.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 34,
+          "ratedLb": 35550,
+          "angleDeg": 26.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 40,
+          "ratedLb": 35250,
+          "angleDeg": 42.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 50,
+          "ratedLb": 32400,
+          "angleDeg": 54.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 58,
+          "ratedLb": 30500,
+          "angleDeg": 60.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 60,
+          "ratedLb": 29300,
+          "angleDeg": 62.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 70,
+          "ratedLb": 27950,
+          "angleDeg": 67.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 80,
+          "ratedLb": 26350,
+          "angleDeg": 71.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 90,
+          "ratedLb": 23250,
+          "angleDeg": 74.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 100,
+          "ratedLb": 18550,
+          "angleDeg": 75.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 105,
+          "ratedLb": 15850,
+          "angleDeg": 76.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 40,
+          "ratedLb": 27150,
+          "angleDeg": 27.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 50,
+          "ratedLb": 26500,
+          "angleDeg": 46.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 58,
+          "ratedLb": 25550,
+          "angleDeg": 54.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 60,
+          "ratedLb": 25300,
+          "angleDeg": 56.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 70,
+          "ratedLb": 24000,
+          "angleDeg": 62.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 80,
+          "ratedLb": 22950,
+          "angleDeg": 67.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 90,
+          "ratedLb": 20300,
+          "angleDeg": 70.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 100,
+          "ratedLb": 16500,
+          "angleDeg": 72.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 105,
+          "ratedLb": 15850,
+          "angleDeg": 74.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 50,
+          "ratedLb": 19550,
+          "angleDeg": 37.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 58,
+          "ratedLb": 19150,
+          "angleDeg": 47.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 60,
+          "ratedLb": 19350,
+          "angleDeg": 50.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 70,
+          "ratedLb": 20250,
+          "angleDeg": 57.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 80,
+          "ratedLb": 20000,
+          "angleDeg": 63.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 90,
+          "ratedLb": 17950,
+          "angleDeg": 67.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 100,
+          "ratedLb": 14800,
+          "angleDeg": 69.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 105,
+          "ratedLb": 14350,
+          "angleDeg": 71.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 50,
+          "ratedLb": 15000,
+          "angleDeg": 24.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 58,
+          "ratedLb": 14650,
+          "angleDeg": 39.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 60,
+          "ratedLb": 14850,
+          "angleDeg": 43.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 70,
+          "ratedLb": 15650,
+          "angleDeg": 52.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 80,
+          "ratedLb": 16450,
+          "angleDeg": 58.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 90,
+          "ratedLb": 16000,
+          "angleDeg": 63.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 100,
+          "ratedLb": 13400,
+          "angleDeg": 66.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 105,
+          "ratedLb": 12850,
+          "angleDeg": 68.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 58,
+          "ratedLb": 11500,
+          "angleDeg": 30.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 60,
+          "ratedLb": 11650,
+          "angleDeg": 34.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 70,
+          "ratedLb": 12400,
+          "angleDeg": 46.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 80,
+          "ratedLb": 13100,
+          "angleDeg": 54.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 90,
+          "ratedLb": 13450,
+          "angleDeg": 59.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 100,
+          "ratedLb": 12500,
+          "angleDeg": 63.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 105,
+          "ratedLb": 11550,
+          "angleDeg": 64.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 58,
+          "ratedLb": 9180,
+          "angleDeg": 13.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 60,
+          "ratedLb": 9330,
+          "angleDeg": 23.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 70,
+          "ratedLb": 10000,
+          "angleDeg": 40.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 80,
+          "ratedLb": 10650,
+          "angleDeg": 49.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 90,
+          "ratedLb": 10950,
+          "angleDeg": 55.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 100,
+          "ratedLb": 11300,
+          "angleDeg": 59.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 105,
+          "ratedLb": 10400,
+          "angleDeg": 61.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 70,
+          "ratedLb": 8170,
+          "angleDeg": 32.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 80,
+          "ratedLb": 8770,
+          "angleDeg": 43.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 90,
+          "ratedLb": 9080,
+          "angleDeg": 51.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 100,
+          "ratedLb": 9390,
+          "angleDeg": 56.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 105,
+          "ratedLb": 9450,
+          "angleDeg": 58.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 70,
+          "ratedLb": 6710,
+          "angleDeg": 21.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 80,
+          "ratedLb": 7250,
+          "angleDeg": 37.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 90,
+          "ratedLb": 7560,
+          "angleDeg": 46.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 100,
+          "ratedLb": 7870,
+          "angleDeg": 52.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 105,
+          "ratedLb": 8020,
+          "angleDeg": 54.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 80,
+          "ratedLb": 6020,
+          "angleDeg": 30.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 90,
+          "ratedLb": 6320,
+          "angleDeg": 41.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 100,
+          "ratedLb": 6630,
+          "angleDeg": 48.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 105,
+          "ratedLb": 6790,
+          "angleDeg": 51.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 80,
+          "ratedLb": 4990,
+          "angleDeg": 20.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 90,
+          "ratedLb": 5300,
+          "angleDeg": 35.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 100,
+          "ratedLb": 5610,
+          "angleDeg": 43.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 105,
+          "ratedLb": 5760,
+          "angleDeg": 47.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 90,
+          "ratedLb": 4450,
+          "angleDeg": 28.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 100,
+          "ratedLb": 4750,
+          "angleDeg": 38.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 105,
+          "ratedLb": 4890,
+          "angleDeg": 42.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 80.0,
+          "boomFt": 90,
+          "ratedLb": 3740,
+          "angleDeg": 18.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 80.0,
+          "boomFt": 100,
+          "ratedLb": 4020,
+          "angleDeg": 33.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 80.0,
+          "boomFt": 105,
+          "ratedLb": 4150,
+          "angleDeg": 38.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 85.0,
+          "boomFt": 100,
+          "ratedLb": 3390,
+          "angleDeg": 26.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 85.0,
+          "boomFt": 105,
+          "ratedLb": 3510,
+          "angleDeg": 32.5,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 90.0,
+          "boomFt": 100,
+          "ratedLb": 2830,
+          "angleDeg": 18.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 90.0,
+          "boomFt": 105,
+          "ratedLb": 2950,
+          "angleDeg": 26.0,
+          "deductionLb": 784
+        },
+        {
+          "radiusFt": 95.0,
+          "boomFt": 105,
+          "ratedLb": 2460,
+          "angleDeg": 17.5,
+          "deductionLb": 784
+        }
+      ]
+    },
+    {
+      "id": "national1400",
+      "name": "National 1400H",
+      "source": "assets/load-charts/national-1400h.pdf",
+      "sha256": "3c403f8d7b1efcad6c9dd356f42714c7de442d5aca8678459a37b75dc3990217",
+      "page": 8,
+      "setup": "Series 14127H, 127 ft boom; full 24 ft 6 in span; factory-approved truck; 360\u00b0 only with front stabilizer deployed",
+      "chartCode": "Series 14127H main boom",
+      "deductionNote": "Published capacities used without the no-stowed-jib add-backs. Front stabilizer required for forward lifts (page 5).",
+      "cells": [
+        {
+          "radiusFt": 6.0,
+          "boomFt": 31,
+          "ratedLb": 66000,
+          "angleDeg": 79.9,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 8.0,
+          "boomFt": 31,
+          "ratedLb": 47550,
+          "angleDeg": 76.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 10.0,
+          "boomFt": 31,
+          "ratedLb": 40750,
+          "angleDeg": 71.9,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 10.0,
+          "boomFt": 51,
+          "ratedLb": 32700,
+          "angleDeg": 79.7,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 31,
+          "ratedLb": 35800,
+          "angleDeg": 67.7,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 51,
+          "ratedLb": 29750,
+          "angleDeg": 77.4,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 31,
+          "ratedLb": 30200,
+          "angleDeg": 61.1,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 51,
+          "ratedLb": 25900,
+          "angleDeg": 72.8,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 15.0,
+          "boomFt": 70,
+          "ratedLb": 22550,
+          "angleDeg": 78.1,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 31,
+          "ratedLb": 23950,
+          "angleDeg": 49.5,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 51,
+          "ratedLb": 20450,
+          "angleDeg": 67.7,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 70,
+          "ratedLb": 18950,
+          "angleDeg": 74.8,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 89,
+          "ratedLb": 16600,
+          "angleDeg": 78.8,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 31,
+          "ratedLb": 17700,
+          "angleDeg": 33.1,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 51,
+          "ratedLb": 16750,
+          "angleDeg": 61.2,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 70,
+          "ratedLb": 15350,
+          "angleDeg": 70.4,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 89,
+          "ratedLb": 14200,
+          "angleDeg": 74.7,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 108,
+          "ratedLb": 12250,
+          "angleDeg": 78.1,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 127,
+          "ratedLb": 8200,
+          "angleDeg": 80.3,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 51,
+          "ratedLb": 14000,
+          "angleDeg": 54.1,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 70,
+          "ratedLb": 12850,
+          "angleDeg": 65.9,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 89,
+          "ratedLb": 11850,
+          "angleDeg": 72.2,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 108,
+          "ratedLb": 10550,
+          "angleDeg": 76.1,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 127,
+          "ratedLb": 7900,
+          "angleDeg": 78.5,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 51,
+          "ratedLb": 10550,
+          "angleDeg": 46.2,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 70,
+          "ratedLb": 10650,
+          "angleDeg": 61.1,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 89,
+          "ratedLb": 9700,
+          "angleDeg": 68.6,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 108,
+          "ratedLb": 9050,
+          "angleDeg": 73.6,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 127,
+          "ratedLb": 7600,
+          "angleDeg": 76.4,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 51,
+          "ratedLb": 8100,
+          "angleDeg": 36.5,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 70,
+          "ratedLb": 8350,
+          "angleDeg": 55.2,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 89,
+          "ratedLb": 8300,
+          "angleDeg": 64.3,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 108,
+          "ratedLb": 7850,
+          "angleDeg": 69.8,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 127,
+          "ratedLb": 7200,
+          "angleDeg": 73.8,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 51,
+          "ratedLb": 6250,
+          "angleDeg": 25.7,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 70,
+          "ratedLb": 6500,
+          "angleDeg": 50.9,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 89,
+          "ratedLb": 6700,
+          "angleDeg": 61.5,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 108,
+          "ratedLb": 6750,
+          "angleDeg": 67.8,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 127,
+          "ratedLb": 6400,
+          "angleDeg": 71.5,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 70,
+          "ratedLb": 5100,
+          "angleDeg": 45.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 89,
+          "ratedLb": 5300,
+          "angleDeg": 57.4,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 108,
+          "ratedLb": 5400,
+          "angleDeg": 64.6,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 127,
+          "ratedLb": 5500,
+          "angleDeg": 69.5,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 70,
+          "ratedLb": 4000,
+          "angleDeg": 38.3,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 89,
+          "ratedLb": 4200,
+          "angleDeg": 53.2,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 108,
+          "ratedLb": 4300,
+          "angleDeg": 61.4,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 127,
+          "ratedLb": 4400,
+          "angleDeg": 66.8,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 70,
+          "ratedLb": 3150,
+          "angleDeg": 29.8,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 89,
+          "ratedLb": 3300,
+          "angleDeg": 48.1,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 108,
+          "ratedLb": 3400,
+          "angleDeg": 57.4,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 127,
+          "ratedLb": 3500,
+          "angleDeg": 63.6,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 70,
+          "ratedLb": 2400,
+          "angleDeg": 19.1,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 89,
+          "ratedLb": 2600,
+          "angleDeg": 44.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 108,
+          "ratedLb": 2700,
+          "angleDeg": 54.6,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 127,
+          "ratedLb": 2800,
+          "angleDeg": 61.3,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 89,
+          "ratedLb": 2000,
+          "angleDeg": 38.7,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 108,
+          "ratedLb": 2100,
+          "angleDeg": 51.1,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 127,
+          "ratedLb": 2150,
+          "angleDeg": 58.4,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 89,
+          "ratedLb": 1450,
+          "angleDeg": 32.6,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 108,
+          "ratedLb": 1550,
+          "angleDeg": 47.3,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 127,
+          "ratedLb": 1650,
+          "angleDeg": 55.5,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 80.0,
+          "boomFt": 89,
+          "ratedLb": 1000,
+          "angleDeg": 24.5,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 80.0,
+          "boomFt": 108,
+          "ratedLb": 1100,
+          "angleDeg": 43.2,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 80.0,
+          "boomFt": 127,
+          "ratedLb": 1200,
+          "angleDeg": 52.2,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 85.0,
+          "boomFt": 89,
+          "ratedLb": 650,
+          "angleDeg": 14.0,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 85.0,
+          "boomFt": 108,
+          "ratedLb": 750,
+          "angleDeg": 38.9,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 85.0,
+          "boomFt": 127,
+          "ratedLb": 800,
+          "angleDeg": 49.4,
+          "deductionLb": 0
+        },
+        {
+          "radiusFt": 90.0,
+          "boomFt": 127,
+          "ratedLb": 500,
+          "angleDeg": 45.6,
+          "deductionLb": 0
+        }
+      ]
+    },
+    {
+      "id": "altec2595",
+      "name": "Altec AC25-95B",
+      "source": "assets/load-charts/altec-ac25-95b.pdf",
+      "sha256": "78a1a2c21dbda2f63b04d6d4e78071ee29b4429dcabff1a5edfc9214cf59b0ca",
+      "page": 3,
+      "setup": "95 ft main boom; full 18 ft 6 in main/auxiliary outriggers; 360\u00b0 only with front bumper outrigger deployed",
+      "chartCode": "AC25-95B full-span main boom",
+      "deductionNote": "Stowed-jib deduction applied per boom length: 825 / 550 / 425 / 350 / 300 / 250 lb. Correct reeving/hoist selection required. Chart is 95 ft, despite the catalog spec saying 105 ft.",
+      "cells": [
+        {
+          "radiusFt": 5.0,
+          "boomFt": 30,
+          "ratedLb": 50000,
+          "angleDeg": 77.0,
+          "deductionLb": 825
+        },
+        {
+          "radiusFt": 8.0,
+          "boomFt": 30,
+          "ratedLb": 36800,
+          "angleDeg": 71.0,
+          "deductionLb": 825
+        },
+        {
+          "radiusFt": 8.0,
+          "boomFt": 43,
+          "ratedLb": 17600,
+          "angleDeg": 77.0,
+          "deductionLb": 550
+        },
+        {
+          "radiusFt": 10.0,
+          "boomFt": 30,
+          "ratedLb": 30900,
+          "angleDeg": 66.0,
+          "deductionLb": 825
+        },
+        {
+          "radiusFt": 10.0,
+          "boomFt": 43,
+          "ratedLb": 17800,
+          "angleDeg": 74.0,
+          "deductionLb": 550
+        },
+        {
+          "radiusFt": 10.0,
+          "boomFt": 56,
+          "ratedLb": 17500,
+          "angleDeg": 78.0,
+          "deductionLb": 425
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 30,
+          "ratedLb": 26100,
+          "angleDeg": 62.0,
+          "deductionLb": 825
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 43,
+          "ratedLb": 18000,
+          "angleDeg": 71.0,
+          "deductionLb": 550
+        },
+        {
+          "radiusFt": 12.0,
+          "boomFt": 56,
+          "ratedLb": 17600,
+          "angleDeg": 76.0,
+          "deductionLb": 425
+        },
+        {
+          "radiusFt": 14.0,
+          "boomFt": 30,
+          "ratedLb": 22200,
+          "angleDeg": 57.0,
+          "deductionLb": 825
+        },
+        {
+          "radiusFt": 14.0,
+          "boomFt": 43,
+          "ratedLb": 18200,
+          "angleDeg": 68.0,
+          "deductionLb": 550
+        },
+        {
+          "radiusFt": 14.0,
+          "boomFt": 56,
+          "ratedLb": 17700,
+          "angleDeg": 74.0,
+          "deductionLb": 425
+        },
+        {
+          "radiusFt": 14.0,
+          "boomFt": 69,
+          "ratedLb": 17400,
+          "angleDeg": 78.0,
+          "deductionLb": 350
+        },
+        {
+          "radiusFt": 16.0,
+          "boomFt": 30,
+          "ratedLb": 19100,
+          "angleDeg": 52.0,
+          "deductionLb": 825
+        },
+        {
+          "radiusFt": 16.0,
+          "boomFt": 43,
+          "ratedLb": 18500,
+          "angleDeg": 65.0,
+          "deductionLb": 550
+        },
+        {
+          "radiusFt": 16.0,
+          "boomFt": 56,
+          "ratedLb": 17900,
+          "angleDeg": 72.0,
+          "deductionLb": 425
+        },
+        {
+          "radiusFt": 16.0,
+          "boomFt": 69,
+          "ratedLb": 16100,
+          "angleDeg": 76.0,
+          "deductionLb": 350
+        },
+        {
+          "radiusFt": 16.0,
+          "boomFt": 82,
+          "ratedLb": 13900,
+          "angleDeg": 79.0,
+          "deductionLb": 300
+        },
+        {
+          "radiusFt": 18.0,
+          "boomFt": 30,
+          "ratedLb": 17600,
+          "angleDeg": 47.0,
+          "deductionLb": 825
+        },
+        {
+          "radiusFt": 18.0,
+          "boomFt": 43,
+          "ratedLb": 18000,
+          "angleDeg": 62.0,
+          "deductionLb": 550
+        },
+        {
+          "radiusFt": 18.0,
+          "boomFt": 56,
+          "ratedLb": 18100,
+          "angleDeg": 70.0,
+          "deductionLb": 425
+        },
+        {
+          "radiusFt": 18.0,
+          "boomFt": 69,
+          "ratedLb": 14900,
+          "angleDeg": 75.0,
+          "deductionLb": 350
+        },
+        {
+          "radiusFt": 18.0,
+          "boomFt": 82,
+          "ratedLb": 12900,
+          "angleDeg": 78.0,
+          "deductionLb": 300
+        },
+        {
+          "radiusFt": 18.0,
+          "boomFt": 95,
+          "ratedLb": 10000,
+          "angleDeg": 80.0,
+          "deductionLb": 250
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 30,
+          "ratedLb": 15400,
+          "angleDeg": 41.0,
+          "deductionLb": 825
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 43,
+          "ratedLb": 15800,
+          "angleDeg": 59.0,
+          "deductionLb": 550
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 56,
+          "ratedLb": 16000,
+          "angleDeg": 68.0,
+          "deductionLb": 425
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 69,
+          "ratedLb": 13900,
+          "angleDeg": 73.0,
+          "deductionLb": 350
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 82,
+          "ratedLb": 12000,
+          "angleDeg": 76.0,
+          "deductionLb": 300
+        },
+        {
+          "radiusFt": 20.0,
+          "boomFt": 95,
+          "ratedLb": 10000,
+          "angleDeg": 79.0,
+          "deductionLb": 250
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 30,
+          "ratedLb": 11400,
+          "angleDeg": 19.0,
+          "deductionLb": 825
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 43,
+          "ratedLb": 11900,
+          "angleDeg": 51.0,
+          "deductionLb": 550
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 56,
+          "ratedLb": 12100,
+          "angleDeg": 62.0,
+          "deductionLb": 425
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 69,
+          "ratedLb": 11600,
+          "angleDeg": 68.0,
+          "deductionLb": 350
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 82,
+          "ratedLb": 10100,
+          "angleDeg": 73.0,
+          "deductionLb": 300
+        },
+        {
+          "radiusFt": 25.0,
+          "boomFt": 95,
+          "ratedLb": 8800,
+          "angleDeg": 76.0,
+          "deductionLb": 250
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 43,
+          "ratedLb": 9300,
+          "angleDeg": 42.0,
+          "deductionLb": 550
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 56,
+          "ratedLb": 9500,
+          "angleDeg": 56.0,
+          "deductionLb": 425
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 69,
+          "ratedLb": 9700,
+          "angleDeg": 64.0,
+          "deductionLb": 350
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 82,
+          "ratedLb": 8300,
+          "angleDeg": 69.0,
+          "deductionLb": 300
+        },
+        {
+          "radiusFt": 30.0,
+          "boomFt": 95,
+          "ratedLb": 7600,
+          "angleDeg": 73.0,
+          "deductionLb": 250
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 43,
+          "ratedLb": 7400,
+          "angleDeg": 30.0,
+          "deductionLb": 550
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 56,
+          "ratedLb": 7600,
+          "angleDeg": 49.0,
+          "deductionLb": 425
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 69,
+          "ratedLb": 7800,
+          "angleDeg": 59.0,
+          "deductionLb": 350
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 82,
+          "ratedLb": 7000,
+          "angleDeg": 65.0,
+          "deductionLb": 300
+        },
+        {
+          "radiusFt": 35.0,
+          "boomFt": 95,
+          "ratedLb": 6400,
+          "angleDeg": 70.0,
+          "deductionLb": 250
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 56,
+          "ratedLb": 6100,
+          "angleDeg": 42.0,
+          "deductionLb": 425
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 69,
+          "ratedLb": 6250,
+          "angleDeg": 54.0,
+          "deductionLb": 350
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 82,
+          "ratedLb": 6100,
+          "angleDeg": 61.0,
+          "deductionLb": 300
+        },
+        {
+          "radiusFt": 40.0,
+          "boomFt": 95,
+          "ratedLb": 5500,
+          "angleDeg": 66.0,
+          "deductionLb": 250
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 56,
+          "ratedLb": 4800,
+          "angleDeg": 33.0,
+          "deductionLb": 425
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 69,
+          "ratedLb": 4950,
+          "angleDeg": 48.0,
+          "deductionLb": 350
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 82,
+          "ratedLb": 5050,
+          "angleDeg": 57.0,
+          "deductionLb": 300
+        },
+        {
+          "radiusFt": 45.0,
+          "boomFt": 95,
+          "ratedLb": 4800,
+          "angleDeg": 63.0,
+          "deductionLb": 250
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 56,
+          "ratedLb": 3800,
+          "angleDeg": 20.0,
+          "deductionLb": 425
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 69,
+          "ratedLb": 4000,
+          "angleDeg": 42.0,
+          "deductionLb": 350
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 82,
+          "ratedLb": 4100,
+          "angleDeg": 52.0,
+          "deductionLb": 300
+        },
+        {
+          "radiusFt": 50.0,
+          "boomFt": 95,
+          "ratedLb": 4150,
+          "angleDeg": 60.0,
+          "deductionLb": 250
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 69,
+          "ratedLb": 3200,
+          "angleDeg": 35.0,
+          "deductionLb": 350
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 82,
+          "ratedLb": 3300,
+          "angleDeg": 47.0,
+          "deductionLb": 300
+        },
+        {
+          "radiusFt": 55.0,
+          "boomFt": 95,
+          "ratedLb": 3400,
+          "angleDeg": 55.0,
+          "deductionLb": 250
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 69,
+          "ratedLb": 2600,
+          "angleDeg": 26.0,
+          "deductionLb": 350
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 82,
+          "ratedLb": 2700,
+          "angleDeg": 42.0,
+          "deductionLb": 300
+        },
+        {
+          "radiusFt": 60.0,
+          "boomFt": 95,
+          "ratedLb": 2750,
+          "angleDeg": 51.0,
+          "deductionLb": 250
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 69,
+          "ratedLb": 2100,
+          "angleDeg": 11.0,
+          "deductionLb": 350
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 82,
+          "ratedLb": 2200,
+          "angleDeg": 36.0,
+          "deductionLb": 300
+        },
+        {
+          "radiusFt": 65.0,
+          "boomFt": 95,
+          "ratedLb": 2250,
+          "angleDeg": 47.0,
+          "deductionLb": 250
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 82,
+          "ratedLb": 1750,
+          "angleDeg": 29.0,
+          "deductionLb": 300
+        },
+        {
+          "radiusFt": 70.0,
+          "boomFt": 95,
+          "ratedLb": 1850,
+          "angleDeg": 42.0,
+          "deductionLb": 250
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 82,
+          "ratedLb": 1400,
+          "angleDeg": 20.0,
+          "deductionLb": 300
+        },
+        {
+          "radiusFt": 75.0,
+          "boomFt": 95,
+          "ratedLb": 1500,
+          "angleDeg": 37.0,
+          "deductionLb": 250
+        },
+        {
+          "radiusFt": 80.0,
+          "boomFt": 95,
+          "ratedLb": 1150,
+          "angleDeg": 32.0,
+          "deductionLb": 250
+        },
+        {
+          "radiusFt": 85.0,
+          "boomFt": 95,
+          "ratedLb": 900,
+          "angleDeg": 24.0,
+          "deductionLb": 250
+        },
+        {
+          "radiusFt": 90.0,
+          "boomFt": 95,
+          "ratedLb": 675,
+          "angleDeg": 14.0,
+          "deductionLb": 250
+        }
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "id": "rt40",
+      "name": "Terex RT40",
+      "reason": "The linked PDF is labelled Voltas VRT40, not Terex RT40. A matching unit chart is required before automatic selection."
+    }
+  ]
+}

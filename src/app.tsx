@@ -1,3 +1,4 @@
+import {craneSelector} from "./routes/crane-selector.js";
 import {rewardsBrand} from "./company-logos.js";
 import {memberSinceDate} from "./views/layout.js";
 import {adminDocuments} from "./routes/admin-documents.js";
@@ -113,6 +114,7 @@ app.get("/uploads/:id{[a-z0-9]+}", async c => {
   return c.body(new Uint8Array(upload.data));
 });
 
+app.route("/api/crane-selector",craneSelector);
 app.route("/admin/push",adminPush);
 app.route("/admin/bookings",adminBookingEditor);
 app.route("/admin/bookings",adminDocuments);
