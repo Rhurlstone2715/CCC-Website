@@ -6,6 +6,14 @@
   const angle=Number(match.angleDeg),length=Number(match.boomFt);
   if(!Number.isFinite(angle)||angle<=0||angle>90||!Number.isFinite(length)||length<=0)return document.createTextNode('Chart geometry needs CCC review.');
   const figure=document.createElement('figure');figure.className='selector-vector';
+  if(match.id==='rt890e'){
+   figure.dataset.equipmentDesign='rt890e-cutout';
+   const row=document.createElement('div');row.className='selector-cutout-row';
+   const img=document.createElement('img');img.src='/assets/catalog/rt890e-selector-cutout.png';img.alt='Yellow rough-terrain crane illustration for Grove RT890E';img.width=1254;img.height=1254;img.className='selector-crane-cutout';
+   const info=document.createElement('div');info.className='selector-cutout-labels';
+   for(const[tag,value]of [['strong',match.name],['b',`${angle}°`],['small','SELECTED CHART BOOM ANGLE'],['span',`${length} ft main boom`],['span',`${match.radiusFt} ft chart radius`]]){const el=document.createElement(tag);el.textContent=value;info.append(el);}
+   row.append(img,info);figure.append(row);const caption=document.createElement('figcaption');caption.textContent='Equipment illustration only; its fixed boom position does not depict the selected lift. The chart angle shown alongside requires CCC lift-team confirmation.';figure.append(caption);return figure;
+  }
   const svg=node('svg',{viewBox:'0 0 720 410',role:'img','aria-label':`${match.name}, main boom ${length} ft, published chart angle ${angle} degrees at ${match.radiusFt} ft chart radius. Schematic, not to scale.`});
   svg.append(node('title',{},`${match.name} — ${angle}° chart boom angle`));
   const add=(parent,tag,attrs,value)=>{const e=node(tag,attrs,value);parent.append(e);return e;};
