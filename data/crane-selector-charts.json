@@ -2424,7 +2424,7 @@
       "source": "assets/load-charts/national-1400h.pdf",
       "sha256": "3c403f8d7b1efcad6c9dd356f42714c7de442d5aca8678459a37b75dc3990217",
       "page": 8,
-      "setup": "Series 14127H, 127 ft boom; full 24 ft 6 in span; factory-approved truck; 360\u00b0 only with front stabilizer deployed",
+      "setup": "Series 14127H, 127 ft boom; full 24 ft 6 in span; factory-approved truck; 360\u00b0 only with front stabilizer deployed; single-part line / hook ball only",
       "chartCode": "Series 14127H main boom",
       "deductionNote": "Published capacities used without the no-stowed-jib add-backs. Front stabilizer required for forward lifts (page 5).",
       "cells": [
@@ -2904,7 +2904,10 @@
           "angleDeg": 45.6,
           "deductionLb": 0
         }
-      ]
+      ],
+      "singleLineLimitLb": 4400,
+      "singleLineSourcePage": 7,
+      "singleLineNote": "Single-part line with hook ball only. Conservative high-speed line limit; 60% planning margin applies to the lower of line limit and adjusted boom chart capacity."
     },
     {
       "id": "altec2595",
@@ -2912,7 +2915,7 @@
       "source": "assets/load-charts/altec-ac25-95b.pdf",
       "sha256": "78a1a2c21dbda2f63b04d6d4e78071ee29b4429dcabff1a5edfc9214cf59b0ca",
       "page": 3,
-      "setup": "95 ft main boom; full 18 ft 6 in main/auxiliary outriggers; 360\u00b0 only with front bumper outrigger deployed",
+      "setup": "95 ft main boom; full 18 ft 6 in main/auxiliary outriggers; 360\u00b0 only with front bumper outrigger deployed; single-part line / hook ball only",
       "chartCode": "AC25-95B full-span main boom",
       "deductionNote": "Stowed-jib deduction applied per boom length: 825 / 550 / 425 / 350 / 300 / 250 lb. Correct reeving/hoist selection required. Chart is 95 ft, despite the catalog spec saying 105 ft.",
       "cells": [
@@ -3434,7 +3437,10 @@
           "angleDeg": 14.0,
           "deductionLb": 250
         }
-      ]
+      ],
+      "singleLineLimitLb": 4620,
+      "singleLineSourcePage": 3,
+      "singleLineNote": "Single-part line with hook ball only. Conservative high-speed line limit; 60% planning margin applies to the lower of line limit and adjusted boom chart capacity."
     },
     {
       "id": "rt40",

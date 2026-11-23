@@ -34,3 +34,15 @@ test('invalid inputs and loads beyond all reviewed capacity get no recommendatio
  assert.equal(screenLift({loadLb:500000,liftHeightFt:5}).matches.length,0);
  for(const liftHeightFt of [5,25,50,100,150])for(const loadLb of [100,1000,10000,50000,200000])for(const m of screenLift({loadLb,liftHeightFt}).matches)assert.ok((loadLb+m.riggingLb)*100<=(m.ratedLb-m.deductionLb)*60);
 });
+
+test('boom trucks use only single-part hook-ball ratings with 500 lb handling and 60% margin',()=>{
+ for(const[id,limit,item]of [['national1400',4400,2140],['altec2595',4620,2272]] as const){
+  const p=craneChartData.profiles.find(p=>p.id===id)!;assert.equal(p.singleLineLimitLb,limit);
+  const fixture={...p,cells:[{radiusFt:10,boomFt:100,ratedLb:50000,angleDeg:70,deductionLb:0}]};
+  const at=screenLift({loadLb:item,liftHeightFt:5},[fixture]).matches[0];assert.ok(at);assert.equal(at.riggingLb,500);assert.equal(at.allowedGrossLb,limit*60/100);assert.match(at.setup,/single-part line/);
+  assert.equal(screenLift({loadLb:item+.01,liftHeightFt:5},[fixture]).matches.length,0);
+  assert.equal(screenLift({loadLb:item,liftHeightFt:5},[{...fixture,singleLineLimitLb:undefined}]).matches.length,0);
+  for(const m of screenLift({loadLb:500,liftHeightFt:10},[p]).matches)assert.ok(m.totalLb*100<=limit*60);
+ }
+ const heavy=screenLift({loadLb:10000,liftHeightFt:50});assert.ok(heavy.matches.length);assert.ok(heavy.matches.every(m=>m.id.startsWith('rt')));
+});

@@ -81,7 +81,7 @@
   const rigging=add(svg,'g',{class:'selector-vector-rigging'});
   add(rigging,'line',{x1:tx,y1:ty,x2:tx,y2:ty+59,stroke:metal,'stroke-width':2});
   if(!truck)add(rigging,'line',{x1:tx-5,y1:ty,x2:tx-5,y2:ty+59,stroke:metal,'stroke-width':1});
-  add(rigging,'path',{d:`M${tx-7} ${ty+58} Q${tx} ${ty+53} ${tx+7} ${ty+58} L${tx+4} ${ty+75} H${tx-4} Z`,fill:truck?'#f3c837':ink,stroke:dark});
+  if(truck){rigging.setAttribute('data-hoist','single-part-hook-ball');add(rigging,'circle',{cx:tx,cy:ty+66,r:8,fill:'#f3c837',stroke:dark});}else add(rigging,'path',{d:`M${tx-7} ${ty+58} Q${tx} ${ty+53} ${tx+7} ${ty+58} L${tx+4} ${ty+75} H${tx-4} Z`,fill:ink,stroke:dark});
   if(truck)for(const offset of [60,66])add(rigging,'path',{d:`M${tx-5} ${ty+offset} l10 5`,stroke:dark,'stroke-width':2});
   add(rigging,'path',{d:`M${tx} ${ty+75} v5 q-11 13 -13 0`,fill:'none',stroke:truck?dark:ink,'stroke-width':3});
   // Label deliberately stays horizontal for readability on phones.
