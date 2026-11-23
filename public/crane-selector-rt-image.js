@@ -38,6 +38,13 @@
   label(500,141,`${angle}°`,{fill:'#bc101c','font-size':36,'font-weight':800});label(500,166,'CHART BOOM ANGLE',{'font-size':11,'font-weight':700});
   label(500,194,`${length} ft main boom`);label(500,219,`${match.radiusFt} ft chart radius`,{'font-size':14});
   label(25,446,'Equipment artwork · chart-driven angle · schematic, not to scale',{'font-size':13,fill:'#68717b'});
-  figure.append(svg);const caption=document.createElement('figcaption');caption.textContent=`${match.name}: the original artwork layers extend at the selected ${angle}° chart angle. Illustrated extension is not a scale lift plan; CCC must confirm actual boom configuration and clearance.`;figure.append(caption);return figure;
+  figure.append(svg);
+  if(!reduced){
+   const controls=document.createElement('div');controls.className='selector-motion-controls';
+   const replay=document.createElement('button');replay.type='button';replay.className='selector-replay';replay.textContent='Replay boom extension';replay.setAttribute('aria-label',`Replay ${match.name} boom extension`);
+   replay.onclick=()=>{svg.pauseAnimations();svg.setCurrentTime(0);svg.unpauseAnimations();};controls.append(replay);figure.append(controls);
+   queueMicrotask(()=>{if(!svg.isConnected)return;svg.pauseAnimations();svg.setCurrentTime(0);if(!('IntersectionObserver'in window)){svg.unpauseAnimations();return;}const observer=new IntersectionObserver(entries=>{if(!svg.isConnected){observer.disconnect();return;}if(entries.some(e=>e.isIntersecting)){svg.unpauseAnimations();observer.disconnect();}},{threshold:.2});observer.observe(svg);});
+  }
+  const caption=document.createElement('figcaption');caption.textContent=`${match.name}: the original artwork layers extend at the selected ${angle}° chart angle. Illustrated extension is not a scale lift plan; CCC must confirm actual boom configuration and clearance.`;figure.append(caption);return figure;
  };
 })();
