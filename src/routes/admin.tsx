@@ -1,3 +1,5 @@
+import {weeklyMonthlyLines,confirmedReminderEnd,reminderRecipientVerified} from '../rental-reminder-plan.js';
+import {rentalRemindersEnabled} from '../rental-reminders.js';
 import {adminCustomerBrands,type RewardsBrand} from "../company-logos.js";
 import {memberSinceDate} from "../views/layout.js";
 import { phoneProblem } from "../phone.js";
@@ -24,6 +26,8 @@ export const admin = new Hono<AppEnv>();
 
 
 const NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string }> = {
+  "rental-returned": {tone:"success",text:"Equipment marked returned. Pending rental reminders have been stopped."},
+  "rental-resumed": {tone:"success",text:"Rental reminder eligibility will be checked again."},
   "booking-created": { tone: "success", text: "Booking created. Its PDF estimate is saved and queued for email to the customer." },
   "booking-edited": { tone: "success", text: "Booking updated. A revised PDF estimate is saved and queued for email; the previous estimate is kept in change history." },
   "approved-sent": { tone: "success", text: "Booking approved. The customer has been emailed their confirmation and contract." },
@@ -475,6 +479,10 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
   ]);
   const notice = noticeFrom(c);
   const ref = bookingRef(booking.id);
+  const reminderLines=weeklyMonthlyLines(booking.items);
+  const reminderVerified=reminderRecipientVerified(booking,booking.user);
+  const missingReminderEnd=reminderLines.some(line=>!confirmedReminderEnd(booking,line));
+  const reminderHistory=reminderLines.length?await prisma.rentalReminder.findMany({where:{bookingId:booking.id},orderBy:{dueAt:'desc'},take:6}):[];
 
   return c.html(
     <AdminPage title={ref} user={user} pending={pending} active="bookings">
@@ -555,6 +563,7 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
                   ? "Not confirmed yet. The calendar shows the requested start date until you save dates here."
                   : "Set dates to place this booking on the calendar."}
             </p>
+            {reminderLines.length?<div class="notice info"><b>Rental reminder emails</b><p>{booking.rentalReturnedAt?"Equipment is marked returned. No further rental reminders will be sent.":!rentalRemindersEnabled()?"Automatic reminders are not enabled.":!customerEmailsEnabled()?"Customer email delivery is not configured yet.":!reminderVerified?"Link a verified customer account whose email matches this booking before reminders can be sent.":!booking.estimate?"Save a rental estimate before reminders can be queued.":missingReminderEnd?"Confirm the actual last rental day below. Reminders are held until an end date is confirmed.":"Reminders are checked automatically: 9 am the day before and 8 am on the final day (Cayman time). Only approved/paid bookings with a verified customer and saved contract are eligible."}</p>{reminderHistory.length?<ul>{reminderHistory.map(r=><li>{r.kind==='day-before'?'Day-before':'Final-day'} · {r.endDate.toISOString().slice(0,10)} · {r.sentAt?'Sent':r.cancelledAt?'Cancelled / superseded':r.attempts?'Retry pending':'Scheduled'}</li>)}</ul>:null}{['APPROVED','PAID'].includes(booking.status)?<form method="post" action={`/admin/bookings/${booking.id}/${booking.rentalReturnedAt?'rental-resumed':'rental-returned'}`} data-confirm={booking.rentalReturnedAt?'Resume eligible rental reminders?':'Mark all rental equipment returned and stop remaining reminders?'}><button class="button secondary small" type="submit">{booking.rentalReturnedAt?'Resume reminders':'Mark all equipment returned'}</button></form>:null}</div>:null}
             {Array.isArray(booking.items)&&booking.items.some(l=>Boolean((l as {sessionStart?:string}).sessionStart))?<p class="hint">This booking has dated work sessions. Use <a href={`/admin/bookings/${booking.id}/edit`}>Edit booking</a> to change the dates, hours and prices for each session.</p>:<>
             <form class="form" method="post" action={`/admin/bookings/${booking.id}/schedule`}>
               <div class="rate-grid">
@@ -564,7 +573,7 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
                 </div>
                 <div class="field">
                   <label for="scheduleEnd">Last day</label>
-                  <input id="scheduleEnd" name="scheduleEnd" type="date" value={isoDate(booking.scheduleEnd ?? booking.scheduleStart ?? booking.startDate)} />
+                  <input id="scheduleEnd" name="scheduleEnd" type="date" value={isoDate(booking.scheduleEnd ?? (reminderLines.length?null:booking.scheduleStart ?? booking.startDate))} required={reminderLines.length>0} />
                 </div>
               </div>
               <div class="form-actions">
@@ -687,6 +696,16 @@ admin.post("/bookings/:id{[0-9]+}/:action", async c => {
       if (!["DECLINED", "CANCELLED"].includes(booking.status)) return back("bad-transition");
       await update({ status: "PENDING", approvedAt: null });
       return back("reopened");
+    case "rental-returned": {
+      if(!['APPROVED','PAID'].includes(booking.status))return back('bad-transition');
+      await update({rentalReturnedAt:new Date()});
+      await prisma.rentalReminder.updateMany({where:{bookingId:id,sentAt:null,cancelledAt:null},data:{cancelledAt:new Date()}});
+      return back('rental-returned');
+    }
+    case "rental-resumed": {
+      if(!['APPROVED','PAID'].includes(booking.status))return back('bad-transition');
+      await update({rentalReturnedAt:null});return back('rental-resumed');
+    }
     case "schedule": {
       if(Array.isArray(booking.items)&&booking.items.some(l=>Boolean((l as {sessionStart?:string}).sessionStart)))return back('edit-sessions');
       if (body.clear === "1") {

@@ -1,3 +1,4 @@
+import {startRentalReminderDelivery} from './rental-reminders.js';
 import {runConfiguredDocumentCorrection} from "./booking-document-correction.js";
 import {runConfiguredTransportRepair} from './booking-transport-repair.js';
 import {startReceiptEmailDelivery} from './receipts.js';
@@ -20,6 +21,7 @@ const estimateEmailTimer = startEstimateEmailDelivery();
 const receiptEmailTimer=startReceiptEmailDelivery();
 const companyLogoTimer=startCompanyLogoRefresh();
 const adminPushTimer=startAdminPushDelivery();
+const rentalReminderTimer=startRentalReminderDelivery();
 
 const port = Number(process.env.PORT) || 3000;
 const server = serve({ fetch: app.fetch, port }, info => console.log(`Listening on port ${info.port}`));
@@ -31,6 +33,7 @@ function shutdown() {
   clearInterval(receiptEmailTimer);
   clearInterval(companyLogoTimer);
   clearInterval(adminPushTimer);
+  clearInterval(rentalReminderTimer);
   server.close(() => {
     prisma.$disconnect().finally(() => process.exit(0));
   });

@@ -7,7 +7,8 @@ import { deliverAdminPushNotifications, queueAdminSignupNotices } from "./admin-
 import { inventoryNow } from "./availability.js";
 import { deliverEstimateEmails, renderEstimatePdf, estimateSnapshot, type EstimateSnapshot } from "./estimates.js";
 import {deliverReceiptEmails,queuePaidReceipt} from "./receipts.js";
-import {brandedEmailHtml} from "./email.js";
+import {runRentalReminders} from "./rental-reminders.js";
+import {brandedEmailHtml,sendEmail} from "./email.js";
 import {correctJRDocuments} from "./booking-document-correction.js";
 import {runBookingTransportRepair} from "./booking-transport-repair.js";
 import { PDFDocument } from "pdf-lib";
@@ -152,6 +153,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     globalThis.fetch = realFetch;
     delete process.env.RESEND_API_KEY;
     delete process.env.EMAIL_FROM;
+    delete process.env.RENTAL_REMINDERS_ENABLED;
     delete process.env.WEB_PUSH_PUBLIC_KEY;delete process.env.WEB_PUSH_PRIVATE_KEY;
   });
 
@@ -195,6 +197,53 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const old=await req('/assets/load-charts/terex-rt40.pdf');assert.equal(old.status,301);assert.equal(old.headers.get('location'),'/assets/load-charts/ph-omega-40.pdf');
     const pdf=await req('/assets/load-charts/ph-omega-40.pdf');assert.equal(pdf.status,200);assert.match(pdf.headers.get('content-type')??'',/pdf/);
     assert.equal((await pdf.arrayBuffer()).byteLength,3194775);
+  });
+
+  function enableReminderTest(t:{after:(fn:()=>void)=>void}){
+    const keys=['RENTAL_REMINDERS_ENABLED','RESEND_API_KEY','EMAIL_FROM','PUBLIC_URL'] as const;const old=keys.map(k=>process.env[k]);
+    t.after(()=>{keys.forEach((k,i)=>{if(old[i]===undefined)delete process.env[k];else process.env[k]=old[i];});});
+    Object.assign(process.env,{RENTAL_REMINDERS_ENABLED:'true',RESEND_API_KEY:'test-reminder-no-network',EMAIL_FROM:'bookings@example.com',PUBLIC_URL:'https://www.caymancrane.com'});
+  }
+  async function reminderFixture(){
+    const user=await prisma.user.create({data:{name:'Reminder Sample',email:'reminder@example.com',passwordHash:'test-only',emailVerifiedAt:new Date()}});
+    const b=await prisma.booking.create({data:{customerName:user.name,customerEmail:user.email,userId:user.id,status:'APPROVED',requestText:'Weekly mixer',termsText:'Terms',signature:'Sample',initials:'RS',agreedToTerms:true,paymentAck:true,startDate:new Date('2026-12-01'),startTime:'08:00',scheduleStart:new Date('2026-12-01'),scheduleEnd:new Date('2026-12-04'),rentalCollection:'delivery',siteAddress:'Sample site',area:'George Town',items:[{id:'diesel-mixer-9-cu-ft',name:'Mixer',term:'weekly',qty:2,periods:1,rate:175,amount:350,operator:false}]}});
+    await prisma.estimate.create({data:{number:90000+b.id,bookingId:b.id,snapshot:{rows:[{item:'Collection'}]},pdf:new Uint8Array(),emailRecipient:b.customerEmail}});return{user,b};
+  }
+  test('rental reminders are gated, then send the two correct emails once with current contract details',async t=>{
+    const{b}=await reminderFixture();const sent:Parameters<typeof sendEmail>[0][]=[];const send=async(e:Parameters<typeof sendEmail>[0])=>{sent.push(e);return true;};
+    await runRentalReminders(new Date('2026-12-03T14:00Z'),send);assert.equal(await prisma.rentalReminder.count(),0);
+    enableReminderTest(t);await runRentalReminders(new Date('2026-12-03T13:59Z'),send);assert.equal(sent.length,0);assert.equal(await prisma.rentalReminder.count(),2);
+    await Promise.all([runRentalReminders(new Date('2026-12-03T14:00Z'),send),runRentalReminders(new Date('2026-12-03T14:00Z'),send)]);assert.equal(sent.length,1);assert.match(sent[0].text,/by end of day/);assert.match(sent[0].html!,/KYD \$350\.00/);
+    await runRentalReminders(new Date('2026-12-03T14:01Z'),send);assert.equal(sent.length,1);
+    await runRentalReminders(new Date('2026-12-04T13:00Z'),send);assert.equal(sent.length,2);assert.match(sent[1].text,/arrive by 4:00 pm today/);assert.notEqual(sent[0].idempotencyKey,sent[1].idempotencyKey);
+    assert.equal(await prisma.rentalReminder.count({where:{bookingId:b.id,sentAt:{not:null}}}),2);assert.equal(await prisma.booking.count(),1);assert.equal(await prisma.paymentReceipt.count(),0);
+  });
+  test('extensions, cancellations and revoked email verification prevent stale rental notices',async t=>{
+    enableReminderTest(t);const{user,b}=await reminderFixture();const sent:Parameters<typeof sendEmail>[0][]=[];const send=async(e:Parameters<typeof sendEmail>[0])=>{sent.push(e);return true;};
+    await runRentalReminders(new Date('2026-12-02T14:00Z'),send);await prisma.booking.update({where:{id:b.id},data:{scheduleEnd:new Date('2026-12-11')}});
+    await runRentalReminders(new Date('2026-12-03T14:00Z'),send);assert.equal(sent.length,0);assert.equal(await prisma.rentalReminder.count({where:{bookingId:b.id,cancelledAt:{not:null}}}),2);
+    await prisma.user.update({where:{id:user.id},data:{emailVerifiedAt:null}});await runRentalReminders(new Date('2026-12-10T14:00Z'),send);assert.equal(sent.length,0);
+    await prisma.user.update({where:{id:user.id},data:{emailVerifiedAt:new Date()}});await runRentalReminders(new Date('2026-12-10T14:01Z'),send);assert.equal(sent.length,1);assert.match(sent[0].text,/11 December 2026/);
+    await prisma.booking.update({where:{id:b.id},data:{status:'CANCELLED'}});await runRentalReminders(new Date('2026-12-11T13:00Z'),send);assert.equal(sent.length,1);
+  });
+  test('failed rental notices retry with the same key, leases hold, and expired reminders never backfill',async t=>{
+    enableReminderTest(t);await reminderFixture();const sent:Parameters<typeof sendEmail>[0][]=[];let success=false;const send=async(e:Parameters<typeof sendEmail>[0])=>{sent.push(e);return success;};
+    await runRentalReminders(new Date('2026-12-03T14:00Z'),send);assert.equal(sent.length,1);success=true;
+    await runRentalReminders(new Date('2026-12-03T14:00:30Z'),send);assert.equal(sent.length,1);await runRentalReminders(new Date('2026-12-03T14:01Z'),send);assert.equal(sent.length,2);assert.equal(sent[0].idempotencyKey,sent[1].idempotencyKey);
+    await runRentalReminders(new Date('2026-12-04T18:00Z'),send);assert.equal(sent.length,2);assert.equal(await prisma.rentalReminder.count({where:{kind:'final-day',cancelledAt:{not:null}}}),1);
+  });
+  test('a reminder that expires during queue processing is suppressed at the final send check',async t=>{
+    enableReminderTest(t);await reminderFixture();let calls=0,sends=0;
+    const clock=()=>new Date(calls++===0?'2026-12-04T16:59:00Z':'2026-12-04T17:01:00Z');
+    await runRentalReminders(undefined,async()=>{sends++;return true;},clock);assert.equal(sends,0);assert.ok(calls>=2);
+    assert.equal(await prisma.rentalReminder.count({where:{kind:'final-day',cancelledAt:{not:null}}}),1);
+  });
+  test('admin can mark equipment returned and stop reminders without reversing payment or points',async t=>{
+    enableReminderTest(t);const{user,b}=await reminderFixture();await prisma.booking.update({where:{id:b.id},data:{status:'PAID',amountPaidCents:35000,paidAt:new Date()}});const points=(await rewardsForUser(user.id)).points;
+    await runRentalReminders(new Date('2026-12-02T14:00Z'),async()=>true);const admin=await makeAdmin();const page=await(await req(`/admin/bookings/${b.id}`,{cookie:admin})).text();assert.match(page,/Mark all equipment returned/);
+    assert.equal((await req(`/admin/bookings/${b.id}/rental-returned`,{cookie:admin,form:{}})).status,302);const saved=await prisma.booking.findUniqueOrThrow({where:{id:b.id}});assert.ok(saved.rentalReturnedAt);assert.equal(saved.status,'PAID');assert.equal(saved.amountPaidCents,35000);assert.equal((await rewardsForUser(user.id)).points,points);
+    let count=0;await runRentalReminders(new Date('2026-12-03T14:00Z'),async()=>{count++;return true;});assert.equal(count,0);
+    await req(`/admin/bookings/${b.id}/rental-resumed`,{cookie:admin,form:{}});await runRentalReminders(new Date('2026-12-03T14:01Z'),async()=>{count++;return true;});assert.equal(count,1);
   });
 
   // Each call gets its own IP unless one is given, so rate limits don't leak between tests.

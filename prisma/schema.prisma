@@ -101,6 +101,8 @@ model EmailVerification {
 }
 
 model Booking {
+  rentalReminders RentalReminder[]
+  rentalReturnedAt DateTime?
   paymentReceipts PaymentReceipt[]
   adminEditedAt DateTime?
   revisions BookingRevision[]
@@ -407,4 +409,25 @@ model PaymentReceipt {
  createdAt DateTime @default(now())
  @@index([emailSentAt,nextEmailAttemptAt])
  @@index([bookingId])
+}
+
+model RentalReminder {
+  id String @id @default(cuid())
+  key String @unique
+  bookingId Int
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  kind String
+  endDate DateTime @db.Date
+  recipient String
+  dueAt DateTime
+  expiresAt DateTime
+  nextAttemptAt DateTime @default(now())
+  attempts Int @default(0)
+  sentAt DateTime?
+  cancelledAt DateTime?
+  subject String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([sentAt, cancelledAt, dueAt])
+  @@index([bookingId])
 }
