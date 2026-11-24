@@ -3,19 +3,21 @@ import {createHash} from 'node:crypto';
 export type ChartCell={radiusFt:number;boomFt:number;ratedLb:number;angleDeg:number;deductionLb:number};
 export type ChartProfile={id:string;name:string;source:string;sha256:string;page:number;setup:string;chartCode:string;deductionNote:string;singleLineLimitLb?:number;singleLineSourcePage?:number;singleLineNote?:string;cells:ChartCell[]};
 export const craneChartData=JSON.parse(readFileSync(new URL('../data/crane-selector-charts.json',import.meta.url),'utf8')) as {profiles:ChartProfile[];excluded:{id:string;name:string;reason:string}[]};
-export type LiftInput={loadLb:number;liftHeightFt:number};
+export type LiftInput={loadLb:number;liftHeightFt:number;radiusFt?:number};
 // Planning brochures only; actual unit configuration and lift conditions need CCC review.
 // Standard handling allowances are fixed on the server, never supplied by the customer.
 export function screenLift(input:LiftInput,profiles:ChartProfile[]=craneChartData.profiles){
  for(const key of ['loadLb','liftHeightFt'] as const)if(!Number.isFinite(input[key])||input[key]<=0)throw Error('Enter a positive item weight and approximate lifting height.');
  if(input.loadLb>500000||input.liftHeightFt>500)throw Error('These values need direct lift-planning review.');
  if(Math.abs(input.loadLb*100-Math.round(input.loadLb*100))>0.000001)throw Error('Enter item weight to no more than two decimal places.');
+ if(input.radiusFt!==undefined&&(!Number.isFinite(input.radiusFt)||input.radiusFt<=0||input.radiusFt>125))throw Error('Enter a lift radius between 0 and 125 ft (greater than zero).');
  const matches=profiles.flatMap(profile=>{
   const boomTruck=!profile.id.startsWith('rt');
   if(boomTruck&&(!Number.isFinite(profile.singleLineLimitLb)||profile.singleLineLimitLb!<=0))return [];
   const riggingLb=boomTruck?500:800;
   const totalHundredths=Math.round(input.loadLb*100)+riggingLb*100,totalLb=totalHundredths/100;
   const setups=profile.cells.flatMap(cell=>{
+   if(input.radiusFt!==undefined&&cell.radiusFt<input.radiusFt)return [];
    const adjustedChartLb=cell.ratedLb-cell.deductionLb;
    // Hard 60% limit, including standard rigging, without rounding down to fit.
    const effectiveRatedLb=Math.min(adjustedChartLb,profile.singleLineLimitLb??Infinity);
@@ -29,16 +31,14 @@ export function screenLift(input:LiftInput,profiles:ChartProfile[]=craneChartDat
   if(!setups.length)return [];
   return[{id:profile.id,name:profile.name,equipmentType:(boomTruck?'boom-truck':'rt-crane') as 'boom-truck'|'rt-crane',ratedClassLb:Math.max(...profile.cells.map(c=>c.ratedLb)),source:profile.source,page:profile.page,setup:profile.setup,chartCode:profile.chartCode,deductionNote:profile.deductionNote,singleLineLimitLb:profile.singleLineLimitLb,singleLineSourcePage:profile.singleLineSourcePage,singleLineNote:profile.singleLineNote,riggingLb,totalLb,requiredChartLb:Math.ceil(totalHundredths/60),...setups[0]}];
  });
- return {status:matches.length?'matches':'manual-review',loadLb:input.loadLb,liftHeightFt:input.liftHeightFt,matches,reason:matches.length?'Preliminary maximum chart radii only, for stationary main-boom lifts on full outriggers. CCC must confirm actual rigging weight, height, configuration, ground conditions, clearance and availability.':'No reviewed setup passed the 60% capacity and approximate height screens. Contact CCC for a lift review.'};
+ return {status:matches.length?'matches':'manual-review',loadLb:input.loadLb,liftHeightFt:input.liftHeightFt,requestedRadiusFt:input.radiusFt,matches,reason:matches.length?'Preliminary maximum chart radii only, for stationary main-boom lifts on full outriggers. CCC must confirm actual rigging weight, height, configuration, ground conditions, clearance and availability.':'No reviewed setup passed the 60% capacity and approximate height and required radius screens. Contact CCC for a lift review.'};
 }
 // Selection is independent of pricing. Eligibility always comes from the screened chart cells.
 export function chooseLiftRecommendation(input:LiftInput,candidates:ReturnType<typeof screenLift>['matches']){
  const heavy=input.loadLb>5000;
  return [...candidates].filter(m=>!heavy||m.equipmentType==='rt-crane').sort((a,b)=>
-  // For lighter lifts, prefer a fully qualifying boom truck before an RT crane.
-  Number(a.equipmentType==='rt-crane')-Number(b.equipmentType==='rt-crane')||
-  // Rated class ranks already-eligible models; it never approves a load.
-  a.ratedClassLb-b.ratedClassLb||b.radiusFt-a.radiusFt||a.boomFt-b.boomFt||a.id.localeCompare(b.id)
+  // Prefer the larger qualifying crane, independent of all rental prices.
+  b.ratedClassLb-a.ratedClassLb||b.allowedItemLb-a.allowedItemLb||b.radiusFt-a.radiusFt||a.id.localeCompare(b.id)
  )[0];
 }
 export function chartSourceMatches(profile:ChartProfile){

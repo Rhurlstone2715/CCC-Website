@@ -163,14 +163,17 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   });
 
   test("crane selector is read-only, enforces 60% and excludes unverified catalog charts", async () => {
-    const input={loadLb:10000,liftHeightFt:50};
+    const input={loadLb:10000,liftHeightFt:50,radiusFt:25};
     const response=await req('/api/crane-selector',{json:input});assert.equal(response.status,200);
     assert.match(response.headers.get('cache-control')??'',/no-store/);
     const data=await response.json();assert.equal(data.limitPercent,60);assert.equal(data.loadLb,10000);
-    assert.equal(data.matches.length,1);assert.equal(data.matches[0].id,'rt635c');for(const m of data.matches){assert.equal(m.riggingLb,m.id.startsWith('rt')?800:500);assert.equal(m.totalLb,10000+m.riggingLb);assert.ok(m.totalLb<=m.allowedGrossLb);}
+    assert.equal(data.matches.length,1);assert.equal(data.matches[0].id,'rt890e');for(const m of data.matches){assert.equal(m.riggingLb,m.id.startsWith('rt')?800:500);assert.equal(m.totalLb,10000+m.riggingLb);assert.ok(m.totalLb<=m.allowedGrossLb);}
     assert.ok(data.matches[0].hourlyRate>0);assert.ok(!data.excluded.some((p:{id:string})=>p.id==='rt40'));
-    const excessive=await(await req('/api/crane-selector',{json:{loadLb:500000,liftHeightFt:50}})).json();assert.equal(excessive.matches.length,0);
+    const excessive=await(await req('/api/crane-selector',{json:{loadLb:500000,liftHeightFt:50,radiusFt:25}})).json();assert.equal(excessive.matches.length,0);
     assert.equal((await req('/api/crane-selector',{json:{...input,loadLb:-1}})).status,400);
+    assert.equal((await req('/api/crane-selector',{json:{loadLb:1000,liftHeightFt:20}})).status,400);
+    assert.equal((await req('/api/crane-selector',{json:{...input,radiusFt:126}})).status,400);
+    const reach=await(await req('/api/crane-selector',{json:{...input,radiusFt:125}})).json();assert.equal(reach.matches.length,0);
     assert.equal((await req('/api/crane-selector',{json:{...input,padding:'x'.repeat(9000)}})).status,413);
     await prisma.product.update({where:{id:data.matches[0].id},data:{chart:'assets/load-charts/other.pdf'}});
     const changed=await(await req('/api/crane-selector',{json:input})).json();assert.equal(changed.matches.length,1);assert.notEqual(changed.matches[0].id,data.matches[0].id);
@@ -178,13 +181,13 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   });
 
   test("selector checks all six models and chooses suitability rather than hourly price",async()=>{
-    const calculate=async(loadLb:number,liftHeightFt:number)=>{const r=await req('/api/crane-selector',{json:{loadLb,liftHeightFt}});assert.equal(r.status,200);const d=await r.json();assert.equal(d.evaluatedMachineCount,6);assert.equal(d.matches.length,1);assert.equal(d.limitPercent,60);return d;};
-    let d=await calculate(1000,20);assert.equal(d.matches[0].id,'altec2595');assert.equal(d.matches[0].equipmentType,'boom-truck');
-    const altec=await prisma.product.findUniqueOrThrow({where:{id:'altec2595'}});const grove=await prisma.product.findUniqueOrThrow({where:{id:'rt635c'}});
+    const calculate=async(loadLb:number,liftHeightFt:number)=>{const r=await req('/api/crane-selector',{json:{loadLb,liftHeightFt,radiusFt:25}});assert.equal(r.status,200);const d=await r.json();assert.equal(d.evaluatedMachineCount,6);assert.equal(d.matches.length,1);assert.equal(d.limitPercent,60);return d;};
+    let d=await calculate(1000,20);assert.equal(d.matches[0].id,'rt890e');assert.equal(d.matches[0].equipmentType,'rt-crane');
+    const altec=await prisma.product.findUniqueOrThrow({where:{id:'altec2595'}});const grove=await prisma.product.findUniqueOrThrow({where:{id:'rt890e'}});
     await prisma.product.update({where:{id:altec.id},data:{rates:{...(altec.rates as object),hourly:99999}}});
     await prisma.product.update({where:{id:grove.id},data:{rates:{...(grove.rates as object),hourly:1}}});
-    d=await calculate(1000,20);assert.equal(d.matches[0].id,'altec2595');
-    d=await calculate(1000,90);assert.equal(d.matches[0].id,'national1400');
+    d=await calculate(1000,20);assert.equal(d.matches[0].id,'rt890e');
+    d=await calculate(1000,90);assert.equal(d.matches[0].id,'rt890e');
     d=await calculate(6000,90);assert.equal(d.matches[0].equipmentType,'rt-crane');assert.match(d.recommendationReason,/rough-terrain crane/);
   });
 

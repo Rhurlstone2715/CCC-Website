@@ -1,19 +1,26 @@
 (()=>{
  const form=document.getElementById('craneSelectorForm');if(!form)return;
+ let revision=0;
+ const radius=form.elements.radiusFt,slider=document.getElementById('liftRadiusSlider');
+ slider.addEventListener('input',()=>{radius.value=slider.value;});
+ radius.addEventListener('input',()=>{slider.value=radius.value;});
+ form.addEventListener('input',()=>{revision++;results.replaceChildren();status.textContent='Details changed — calculate again for an updated recommendation.';});
  const results=document.getElementById('craneSelectorResults'),status=document.getElementById('craneSelectorStatus');
  const fmt=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:2});
  const text=(tag,value,className)=>{const el=document.createElement(tag);el.textContent=value;if(className)el.className=className;return el;};
  const row=(dl,label,value)=>{const item=document.createElement('div');item.append(text('dt',label),text('dd',value));dl.append(item);};
  form.onsubmit=async event=>{
   event.preventDefault();if(!form.reportValidity())return;const button=form.querySelector('button[type=submit]');button.disabled=true;results.replaceChildren();status.className='';status.textContent='Finding equipment for your lift…';
-  const values=Object.fromEntries(['loadLb','liftHeightFt'].map(k=>[k,Number(form.elements[k].value)]));
+  const submittedRevision=revision;
+  const values=Object.fromEntries(['loadLb','liftHeightFt','radiusFt'].map(k=>[k,Number(form.elements[k].value)]));
   try{
-   const response=await fetch('/api/crane-selector',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(values)}),data=await response.json();if(!response.ok)throw Error(data.error||'Could not calculate this lift.');
+   const response=await fetch('/api/crane-selector',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(values)}),data=await response.json();if(submittedRevision!==revision)return;if(!response.ok)throw Error(data.error||'Could not calculate this lift.');
    const match=data.matches?.[0];
    status.textContent=match?'Your suggested equipment':'Please contact CCC for a lift review';
    if(match){
-    const card=text('article','', 'selector-match selector-simple-match');card.append(text('p','Suggested for your lift','eyebrow red'),text('h3',match.name),text('p',`${data.recommendationReason||'Suggested after reviewing the available load charts.'} For your ${fmt(values.loadLb)} lb item at approximately ${fmt(values.liftHeightFt)} ft. Check that your site’s reach fits within the maximum radius shown.`,'selector-results-note'));
+    const card=text('article','', 'selector-match selector-simple-match');card.append(text('p','Suggested for your lift','eyebrow red'),text('h3',match.name),text('p',`${data.recommendationReason||'Suggested after reviewing the available load charts.'} For your ${fmt(values.loadLb)} lb item at approximately ${fmt(values.liftHeightFt)} ft, with a required lift radius of ${fmt(values.radiusFt)} ft.`,'selector-results-note'));
     const stats=text('dl','','selector-key-stats');
+    row(stats,'Your required lift radius',`${fmt(values.radiusFt)} ft`);
     row(stats,'Maximum radius for your load',`${fmt(match.radiusFt)} ft`);
     row(stats,'Approx. max lift height · this setup',`${fmt(match.estimatedTipScreenFt)} ft`);
     row(stats,'Recommended item-weight limit',`${fmt(match.allowedItemLb)} lb`);card.append(stats);
@@ -30,7 +37,7 @@
     if(match.singleLineSourcePage){const line=text('a',`Hook-ball limit · page ${match.singleLineSourcePage}`);line.href='/'+match.source+'#page='+match.singleLineSourcePage;line.target='_blank';line.rel='noopener';links.append(line);}details.append(links);card.append(details);
     const view=text('a','View equipment & rates','selector-equipment-link');view.href='/rentals?category='+(match.category==='Boom Trucks'?'boom-trucks':'cranes')+'#catalog';card.append(view);results.append(card);
    }else results.append(text('p','We could not find a suitable reviewed setup for these details. Send your requirements to CCC so we can help.','selector-results-note'));
-   const summary=`Lift review request\nItem weight: ${values.loadLb} lb\nApproximate lifting height: ${values.liftHeightFt} ft\n${match?`Suggested machine: ${match.name}\nMaximum chart radius: ${match.radiusFt} ft\nApproximate maximum height for this setup: ${match.estimatedTipScreenFt} ft\nRecommended item-weight limit: ${match.allowedItemLb} lb\nHook/rigging: ${match.riggingLb} lb\nMain boom: ${match.boomFt} ft at ${match.angleDeg}°`:'Manual review needed'}\nMain boom, full outriggers; CCC confirmation required.`;
+   const summary=`Lift review request\nItem weight: ${values.loadLb} lb\nApproximate lifting height: ${values.liftHeightFt} ft\nRequired lift radius: ${values.radiusFt} ft\n${match?`Suggested machine: ${match.name}\nMaximum chart radius: ${match.radiusFt} ft\nApproximate maximum height for this setup: ${match.estimatedTipScreenFt} ft\nRecommended item-weight limit: ${match.allowedItemLb} lb\nHook/rigging: ${match.riggingLb} lb\nMain boom: ${match.boomFt} ft at ${match.angleDeg}°`:'Manual review needed'}\nMain boom, full outriggers; CCC confirmation required.`;
    const inquire=text('a',match?'Ask CCC to confirm this lift':'Ask CCC for help','button primary');inquire.href='mailto:caymancrane@gmail.com?subject='+encodeURIComponent('Crane selection and lift review')+'&body='+encodeURIComponent(summary);results.append(inquire);
   }catch(error){status.textContent=error.message||'Could not calculate this lift. Contact CCC for a review.';status.className='selector-error';}finally{button.disabled=false;}
  };

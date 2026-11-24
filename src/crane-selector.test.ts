@@ -47,24 +47,33 @@ test('boom trucks use only single-part hook-ball ratings with 500 lb handling an
  const heavy=screenLift({loadLb:10000,liftHeightFt:50});assert.ok(heavy.matches.length);assert.ok(heavy.matches.every(m=>m.id.startsWith('rt')));
 });
 
-test('suitability considers every fleet model and favours a qualifying boom truck for lighter lifts',()=>{
+test('suitability considers every fleet model and favours the largest qualifying model',()=>{
  const light={loadLb:1000,liftHeightFt:20};const matches=screenLift(light).matches;assert.equal(matches.length,6);
- assert.equal(chooseLiftRecommendation(light,matches)!.id,'altec2595');
- const high={loadLb:1000,liftHeightFt:90};assert.equal(chooseLiftRecommendation(high,screenLift(high).matches)!.id,'national1400');
+ assert.equal(chooseLiftRecommendation(light,matches)!.id,'rt890e');
+ const high={loadLb:1000,liftHeightFt:90};assert.equal(chooseLiftRecommendation(high,screenLift(high).matches)!.id,'rt890e');
  for(const profile of craneChartData.profiles){const small={loadLb:100,liftHeightFt:5};assert.equal(chooseLiftRecommendation(small,screenLift(small,[profile]).matches)!.id,profile.id);}
- const heavy={loadLb:10000,liftHeightFt:50};assert.equal(chooseLiftRecommendation(heavy,screenLift(heavy).matches)!.id,'rt635c');
+ const heavy={loadLb:10000,liftHeightFt:50};assert.equal(chooseLiftRecommendation(heavy,screenLift(heavy).matches)!.id,'rt890e');
 });
 test('above 5000 lb selects RT only even if a hypothetical boom truck passes the chart and line limits',()=>{
  const truck=craneChartData.profiles.find(p=>p.id==='national1400')!;
  const cell={radiusFt:20,boomFt:150,ratedLb:50000,angleDeg:70,deductionLb:0};
  const profiles=[{...truck,singleLineLimitLb:20000,cells:[cell]},{...craneChartData.profiles.find(p=>p.id==='rt635c')!,cells:[cell]}];
- const at={loadLb:5000,liftHeightFt:80};assert.equal(chooseLiftRecommendation(at,screenLift(at,profiles).matches)!.equipmentType,'boom-truck');
+ const at={loadLb:5000,liftHeightFt:80};assert.equal(chooseLiftRecommendation(at,screenLift(at,profiles).matches)!.equipmentType,'rt-crane');
  const over={loadLb:5000.01,liftHeightFt:80};const matches=screenLift(over,profiles).matches;assert.equal(matches.length,2);
  assert.equal(chooseLiftRecommendation(over,matches)!.equipmentType,'rt-crane');
  assert.equal(chooseLiftRecommendation(over,matches.filter(m=>m.equipmentType==='boom-truck')),undefined);
 });
 
-test('every reviewed machine can be the best fit for a real input without using rental price',()=>{
- const cases=[[1000,20,'altec2595'],[1000,90,'national1400'],[10000,50,'rt635c'],[42000,10,'rt40'],[50000,20,'rt175'],[95000,5,'rt890e']] as const;
- for(const[loadLb,liftHeightFt,id]of cases){const input={loadLb,liftHeightFt};const m=chooseLiftRecommendation(input,screenLift(input).matches)!;assert.equal(m.id,id);assert.ok(m.totalLb*100<=m.effectiveRatedLb*60);assert.ok(m.estimatedTipScreenFt>=liftHeightFt);}
+test('required radius rejects shorter reach and never interpolates missing chart radii',()=>{
+ const p={...craneChartData.profiles[0],cells:[{radiusFt:40,boomFt:100,ratedLb:30000,angleDeg:70,deductionLb:0},{radiusFt:50,boomFt:100,ratedLb:10000,angleDeg:60,deductionLb:0}]};
+ assert.equal(screenLift({...base,radiusFt:40},[p]).matches.length,1);
+ assert.equal(screenLift({...base,radiusFt:40.01},[p]).matches.length,0);
+ assert.equal(screenLift({...base,loadLb:1000,radiusFt:49},[p]).matches[0].radiusFt,50);
+ for(const radiusFt of [0,-1,NaN,Infinity,126])assert.throws(()=>screenLift({...base,radiusFt}));
+ for(const radiusFt of [10,50,90,125])for(const m of screenLift({...base,radiusFt}).matches)assert.ok(m.radiusFt>=radiusFt);
+});
+test('larger class wins independently of candidate ordering and every model remains eligible alone',()=>{
+ const input={loadLb:1000,liftHeightFt:20,radiusFt:25};const matches=screenLift(input).matches;
+ assert.equal(chooseLiftRecommendation(input,matches)!.id,'rt890e');assert.equal(chooseLiftRecommendation(input,matches.reverse())!.id,'rt890e');
+ for(const p of craneChartData.profiles){const result=screenLift(input,[p]);assert.equal(chooseLiftRecommendation(input,result.matches)?.id,p.id);}
 });
