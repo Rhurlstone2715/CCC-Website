@@ -50,14 +50,14 @@
       </div></div>
     </section>
     <section class="crane-selector-section" id="crane-selector"><div class="wrap">
-      <div class="selector-intro"><div><p class="eyebrow red">Crane &amp; boom truck selector</p><h2>Unsure which equipment suits your lift?</h2><p>Enter your lift details for a preliminary recommendation using a maximum of <strong>60% of the applicable chart capacity</strong>.</p></div><span class="selector-limit">60%<small>planning limit</small></span></div>
+      <div class="selector-intro"><div><p class="eyebrow red">Crane &amp; boom truck selector</p><h2>Unsure which equipment suits your lift?</h2><p>Enter your item weight and lifting height to find suggested equipment for your job.</p></div></div>
       <details class="selector-panel"><summary>Find a crane or boom truck for my job</summary>
         <p class="selector-scope">Main boom only · fully extended outriggers · stationary lifts. Recommendations need CCC lift-team confirmation before booking or lifting.</p>
         <form id="craneSelectorForm"><div class="selector-fields">
           <label>Item weight (lb)<input name="loadLb" type="number" min="0.01" max="500000" step="0.01" required placeholder="e.g. 10000"></label>
           <label>Approximate lifting height (ft)<input name="liftHeightFt" type="number" min="0.01" max="500" step="0.01" required placeholder="e.g. 50"></label>
         </div>
-        <p class="selector-method">Includes standard rigging: <strong>500 lb for boom trucks</strong> (single-part line with hook ball only) and <strong>800 lb for RT cranes</strong>. Shows one suggested machine with its maximum radius and approximate lift height for your load, using no more than 60% of the applicable rating. Boom trucks are also limited to 60% of their conservative single-line rating. Main boom, stationary lifts and full outriggers only. Height and actual rigging require CCC confirmation.</p>
+        <p class="selector-method">Includes standard rigging: <strong>500 lb for boom trucks</strong> (single-part line with hook ball only) and <strong>800 lb for RT cranes</strong>. Shows one suggested machine with its maximum radius and approximate lift height for your load, with rigging and applicable single-line restrictions included. Main boom, stationary lifts and full outriggers only. Height and actual rigging require CCC confirmation.</p>
         <button class="button primary" type="submit">Find my crane</button><p id="craneSelectorStatus" role="status"></p></form>
         <div id="craneSelectorResults" aria-live="polite"></div>
       </details>

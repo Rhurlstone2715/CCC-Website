@@ -36,7 +36,7 @@
   if(!reduced)add(hook,'animateTransform',{attributeName:'transform',type:'translate',from:`${hookStart.x-anchor.x} ${hookStart.y-anchor.y}`,to:`${hookEnd.x-anchor.x} ${hookEnd.y-anchor.y}`,dur:'1.4s',fill:'freeze',calcMode:'spline',keySplines:'.2 .65 .3 1',keyTimes:'0;1'});
   add(svg,'line',{x1:25,y1:414,x2:475,y2:414,stroke:'#ccd1d6','stroke-width':2});
   label(500,141,`${angle}°`,{fill:'#bc101c','font-size':36,'font-weight':800});label(500,166,'CHART BOOM ANGLE',{'font-size':11,'font-weight':700});
-  label(500,194,`${length} ft main boom`);label(500,219,'60% planning limit',{'font-size':14});
+  label(500,194,`${length} ft main boom`);label(500,219,'Planned lift setup',{'font-size':14});
   window.drawCraneSelectorMeasures?.(svg,match,{pivotX:25-minX*scale+pivot.x*scale,loadX:25-minX*scale+hookEnd.x*scale,tipY:85-minY*scale+hookEnd.y*scale,groundY:414});
   label(25,545,'Dimensions apply to this load and setup · schematic, not to scale',{'font-size':13,fill:'#68717b'});
   figure.append(svg);

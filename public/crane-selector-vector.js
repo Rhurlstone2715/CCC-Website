@@ -92,7 +92,7 @@
   label(500,139,`${angle}°`,{fill:red,'font-size':39,'font-weight':800});
   label(500,166,'CHART BOOM ANGLE',{'font-size':12,'font-weight':700});
   label(500,194,`${length} ft main boom`,{'font-size':16,'font-weight':700});
-  label(500,219,'60% planning limit',{'font-size':14});
+  label(500,219,'Planned lift setup',{'font-size':14});
   window.drawCraneSelectorMeasures?.(svg,match,{pivotX:px,loadX:tx,tipY:ty,groundY:375});
   label(30,545,'Dimensions apply to this load and setup · schematic, not to scale',{'font-size':13,fill:'#68717b'});
   figure.append(svg);if(!reduced)queueMicrotask(()=>{if(!svg.isConnected)return;svg.pauseAnimations();svg.setCurrentTime(0);if(!('IntersectionObserver'in window)){svg.unpauseAnimations();return;}const observer=new IntersectionObserver(entries=>{if(!svg.isConnected){observer.disconnect();return;}if(entries.some(e=>e.isIntersecting)){svg.unpauseAnimations();observer.disconnect();}},{threshold:.2});observer.observe(svg);});const caption=document.createElement('figcaption');caption.textContent='Illustration only. Height is approximate for this boom setup; CCC confirms rigging, ground conditions and clearance.';figure.append(caption);return figure;
