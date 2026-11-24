@@ -7,6 +7,7 @@ import { deliverAdminPushNotifications, queueAdminSignupNotices } from "./admin-
 import { inventoryNow } from "./availability.js";
 import { deliverEstimateEmails, renderEstimatePdf, estimateSnapshot, type EstimateSnapshot } from "./estimates.js";
 import {deliverReceiptEmails,queuePaidReceipt} from "./receipts.js";
+import {areaEta,enRouteText,notifyEnRoute} from './en-route.js';
 import {runRentalReminders} from "./rental-reminders.js";
 import {brandedEmailHtml,sendEmail} from "./email.js";
 import {correctJRDocuments} from "./booking-document-correction.js";
@@ -249,6 +250,32 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   // Each call gets its own IP unless one is given, so rate limits don't leak between tests.
   let fixtureDay=0;
   let signupPhone=100;
+  test("en route ETAs cover requested areas and Cayman clock boundaries",()=>{
+    for(const area of ['West Bay','George Town','George town','Red Bay','Prospect','Savannah'])assert.deepEqual(areaEta(area),[15,30]);
+    assert.deepEqual(areaEta('Bodden Town'),[20,30]);for(const area of ['North Side','East End'])assert.deepEqual(areaEta(area),[30,40]);assert.equal(areaEta('7 Mile Beach'),null);
+    const email=enRouteText({id:1,customerName:'Alex',siteAddress:'Site',area:'East End'},{operator:'Gregg',rigger:'Molo',etaStart:new Date('2026-12-02T04:50Z'),etaEnd:new Date('2026-12-02T05:10Z')});
+    assert.match(email.text,/Operator: Gregg and Banksman\/Rigger: Molo are en route/);assert.match(email.text,/11:50 PM–12:10 AM/);
+  });
+  test("en route notification is admin-only, records crew/ETA, avoids duplicates and protects bookings",async t=>{
+    enableReminderTest(t);const{b}=await reminderFixture();const admin=await makeAdmin();
+    const page=await(await req(`/admin/bookings/${b.id}`,{cookie:admin})).text();assert.match(page,/En route — notify customer/);for(const n of ['Leon','Gregg','Conrad','Franklin','Joseph','Marlon','Jeorge','Silvio','Molo'])assert.ok(page.includes(n));
+    assert.equal((await req(`/admin/bookings/${b.id}/en-route`,{form:{dispatchKey:randomUUID()}})).status,302);assert.equal(await prisma.enRouteNotification.count(),0);
+    const now=new Date('2026-12-01T13:30Z');const sent:Parameters<typeof sendEmail>[0][]=[];const sender=async(e:Parameters<typeof sendEmail>[0])=>{sent.push(e);return true;};
+    const input={key:randomUUID(),operator:'Gregg',rigger:'Molo',min:'',max:''};
+    await Promise.all([notifyEnRoute(b.id,input,sender,now),notifyEnRoute(b.id,input,sender,now)]);assert.equal(sent.length,1);assert.match(sent[0].text,/8:45 AM–9:00 AM/);assert.equal(await prisma.enRouteNotification.count(),1);
+    assert.equal((await prisma.booking.findUniqueOrThrow({where:{id:b.id}})).status,'APPROVED');
+    assert.equal(await notifyEnRoute(b.id,{...input,key:randomUUID(),operator:'Fake'},sender,now),'enroute-invalid');
+    await prisma.booking.update({where:{id:b.id},data:{status:'CANCELLED'}});assert.equal(await notifyEnRoute(b.id,{...input,key:randomUUID()},sender,now),'bad-transition');assert.equal(sent.length,1);
+  });
+  test("en route failed sends retry same payload and key, expire old ETAs and require manual ETA for unknown areas",async t=>{
+    enableReminderTest(t);const{b}=await reminderFixture();await prisma.booking.update({where:{id:b.id},data:{area:'7 Mile Beach'}});
+    const now=new Date('2026-12-01T13:30Z');const input={key:randomUUID(),operator:'Leon',rigger:'',min:'',max:''};const sent:Parameters<typeof sendEmail>[0][]=[];let ok=false;const sender=async(e:Parameters<typeof sendEmail>[0])=>{sent.push(e);return ok;};
+    assert.equal(await notifyEnRoute(b.id,input,sender,now),'enroute-invalid');
+    input.min='10';input.max='20';assert.equal(await notifyEnRoute(b.id,input,sender,now),'enroute-failed');ok=true;
+    assert.equal(await notifyEnRoute(b.id,input,sender,new Date(now.getTime()+60000)),'enroute-sent');assert.equal(sent[0].idempotencyKey,sent[1].idempotencyKey);assert.equal(sent[0].text,sent[1].text);
+    ok=false;input.key=randomUUID();await notifyEnRoute(b.id,input,sender,now);ok=true;assert.equal(await notifyEnRoute(b.id,input,sender,new Date(now.getTime()+11*60000)),'enroute-stale');assert.equal(sent.length,3);
+  });
+
   async function req(path: string, opts: { method?: string; form?: Record<string, string>; json?: unknown; cookie?: string; ip?: string; origin?: string } = {}) {
     const headers: Record<string, string> = { "x-real-ip": opts.ip ?? randomUUID() };
     let body: string | undefined;

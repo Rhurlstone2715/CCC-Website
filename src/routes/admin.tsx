@@ -1,3 +1,5 @@
+import {randomUUID} from 'node:crypto';
+import {CREW_NAMES,areaEta,etaTime,notifyEnRoute} from '../en-route.js';
 import {weeklyMonthlyLines,confirmedReminderEnd,reminderRecipientVerified} from '../rental-reminder-plan.js';
 import {rentalRemindersEnabled} from '../rental-reminders.js';
 import {adminCustomerBrands,type RewardsBrand} from "../company-logos.js";
@@ -26,6 +28,11 @@ export const admin = new Hono<AppEnv>();
 
 
 const NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string }> = {
+  "enroute-stale": {tone:"error",text:"That ETA is now outdated. Use the En route form to send a fresh arrival window."},
+  "enroute-sent": {tone:"success",text:"En route notification emailed to the customer."},
+  "enroute-failed": {tone:"error",text:"The email did not send. Retry the saved notification below."},
+  "enroute-invalid": {tone:"error",text:"Choose different crew members for each role and enter a valid ETA window (1–240 minutes) when no area default exists."},
+  "enroute-unconfigured": {tone:"error",text:"Customer email delivery is not configured."},
   "rental-returned": {tone:"success",text:"Equipment marked returned. Pending rental reminders have been stopped."},
   "rental-resumed": {tone:"success",text:"Rental reminder eligibility will be checked again."},
   "booking-created": { tone: "success", text: "Booking created. Its PDF estimate is saved and queued for email to the customer." },
@@ -479,6 +486,8 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
   ]);
   const notice = noticeFrom(c);
   const ref = bookingRef(booking.id);
+  const dispatches=await prisma.enRouteNotification.findMany({where:{bookingId:booking.id},orderBy:{createdAt:'desc'},take:10});
+  const travel=areaEta(booking.area);
   const reminderLines=weeklyMonthlyLines(booking.items);
   const reminderVerified=reminderRecipientVerified(booking,booking.user);
   const missingReminderEnd=reminderLines.some(line=>!confirmedReminderEnd(booking,line));
@@ -553,6 +562,18 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
                 </button>
               </form>
             ) : null}
+          </section>
+          <section class="card">
+            <h2>Equipment en route</h2>
+            <p>Notify {booking.customerName} at {booking.customerEmail} when equipment leaves for {booking.siteAddress||booking.area||"their site"}.</p>
+            {['APPROVED','PAID'].includes(booking.status)&&!booking.rentalReturnedAt&&booking.rentalCollection!=='pickup'?<form class="form" method="post" action={`/admin/bookings/${booking.id}/en-route`} data-confirm="Send this customer an en route email now?">
+              <input type="hidden" name="dispatchKey" value={randomUUID()}/>
+              <label>Operator / driver<select name="operator"><option value="">CCC delivery team</option>{CREW_NAMES.map(n=><option value={n}>{n}</option>)}</select></label>
+              <label>Banksman / rigger (optional)<select name="rigger"><option value="">None</option>{CREW_NAMES.map(n=><option value={n}>{n}</option>)}</select></label>
+              {travel?<p>ETA: {travel[0]}–{travel[1]} minutes after clicking, based on {booking.area}. The email shows the arrival time window in Cayman time.</p>:<><p>No automatic ETA is set for {booking.area||"this area"}. Enter the travel time below.</p><label>Earliest arrival (minutes from now)<input type="number" name="etaMin" min="1" max="240" required/></label><label>Latest arrival (minutes from now)<input type="number" name="etaMax" min="1" max="240" required/></label></>}
+              <button class="button primary" type="submit">En route — notify customer</button>
+            </form>:<p>Available for approved or paid deliveries that have not been marked returned.</p>}
+            {dispatches.length?<ul>{dispatches.map(n=><li>{n.sentAt?'Sent':'Not sent'} · {caymanDate(n.createdAt)} · ETA {etaTime(n.etaStart)}–{etaTime(n.etaEnd)} · {n.operator||'CCC team'}{n.rigger?` · Rigger: ${n.rigger}`:''}{!n.sentAt&&['APPROVED','PAID'].includes(booking.status)?<form method="post" action={`/admin/bookings/${booking.id}/en-route`}><input type="hidden" name="dispatchKey" value={n.id}/><button class="button secondary small" type="submit">Retry original email</button></form>:null}</li>)}</ul>:null}
           </section>
           <section class="card">
             <h2>Rental dates</h2>
@@ -656,6 +677,7 @@ admin.post("/bookings/:id{[0-9]+}/:action", async c => {
   },{timeout:30000,maxWait:15000});
 
   try { switch (action) {
+    case "en-route": return back(await notifyEnRoute(id,{key:text(body.dispatchKey),operator:text(body.operator),rigger:text(body.rigger),min:text(body.etaMin),max:text(body.etaMax)}));
     case "approve": {
       if (booking.status !== "PENDING") return back("bad-transition");
       const approved = await update({ status: "APPROVED", approvedAt: new Date() });

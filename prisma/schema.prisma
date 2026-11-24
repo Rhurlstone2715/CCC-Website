@@ -101,6 +101,7 @@ model EmailVerification {
 }
 
 model Booking {
+  enRouteNotifications EnRouteNotification[]
   rentalReminders RentalReminder[]
   rentalReturnedAt DateTime?
   paymentReceipts PaymentReceipt[]
@@ -430,4 +431,18 @@ model RentalReminder {
   updatedAt DateTime @updatedAt
   @@index([sentAt, cancelledAt, dueAt])
   @@index([bookingId])
+}
+
+model EnRouteNotification {
+ id String @id
+ bookingId Int
+ booking Booking @relation(fields:[bookingId],references:[id],onDelete:Cascade)
+ operator String?
+ rigger String?
+ recipient String
+ etaStart DateTime
+ etaEnd DateTime
+ sentAt DateTime?
+ createdAt DateTime @default(now())
+ @@index([bookingId,createdAt])
 }
