@@ -2907,7 +2907,7 @@
       ],
       "singleLineLimitLb": 4400,
       "singleLineSourcePage": 7,
-      "singleLineNote": "Single-part line with hook ball only. Conservative high-speed line limit; 60% planning margin applies to the lower of line limit and adjusted boom chart capacity."
+      "singleLineNote": "Single-part line with hook ball only. Conservative high-speed line limit; 50% planning margin applies to the lower of line limit and adjusted boom chart capacity."
     },
     {
       "id": "altec2595",
@@ -3440,7 +3440,7 @@
       ],
       "singleLineLimitLb": 4620,
       "singleLineSourcePage": 3,
-      "singleLineNote": "Single-part line with hook ball only. Conservative high-speed line limit; 60% planning margin applies to the lower of line limit and adjusted boom chart capacity."
+      "singleLineNote": "Single-part line with hook ball only. Conservative high-speed line limit; 50% planning margin applies to the lower of line limit and adjusted boom chart capacity."
     },
     {
       "id": "rt40",
