@@ -27,9 +27,19 @@ export function screenLift(input:LiftInput,profiles:ChartProfile[]=craneChartDat
    return[{...cell,adjustedChartLb,effectiveRatedLb,allowedGrossLb:effectiveRatedLb*60/100,allowedItemLb:(effectiveRatedLb*60-riggingLb*100)/100,estimatedTipScreenFt,chartUtilizationPercent:Math.min(60,Math.ceil(totalLb/adjustedChartLb*10000-1e-9)/100)}];
   }).sort((a,b)=>b.radiusFt-a.radiusFt||a.boomFt-b.boomFt);
   if(!setups.length)return [];
-  return[{id:profile.id,name:profile.name,source:profile.source,page:profile.page,setup:profile.setup,chartCode:profile.chartCode,deductionNote:profile.deductionNote,singleLineLimitLb:profile.singleLineLimitLb,singleLineSourcePage:profile.singleLineSourcePage,singleLineNote:profile.singleLineNote,riggingLb,totalLb,requiredChartLb:Math.ceil(totalHundredths/60),...setups[0]}];
+  return[{id:profile.id,name:profile.name,equipmentType:(boomTruck?'boom-truck':'rt-crane') as 'boom-truck'|'rt-crane',ratedClassLb:Math.max(...profile.cells.map(c=>c.ratedLb)),source:profile.source,page:profile.page,setup:profile.setup,chartCode:profile.chartCode,deductionNote:profile.deductionNote,singleLineLimitLb:profile.singleLineLimitLb,singleLineSourcePage:profile.singleLineSourcePage,singleLineNote:profile.singleLineNote,riggingLb,totalLb,requiredChartLb:Math.ceil(totalHundredths/60),...setups[0]}];
  });
  return {status:matches.length?'matches':'manual-review',loadLb:input.loadLb,liftHeightFt:input.liftHeightFt,matches,reason:matches.length?'Preliminary maximum chart radii only, for stationary main-boom lifts on full outriggers. CCC must confirm actual rigging weight, height, configuration, ground conditions, clearance and availability.':'No reviewed setup passed the 60% capacity and approximate height screens. Contact CCC for a lift review.'};
+}
+// Selection is independent of pricing. Eligibility always comes from the screened chart cells.
+export function chooseLiftRecommendation(input:LiftInput,candidates:ReturnType<typeof screenLift>['matches']){
+ const heavy=input.loadLb>5000;
+ return [...candidates].filter(m=>!heavy||m.equipmentType==='rt-crane').sort((a,b)=>
+  // For lighter lifts, prefer a fully qualifying boom truck before an RT crane.
+  Number(a.equipmentType==='rt-crane')-Number(b.equipmentType==='rt-crane')||
+  // Rated class ranks already-eligible models; it never approves a load.
+  a.ratedClassLb-b.ratedClassLb||b.radiusFt-a.radiusFt||a.boomFt-b.boomFt||a.id.localeCompare(b.id)
+ )[0];
 }
 export function chartSourceMatches(profile:ChartProfile){
  try{return createHash('sha256').update(readFileSync(new URL('../public/'+profile.source,import.meta.url))).digest('hex')===profile.sha256;}catch{return false;}

@@ -2,7 +2,7 @@ import {Hono} from 'hono';
 import {bodyLimit} from 'hono/body-limit';
 import {prisma} from '../db.js';
 import {clientIp,createLimiter} from '../ratelimit.js';
-import {craneChartData,screenLift,chartSourceMatches} from '../crane-selector.js';
+import {craneChartData,screenLift,chartSourceMatches,chooseLiftRecommendation} from '../crane-selector.js';
 export const craneSelector=new Hono();
 const limit=createLimiter(100,15*60000);
 const verifiedProfiles=craneChartData.profiles.filter(chartSourceMatches);
@@ -13,7 +13,9 @@ craneSelector.post('/',bodyLimit({maxSize:8000,onError:c=>c.json({error:'Lift re
  const enabled=verifiedProfiles.filter(p=>products.some(product=>product.id===p.id&&product.chart?.replace(/^\//,'')===p.source&&product.name.replace(/[^a-z0-9]/gi,'').toLowerCase().includes(p.name.replace(/[^a-z0-9]/gi,'').toLowerCase())));
  try{
   const result=screenLift(input,enabled);
-  const matches=result.matches.map(m=>{const product=products.find(p=>p.id===m.id)!;const rate=(product.rates as Record<string,number>).hourly;return {...m,image:product.image,hourlyRate:typeof rate==='number'?rate:null,category:product.category};}).sort((a,b)=>(a.hourlyRate??Infinity)-(b.hourlyRate??Infinity)||a.chartUtilizationPercent-b.chartUtilizationPercent).slice(0,1);
-  return c.json({...result,matches,limitPercent:60,excluded:[...craneChartData.excluded,...craneChartData.profiles.filter(p=>!enabled.includes(p)).map(p=>({id:p.id,name:p.name,reason:'Chart verification is needed. Please ask CCC for a manual equipment recommendation.'}))]});
+  const selected=chooseLiftRecommendation(input,result.matches);
+  const matches=selected?[selected].map(m=>{const product=products.find(p=>p.id===m.id)!;const rate=(product.rates as Record<string,number>).hourly;return {...m,image:product.image,hourlyRate:typeof rate==='number'?rate:null,category:product.category};}):[];
+  const recommendationReason=!selected?'CCC must review this lift; no suitable reviewed setup was selected.':input.loadLb>5000?'A rough-terrain crane is recommended for this heavier lift.':selected.equipmentType==='boom-truck'?'A boom truck meets the reviewed weight and height requirements.':'A rough-terrain crane is needed for the reviewed weight and height requirements.';
+  return c.json({...result,matches,status:matches.length?'matches':'manual-review',recommendationReason,evaluatedMachineCount:enabled.length,limitPercent:60,excluded:[...craneChartData.excluded,...craneChartData.profiles.filter(p=>!enabled.includes(p)).map(p=>({id:p.id,name:p.name,reason:'Chart verification is needed. Please ask CCC for a manual equipment recommendation.'}))]});
  }catch(error){return c.json({error:error instanceof Error?error.message:'Check your lift requirements.'},400);}
 });

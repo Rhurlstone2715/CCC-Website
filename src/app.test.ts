@@ -174,6 +174,17 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal(await prisma.booking.count(),0);assert.equal(await prisma.accountEmail.count(),0);
   });
 
+  test("selector checks all six models and chooses suitability rather than hourly price",async()=>{
+    const calculate=async(loadLb:number,liftHeightFt:number)=>{const r=await req('/api/crane-selector',{json:{loadLb,liftHeightFt}});assert.equal(r.status,200);const d=await r.json();assert.equal(d.evaluatedMachineCount,6);assert.equal(d.matches.length,1);assert.equal(d.limitPercent,60);return d;};
+    let d=await calculate(1000,20);assert.equal(d.matches[0].id,'altec2595');assert.equal(d.matches[0].equipmentType,'boom-truck');
+    const altec=await prisma.product.findUniqueOrThrow({where:{id:'altec2595'}});const grove=await prisma.product.findUniqueOrThrow({where:{id:'rt635c'}});
+    await prisma.product.update({where:{id:altec.id},data:{rates:{...(altec.rates as object),hourly:99999}}});
+    await prisma.product.update({where:{id:grove.id},data:{rates:{...(grove.rates as object),hourly:1}}});
+    d=await calculate(1000,20);assert.equal(d.matches[0].id,'altec2595');
+    d=await calculate(1000,90);assert.equal(d.matches[0].id,'national1400');
+    d=await calculate(6000,90);assert.equal(d.matches[0].equipmentType,'rt-crane');assert.match(d.recommendationReason,/rough-terrain crane/);
+  });
+
   test("Omega 40 correction preserves prices and stock and serves the uploaded chart",async()=>{
     const before=await prisma.product.findUniqueOrThrow({where:{id:'rt40'}});
     await prisma.product.update({where:{id:'rt40'},data:{name:'Terex RT40',chart:'assets/load-charts/terex-rt40.pdf'}});

@@ -12,7 +12,7 @@
    const match=data.matches?.[0];
    status.textContent=match?'Your suggested equipment':'Please contact CCC for a lift review';
    if(match){
-    const card=text('article','', 'selector-match selector-simple-match');card.append(text('p','Suggested for your lift','eyebrow red'),text('h3',match.name),text('p',`For your ${fmt(values.loadLb)} lb item at approximately ${fmt(values.liftHeightFt)} ft. Check that your site’s reach fits within the maximum radius shown.`,'selector-results-note'));
+    const card=text('article','', 'selector-match selector-simple-match');card.append(text('p','Suggested for your lift','eyebrow red'),text('h3',match.name),text('p',`${data.recommendationReason||'Suggested after reviewing the available load charts.'} For your ${fmt(values.loadLb)} lb item at approximately ${fmt(values.liftHeightFt)} ft. Check that your site’s reach fits within the maximum radius shown.`,'selector-results-note'));
     const stats=text('dl','','selector-key-stats');
     row(stats,'Maximum radius for your load',`${fmt(match.radiusFt)} ft`);
     row(stats,'Approx. max lift height · this setup',`${fmt(match.estimatedTipScreenFt)} ft`);

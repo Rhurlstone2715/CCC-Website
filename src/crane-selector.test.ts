@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';import{test}from'node:test';
-import{craneChartData,screenLift,chartSourceMatches,type ChartProfile}from'./crane-selector.js';
+import{craneChartData,screenLift,chartSourceMatches,chooseLiftRecommendation,type ChartProfile}from'./crane-selector.js';
 const base={loadLb:10000,liftHeightFt:50};
 test('reviewed chart data matches exact source files, imperial units and populated main-boom cells',()=>{
  assert.equal(craneChartData.profiles.length,6);assert.equal(craneChartData.profiles.reduce((n,p)=>n+p.cells.length,0),556);
@@ -45,4 +45,26 @@ test('boom trucks use only single-part hook-ball ratings with 500 lb handling an
   for(const m of screenLift({loadLb:500,liftHeightFt:10},[p]).matches)assert.ok(m.totalLb*100<=limit*60);
  }
  const heavy=screenLift({loadLb:10000,liftHeightFt:50});assert.ok(heavy.matches.length);assert.ok(heavy.matches.every(m=>m.id.startsWith('rt')));
+});
+
+test('suitability considers every fleet model and favours a qualifying boom truck for lighter lifts',()=>{
+ const light={loadLb:1000,liftHeightFt:20};const matches=screenLift(light).matches;assert.equal(matches.length,6);
+ assert.equal(chooseLiftRecommendation(light,matches)!.id,'altec2595');
+ const high={loadLb:1000,liftHeightFt:90};assert.equal(chooseLiftRecommendation(high,screenLift(high).matches)!.id,'national1400');
+ for(const profile of craneChartData.profiles){const small={loadLb:100,liftHeightFt:5};assert.equal(chooseLiftRecommendation(small,screenLift(small,[profile]).matches)!.id,profile.id);}
+ const heavy={loadLb:10000,liftHeightFt:50};assert.equal(chooseLiftRecommendation(heavy,screenLift(heavy).matches)!.id,'rt635c');
+});
+test('above 5000 lb selects RT only even if a hypothetical boom truck passes the chart and line limits',()=>{
+ const truck=craneChartData.profiles.find(p=>p.id==='national1400')!;
+ const cell={radiusFt:20,boomFt:150,ratedLb:50000,angleDeg:70,deductionLb:0};
+ const profiles=[{...truck,singleLineLimitLb:20000,cells:[cell]},{...craneChartData.profiles.find(p=>p.id==='rt635c')!,cells:[cell]}];
+ const at={loadLb:5000,liftHeightFt:80};assert.equal(chooseLiftRecommendation(at,screenLift(at,profiles).matches)!.equipmentType,'boom-truck');
+ const over={loadLb:5000.01,liftHeightFt:80};const matches=screenLift(over,profiles).matches;assert.equal(matches.length,2);
+ assert.equal(chooseLiftRecommendation(over,matches)!.equipmentType,'rt-crane');
+ assert.equal(chooseLiftRecommendation(over,matches.filter(m=>m.equipmentType==='boom-truck')),undefined);
+});
+
+test('every reviewed machine can be the best fit for a real input without using rental price',()=>{
+ const cases=[[1000,20,'altec2595'],[1000,90,'national1400'],[10000,50,'rt635c'],[42000,10,'rt40'],[50000,20,'rt175'],[95000,5,'rt890e']] as const;
+ for(const[loadLb,liftHeightFt,id]of cases){const input={loadLb,liftHeightFt};const m=chooseLiftRecommendation(input,screenLift(input).matches)!;assert.equal(m.id,id);assert.ok(m.totalLb*100<=m.effectiveRatedLb*60);assert.ok(m.estimatedTipScreenFt>=liftHeightFt);}
 });
