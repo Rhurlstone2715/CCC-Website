@@ -3,23 +3,35 @@
  const results=document.getElementById('craneSelectorResults'),status=document.getElementById('craneSelectorStatus');
  const fmt=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:2});
  const text=(tag,value,className)=>{const el=document.createElement(tag);el.textContent=value;if(className)el.className=className;return el;};
+ const row=(dl,label,value)=>{const item=document.createElement('div');item.append(text('dt',label),text('dd',value));dl.append(item);};
  form.onsubmit=async event=>{
-  event.preventDefault();if(!form.reportValidity())return;const button=form.querySelector('button[type=submit]');button.disabled=true;results.replaceChildren();status.className='';status.textContent='Checking reviewed chart entries…';
+  event.preventDefault();if(!form.reportValidity())return;const button=form.querySelector('button[type=submit]');button.disabled=true;results.replaceChildren();status.className='';status.textContent='Finding equipment for your lift…';
   const values=Object.fromEntries(['loadLb','liftHeightFt'].map(k=>[k,Number(form.elements[k].value)]));
   try{
    const response=await fetch('/api/crane-selector',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(values)}),data=await response.json();if(!response.ok)throw Error(data.error||'Could not calculate this lift.');
-   status.textContent=data.matches.length?`${data.matches.length} preliminary equipment match${data.matches.length===1?'':'es'} for CCC review.`:'Manual lift review required.';
-   results.append(text('p','Compare each maximum chart radius with the reach needed at your site. Options are sorted by published hourly rate; CCC confirms the actual lift and availability.','selector-results-note'));
-   results.append(text('p',`Item weight: ${fmt(data.loadLb)} lb · approximate lifting height: ${fmt(data.liftHeightFt)} ft. Standard rigging is included separately for each machine.`, 'selector-results-note'),text('p',data.reason,'selector-results-note'));
-   data.matches.forEach((match,index)=>{
-    const card=text('article','', 'selector-match');card.append(text('p',index===0?'Recommended for lift-team review':'Alternative for lift-team review','eyebrow red'),text('h3',match.name));if(window.renderCraneSelectorVector)card.append(window.renderCraneSelectorVector(match));const dl=document.createElement('dl');
-    for(const [label,value]of [['Maximum qualifying chart radius',`${fmt(match.radiusFt)} ft`],['Standard rigging included',`${fmt(match.riggingLb)} lb`],['Total suspended weight',`${fmt(match.totalLb)} lb`],['Chart boom angle',`${fmt(match.angleDeg)}°`],['Main boom chart column',`${fmt(match.boomFt)} ft`],['Published capacity',`${fmt(match.ratedLb)} lb`],['Chart attachment deduction',`${fmt(match.deductionLb)} lb`],['60% gross planning limit',`${fmt(match.allowedGrossLb)} lb`],['Gross chart utilization',`${fmt(match.chartUtilizationPercent)}%`],['Published hourly rate',match.hourlyRate===null?'Confirm with CCC':`KYD $${fmt(match.hourlyRate)}`]]){const item=document.createElement('div');item.append(text('dt',label),text('dd',value));dl.append(item);}if(match.singleLineLimitLb){const line=document.createElement('div');line.append(text('dt','Single-part line / hook ball limit'),text('dd',`${fmt(match.singleLineLimitLb)} lb · 60% planning limit applied`));dl.append(line);}card.append(dl,text('p',match.setup),text('p',match.deductionNote),...(match.singleLineNote?[text('p',match.singleLineNote)]:[]),text('p','Reach screening is approximate. Boom deflection, actual hook clearance, ground bearing, obstacles, wind, hoist/reeving and the unit-specific chart must be verified by CCC.'));
-    const links=text('div','','selector-links'),chart=text('a',`Review source chart · page ${match.page}`);chart.href='/'+match.source+'#page='+match.page;chart.target='_blank';chart.rel='noopener';const view=text('a','View equipment & rates');view.href='/rentals?category='+(match.category==='Boom Trucks'?'boom-trucks':'cranes')+'#catalog';links.append(chart,view);if(match.singleLineSourcePage){const lineChart=text('a',`Review single-line limit · page ${match.singleLineSourcePage}`);lineChart.href='/'+match.source+'#page='+match.singleLineSourcePage;lineChart.target='_blank';lineChart.rel='noopener';links.append(lineChart);}card.append(links);results.append(card);
-   });
-   const summary=`Crane selector lift review\nItem weight: ${values.loadLb} lb\nApproximate lifting height: ${values.liftHeightFt} ft\nMain boom, full-outrigger stationary setup only.\n60% maximum of the adjusted chart rating.\nPreliminary maximum chart radii:\n${data.matches.map(m=>`${m.name}: ${m.radiusFt} ft radius, ${m.boomFt} ft boom, ${m.angleDeg}° chart angle; ${m.riggingLb} lb standard rigging, ${m.totalLb} lb gross`).join('\n')||'Manual review required'}`;
-
-   const inquire=text('a','Request CCC lift review','button primary');inquire.href='mailto:caymancrane@gmail.com?subject='+encodeURIComponent('Crane selection and lift review')+'&body='+encodeURIComponent(summary);results.append(inquire);
-   if(data.excluded?.length)results.append(text('p',data.excluded.map(p=>`${p.name}: ${p.reason}`).join(' '),'selector-excluded'));
+   const match=data.matches?.[0];
+   status.textContent=match?'Your suggested equipment':'Please contact CCC for a lift review';
+   if(match){
+    const card=text('article','', 'selector-match selector-simple-match');card.append(text('p','Suggested for your lift','eyebrow red'),text('h3',match.name),text('p',`For your ${fmt(values.loadLb)} lb item at approximately ${fmt(values.liftHeightFt)} ft. Check that your site’s reach fits within the maximum radius shown.`,'selector-results-note'));
+    const stats=text('dl','','selector-key-stats');
+    row(stats,'Maximum radius for your load',`${fmt(match.radiusFt)} ft`);
+    row(stats,'Approx. max lift height · this setup',`${fmt(match.estimatedTipScreenFt)} ft`);
+    row(stats,'Max item load at 60%',`${fmt(match.allowedItemLb)} lb`);card.append(stats);
+    if(window.renderCraneSelectorVector)card.append(window.renderCraneSelectorVector(match));
+    card.append(text('p',`${fmt(match.riggingLb)} lb hook and rigging allowance included. Main boom, full outriggers. CCC confirms site conditions and availability.`,'selector-results-note'));
+    const details=text('details','','selector-calculation');details.append(text('summary','View calculation and source chart'));
+    const dl=document.createElement('dl');
+    for(const[label,value]of [['Your item weight',`${fmt(values.loadLb)} lb`],['Hook & rigging allowance',`${fmt(match.riggingLb)} lb`],['Total suspended weight',`${fmt(match.totalLb)} lb`],['Allowed suspended load at 60%',`${fmt(match.allowedGrossLb)} lb`],['Main boom length',`${fmt(match.boomFt)} ft`],['Chart boom angle',`${fmt(match.angleDeg)}°`],['Manufacturer chart rating before margin',`${fmt(match.ratedLb)} lb`],['Chart attachment deduction',`${fmt(match.deductionLb)} lb`]])row(dl,label,value);
+    if(match.singleLineLimitLb)row(dl,'Single-part hook-ball rating before margin',`${fmt(match.singleLineLimitLb)} lb`);
+    if(match.hourlyRate!==null)row(dl,'Published hourly rate',`KYD $${fmt(match.hourlyRate)}`);
+    details.append(dl,text('p',match.setup),text('p',match.deductionNote));if(match.singleLineNote)details.append(text('p',match.singleLineNote));
+    details.append(text('p','The 60% limit uses the lower of the adjusted chart rating and any single-line restriction. Height is a conservative estimate for this setup, not the crane’s absolute maximum. CCC must verify the actual unit, rigging, clearance and ground conditions.'));
+    const links=text('div','','selector-links'),chart=text('a',`Load chart · page ${match.page}`);chart.href='/'+match.source+'#page='+match.page;chart.target='_blank';chart.rel='noopener';links.append(chart);
+    if(match.singleLineSourcePage){const line=text('a',`Hook-ball limit · page ${match.singleLineSourcePage}`);line.href='/'+match.source+'#page='+match.singleLineSourcePage;line.target='_blank';line.rel='noopener';links.append(line);}details.append(links);card.append(details);
+    const view=text('a','View equipment & rates','selector-equipment-link');view.href='/rentals?category='+(match.category==='Boom Trucks'?'boom-trucks':'cranes')+'#catalog';card.append(view);results.append(card);
+   }else results.append(text('p','We could not find a reviewed setup within the 60% planning limit for these details. Send your requirements to CCC so we can help.','selector-results-note'));
+   const summary=`Lift review request\nItem weight: ${values.loadLb} lb\nApproximate lifting height: ${values.liftHeightFt} ft\n${match?`Suggested machine: ${match.name}\nMaximum chart radius: ${match.radiusFt} ft\nApproximate maximum height for this setup: ${match.estimatedTipScreenFt} ft\nMaximum item weight at 60%: ${match.allowedItemLb} lb\nHook/rigging: ${match.riggingLb} lb\nMain boom: ${match.boomFt} ft at ${match.angleDeg}°`:'Manual review needed'}\nMain boom, full outriggers; 60% maximum planning limit.`;
+   const inquire=text('a',match?'Ask CCC to confirm this lift':'Ask CCC for help','button primary');inquire.href='mailto:caymancrane@gmail.com?subject='+encodeURIComponent('Crane selection and lift review')+'&body='+encodeURIComponent(summary);results.append(inquire);
   }catch(error){status.textContent=error.message||'Could not calculate this lift. Contact CCC for a review.';status.className='selector-error';}finally{button.disabled=false;}
  };
 })();

@@ -10,7 +10,7 @@ test('reviewed chart data matches exact source files, imperial units and populat
 });
 test('maximum radius includes the correct fixed rigging for each type',()=>{
  const result=screenLift(base);assert.equal(result.status,'matches');const omega=result.matches.find(m=>m.id==='rt40')!;assert.equal(omega.radiusFt,35);assert.equal(omega.boomFt,72);assert.equal(omega.angleDeg,58);assert.equal(omega.totalLb,10800);assert.equal(omega.allowedGrossLb,12000);
- for(const m of result.matches){assert.equal(m.riggingLb,m.id.startsWith('rt')?800:500);assert.equal(m.totalLb,10000+m.riggingLb);assert.ok(m.totalLb<=m.allowedGrossLb);assert.ok(m.chartUtilizationPercent<=60);}
+ for(const m of result.matches){assert.equal(m.riggingLb,m.id.startsWith('rt')?800:500);assert.equal(m.totalLb,10000+m.riggingLb);assert.ok(m.totalLb<=m.allowedGrossLb);assert.equal(m.allowedItemLb+m.riggingLb,m.allowedGrossLb);assert.ok(m.chartUtilizationPercent<=60);}
  const light=screenLift({loadLb:100,liftHeightFt:5});assert.equal(light.matches.length,6);
  for(const m of light.matches){const p=craneChartData.profiles.find(p=>p.id===m.id)!;for(const c of p.cells.filter(c=>c.radiusFt>m.radiusFt)){const reach=Math.max(0,Math.floor((c.boomFt*Math.sin(c.angleDeg*Math.PI/180)-10)/5)*5);assert.ok((100+m.riggingLb)*100>(c.ratedLb-c.deductionLb)*60||reach<5);}}
 });

@@ -7,7 +7,7 @@
   const colour=colours[match.id];if(!colour)return null;
   const angle=Number(match.angleDeg),length=Number(match.boomFt);if(!(angle>0&&angle<=90&&length>0))return null;
   const figure=document.createElement('figure');figure.className='selector-vector';figure.dataset.equipmentDesign='rt-artwork-'+colour;
-  const svg=el('svg',{viewBox:'0 0 720 460',role:'img','aria-label':`${match.name}, ${colour==='yellow'?'yellow':'grey and white'} crane, ${angle} degree chart angle, ${length} ft main boom. Animated extension; schematic, not to scale.`});
+  const svg=el('svg',{viewBox:'0 0 720 560',role:'img','aria-label':`${match.name}, ${colour==='yellow'?'yellow':'grey and white'} crane, ${angle} degree chart angle, ${length} ft main boom. Animated extension; schematic, not to scale.`});
   const add=(p,t,a,s)=>{const n=el(t,a,s);p.append(n);return n;};
   const label=(x,y,text,attrs={})=>add(svg,'text',{x,y,fill:'#383e47','font-family':'Arial, sans-serif','font-size':15,...attrs},text);
   add(svg,'title',{},`${match.name} — extending main boom at ${angle}°`);
@@ -36,15 +36,13 @@
   if(!reduced)add(hook,'animateTransform',{attributeName:'transform',type:'translate',from:`${hookStart.x-anchor.x} ${hookStart.y-anchor.y}`,to:`${hookEnd.x-anchor.x} ${hookEnd.y-anchor.y}`,dur:'1.4s',fill:'freeze',calcMode:'spline',keySplines:'.2 .65 .3 1',keyTimes:'0;1'});
   add(svg,'line',{x1:25,y1:414,x2:475,y2:414,stroke:'#ccd1d6','stroke-width':2});
   label(500,141,`${angle}°`,{fill:'#bc101c','font-size':36,'font-weight':800});label(500,166,'CHART BOOM ANGLE',{'font-size':11,'font-weight':700});
-  label(500,194,`${length} ft main boom`);label(500,219,`${match.radiusFt} ft chart radius`,{'font-size':14});
-  label(25,446,'Equipment artwork · chart-driven angle · schematic, not to scale',{'font-size':13,fill:'#68717b'});
+  label(500,194,`${length} ft main boom`);label(500,219,'60% planning limit',{'font-size':14});
+  window.drawCraneSelectorMeasures?.(svg,match,{pivotX:25-minX*scale+pivot.x*scale,loadX:25-minX*scale+hookEnd.x*scale,tipY:85-minY*scale+hookEnd.y*scale,groundY:414});
+  label(25,545,'Dimensions apply to this load and setup · schematic, not to scale',{'font-size':13,fill:'#68717b'});
   figure.append(svg);
   if(!reduced){
-   const controls=document.createElement('div');controls.className='selector-motion-controls';
-   const replay=document.createElement('button');replay.type='button';replay.className='selector-replay';replay.textContent='Replay boom extension';replay.setAttribute('aria-label',`Replay ${match.name} boom extension`);
-   replay.onclick=()=>{svg.pauseAnimations();svg.setCurrentTime(0);svg.unpauseAnimations();};controls.append(replay);figure.append(controls);
    queueMicrotask(()=>{if(!svg.isConnected)return;svg.pauseAnimations();svg.setCurrentTime(0);if(!('IntersectionObserver'in window)){svg.unpauseAnimations();return;}const observer=new IntersectionObserver(entries=>{if(!svg.isConnected){observer.disconnect();return;}if(entries.some(e=>e.isIntersecting)){svg.unpauseAnimations();observer.disconnect();}},{threshold:.2});observer.observe(svg);});
   }
-  const caption=document.createElement('figcaption');caption.textContent=`${match.name}: the original artwork layers extend at the selected ${angle}° chart angle. Illustrated extension is not a scale lift plan; CCC must confirm actual boom configuration and clearance.`;figure.append(caption);return figure;
+  const caption=document.createElement('figcaption');caption.textContent='Illustration only. Height is approximate for this boom setup; CCC confirms rigging, ground conditions and clearance.';figure.append(caption);return figure;
  };
 })();

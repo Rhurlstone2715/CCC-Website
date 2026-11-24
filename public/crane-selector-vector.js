@@ -7,7 +7,7 @@
   if(!Number.isFinite(angle)||angle<=0||angle>90||!Number.isFinite(length)||length<=0)return document.createTextNode('Chart geometry needs CCC review.');
   const figure=document.createElement('figure');figure.className='selector-vector';
   const rtImage=window.renderRtCraneImage?.(match);if(rtImage)return rtImage;
-  const svg=node('svg',{viewBox:'0 0 720 410',role:'img','aria-label':`${match.name}, main boom ${length} ft, published chart angle ${angle} degrees at ${match.radiusFt} ft chart radius. Schematic, not to scale.`});
+  const svg=node('svg',{viewBox:'0 0 720 560',role:'img','aria-label':`${match.name}, main boom ${length} ft, published chart angle ${angle} degrees at ${match.radiusFt} ft chart radius. Schematic, not to scale.`});
   svg.append(node('title',{},`${match.name} — ${angle}° chart boom angle`));
   const add=(parent,tag,attrs,value)=>{const e=node(tag,attrs,value);parent.append(e);return e;};
   const label=(x,y,value,attrs={})=>add(svg,'text',{x,y,fill:'#383e47','font-family':'Arial, sans-serif','font-size':16,...attrs},value);
@@ -92,8 +92,9 @@
   label(500,139,`${angle}°`,{fill:red,'font-size':39,'font-weight':800});
   label(500,166,'CHART BOOM ANGLE',{'font-size':12,'font-weight':700});
   label(500,194,`${length} ft main boom`,{'font-size':16,'font-weight':700});
-  label(500,219,`${match.radiusFt} ft chart radius`,{'font-size':14});
-  label(30,400,'Illustration only · not to scale · CCC must verify the actual lift',{'font-size':13,fill:'#68717b'});
-  figure.append(svg);const caption=document.createElement('figcaption');caption.textContent=`${match.name}: ${angle}° published loaded boom angle at the selected ${match.radiusFt} ft chart radius. The exact lift angle and extension require CCC confirmation.`;figure.append(caption);return figure;
+  label(500,219,'60% planning limit',{'font-size':14});
+  window.drawCraneSelectorMeasures?.(svg,match,{pivotX:px,loadX:tx,tipY:ty,groundY:375});
+  label(30,545,'Dimensions apply to this load and setup · schematic, not to scale',{'font-size':13,fill:'#68717b'});
+  figure.append(svg);if(!reduced)queueMicrotask(()=>{if(!svg.isConnected)return;svg.pauseAnimations();svg.setCurrentTime(0);if(!('IntersectionObserver'in window)){svg.unpauseAnimations();return;}const observer=new IntersectionObserver(entries=>{if(!svg.isConnected){observer.disconnect();return;}if(entries.some(e=>e.isIntersecting)){svg.unpauseAnimations();observer.disconnect();}},{threshold:.2});observer.observe(svg);});const caption=document.createElement('figcaption');caption.textContent='Illustration only. Height is approximate for this boom setup; CCC confirms rigging, ground conditions and clearance.';figure.append(caption);return figure;
  };
 })();

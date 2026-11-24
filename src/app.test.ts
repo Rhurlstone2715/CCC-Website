@@ -164,13 +164,13 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const response=await req('/api/crane-selector',{json:input});assert.equal(response.status,200);
     assert.match(response.headers.get('cache-control')??'',/no-store/);
     const data=await response.json();assert.equal(data.limitPercent,60);assert.equal(data.loadLb,10000);
-    assert.ok(data.matches.some((m:{id:string})=>m.id==='rt890e'));for(const m of data.matches){assert.equal(m.riggingLb,m.id.startsWith('rt')?800:500);assert.equal(m.totalLb,10000+m.riggingLb);assert.ok(m.totalLb<=m.allowedGrossLb);}
-    assert.ok(data.matches[0].hourlyRate>0);assert.ok(!data.excluded.some((p:{id:string})=>p.id==='rt40'));assert.ok(data.matches.some((m:{id:string,name:string})=>m.id==='rt40'&&m.name==='P&H Omega 40'));
+    assert.equal(data.matches.length,1);assert.equal(data.matches[0].id,'rt635c');for(const m of data.matches){assert.equal(m.riggingLb,m.id.startsWith('rt')?800:500);assert.equal(m.totalLb,10000+m.riggingLb);assert.ok(m.totalLb<=m.allowedGrossLb);}
+    assert.ok(data.matches[0].hourlyRate>0);assert.ok(!data.excluded.some((p:{id:string})=>p.id==='rt40'));
     const excessive=await(await req('/api/crane-selector',{json:{loadLb:500000,liftHeightFt:50}})).json();assert.equal(excessive.matches.length,0);
     assert.equal((await req('/api/crane-selector',{json:{...input,loadLb:-1}})).status,400);
     assert.equal((await req('/api/crane-selector',{json:{...input,padding:'x'.repeat(9000)}})).status,413);
-    await prisma.product.update({where:{id:'rt890e'},data:{chart:'assets/load-charts/other.pdf'}});
-    const changed=await(await req('/api/crane-selector',{json:input})).json();assert.ok(!changed.matches.some((m:{id:string})=>m.id==='rt890e'));
+    await prisma.product.update({where:{id:data.matches[0].id},data:{chart:'assets/load-charts/other.pdf'}});
+    const changed=await(await req('/api/crane-selector',{json:input})).json();assert.equal(changed.matches.length,1);assert.notEqual(changed.matches[0].id,data.matches[0].id);
     assert.equal(await prisma.booking.count(),0);assert.equal(await prisma.accountEmail.count(),0);
   });
 

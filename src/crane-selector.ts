@@ -24,7 +24,7 @@ export function screenLift(input:LiftInput,profiles:ChartProfile[]=craneChartDat
    // round down to 5 ft. Actual deflection and hook/rigging clearance need review.
    const estimatedTipScreenFt=Math.max(0,Math.floor((cell.boomFt*Math.sin(cell.angleDeg*Math.PI/180)-10)/5)*5);
    if(input.liftHeightFt>estimatedTipScreenFt)return [];
-   return[{...cell,adjustedChartLb,effectiveRatedLb,allowedGrossLb:effectiveRatedLb*60/100,estimatedTipScreenFt,chartUtilizationPercent:Math.min(60,Math.ceil(totalLb/adjustedChartLb*10000-1e-9)/100)}];
+   return[{...cell,adjustedChartLb,effectiveRatedLb,allowedGrossLb:effectiveRatedLb*60/100,allowedItemLb:(effectiveRatedLb*60-riggingLb*100)/100,estimatedTipScreenFt,chartUtilizationPercent:Math.min(60,Math.ceil(totalLb/adjustedChartLb*10000-1e-9)/100)}];
   }).sort((a,b)=>b.radiusFt-a.radiusFt||a.boomFt-b.boomFt);
   if(!setups.length)return [];
   return[{id:profile.id,name:profile.name,source:profile.source,page:profile.page,setup:profile.setup,chartCode:profile.chartCode,deductionNote:profile.deductionNote,singleLineLimitLb:profile.singleLineLimitLb,singleLineSourcePage:profile.singleLineSourcePage,singleLineNote:profile.singleLineNote,riggingLb,totalLb,requiredChartLb:Math.ceil(totalHundredths/60),...setups[0]}];
