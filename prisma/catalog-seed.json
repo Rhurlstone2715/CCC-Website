@@ -1507,7 +1507,7 @@
    "category": "Rigging Services",
    "spec": "Hourly or daily labour service",
    "desc": "Rigger/banksman service for lifting work.",
-   "image": "assets/catalog/rigger-banksman.jpg",
+   "image": "assets/catalog/rigger-banksman.png",
    "photo": true,
    "operatorService": true,
    "rates": {
