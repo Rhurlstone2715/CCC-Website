@@ -24,7 +24,7 @@ test('Rigger/Banksman is a visible, bookable Rigging Services item with hourly a
  const p=seed.find(p=>p.id==='rigger-banksman');assert.ok(p);assert.equal(p.name,'Rigger/Banksman');assert.equal(p.category,'Rigging Services');
  assert.deepEqual(p.rates,{hourly:50,daily:315});assert.equal(p.operatorService,true);assert.ok(!p.hidden);assert.ok(!p.delivery);assert.equal(p.availableQuantity,undefined);assert.equal(p.image,'assets/catalog/rigger-banksman.jpg');
  assert.equal(layout.categoryId(p),'rigging-services');assert.deepEqual(Array.from(layout.itemsFor(seed,'rigging-services'),p=>p.id),['rigger-banksman']);
- assert.equal(layout.categories.find(c=>c.id==='rigging-services').name,'Rigging Services');assert.equal(layout.categories.find(c=>c.id==='rigging-services').hero,'rigger-banksman');assert.ok(!layout.categories.some(c=>c.id==='operator-service'));assert.ok(!layout.itemsFor(seed,'other').some(p=>p.id==='rigger-banksman'));
+ assert.equal(layout.categories.find(c=>c.id==='rigging-services').name,'Rigging & Banksman Services');assert.equal(layout.categories.find(c=>c.id==='rigging-services').hero,'rigger-banksman');assert.ok(!layout.categories.some(c=>c.id==='operator-service'));assert.ok(!layout.itemsFor(seed,'other').some(p=>p.id==='rigger-banksman'));
  const operator=seed.find(p=>p.id==='telehandler-operator');assert.ok(operator.hidden);assert.deepEqual(operator.rates,{hourly:35,daily:315});assert.ok(!layout.visibleCategories(seed).some(c=>layout.itemsFor(seed,c.id).includes(operator)));
 });
 test('Rigger/Banksman migration adds the item without overwriting admin-edited catalogs',()=>{
