@@ -85,7 +85,7 @@ export async function estimateSnapshot(tx:Prisma.TransactionClient,b:Booking,num
  if(!rows.length)rows.push({item:'Rental',description:'Equipment and rental pricing to be confirmed. Refer to the booking request.',qty:'',rate:'TBC',total:'TBC'});
  rows.push(...deliveryRows);
  if(!complete)rows.push({item:'Pricing',description:`Priced subtotal: CI$${currency(pricedSubtotalCents+(deliveryCents||0))}. Items marked TBC require manual pricing; this is not the final total.`,qty:'',rate:'',total:''});
- if(discountCents)rows.push({item:'Loyalty',description:b.loyaltyDiscountOverrideCents!==null?`${b.rewardTier||'Loyalty'} discount — admin-approved amount`:`${b.rewardTier||'Loyalty'} discount (${b.discountPercent}%) — equipment only; rounded to the nearest KYD $5`,qty:'',rate:'',total:'-'+currency(discountCents)});
+ if(discountCents)rows.push({item:'Loyalty',description:b.loyaltyDiscountOverrideCents!==null?`${b.rewardTier||'Loyalty'} discount — admin-approved amount`:`${b.rewardTier||'Loyalty'} discount (${b.discountPercent}%) — equipment only`,qty:'',rate:'',total:'-'+currency(discountCents)});
  return {number,bookingRef:bookingRef(b.id),date:b.createdAt.toLocaleDateString('en-GB',{timeZone:'America/Cayman',day:'numeric',month:'short',year:'numeric'}),customerName:b.customerName,company:b.company,billingAddress:b.billingAddress,email:b.customerEmail,phone:b.phone,location:[b.siteAddress,b.area].filter(Boolean).join(', ')|| (b.rentalCollection==='pickup'?'Customer pickup':'To be confirmed'),requestedStart,jobDetails,rows,discountCents,deliveryCents,pricedSubtotalCents,totalCents};
 }
 let templateFiles:Promise<Buffer[]>|undefined;
@@ -107,6 +107,7 @@ function columnMoney(value:string):string{
 }
 export type ReceiptRender = {number:string; amountPaidCents:number; paidDate:string};
 export async function renderEstimatePdf(s:EstimateSnapshot,preview=false,receipt?:ReceiptRender,invoice?:{number:string;amountPaidCents:number}):Promise<Uint8Array>{
+ s={...s,rows:s.rows.map(row=>({...row,description:row.description.replace(/; rounded to the nearest KYD \$5/g,'')}))};
  const [template,regularBytes,boldBytes]=await files();const doc=await PDFDocument.create();doc.registerFontkit(fontkit);
  const font=await doc.embedFont(regularBytes,{subset:true}),bold=await doc.embedFont(boldBytes,{subset:true});
  const columns=[{x:45,w:70},{x:125,w:207},{x:342,w:68},{x:420,w:55},{x:485,w:84}];

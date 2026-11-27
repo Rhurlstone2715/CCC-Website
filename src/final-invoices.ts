@@ -56,8 +56,8 @@ finalInvoiceDocuments.get('/:id{[0-9]+}/invoices/:invoice',async c=>{
 // Update saved historical PDFs without changing their financial snapshots or emailing them again.
 export async function backfillInvoiceWatermarks(){
  let cursor=0,updated=0;
- for(;;){const invoices=await prisma.finalInvoice.findMany({where:{id:{gt:cursor}},orderBy:{id:'asc'},take:50,select:{id:true,pdf:true}});if(!invoices.length)break;
-  for(const invoice of invoices){const pdf=await watermarkPdf(invoice.pdf,'invoice');if(pdf!==invoice.pdf){await prisma.finalInvoice.update({where:{id:invoice.id},data:{pdf:new Uint8Array(pdf)}});updated++;}cursor=invoice.id;}
+ for(;;){const invoices=await prisma.finalInvoice.findMany({where:{id:{gt:cursor}},orderBy:{id:'asc'},take:50,select:{id:true,pdf:true,snapshot:true,amountPaidCents:true}});if(!invoices.length)break;
+  for(const invoice of invoices){const snapshot=invoice.snapshot as unknown as EstimateSnapshot;const wordingChanged=snapshot.rows.some(row=>row.description.includes('; rounded to the nearest KYD $5'));const cleanSnapshot={...snapshot,rows:snapshot.rows.map(row=>({...row,description:row.description.replace(/; rounded to the nearest KYD \$5/g,'')}))};const pdf=wordingChanged?await renderEstimatePdf(cleanSnapshot,false,undefined,{number:invoiceNumber(invoice.id),amountPaidCents:invoice.amountPaidCents}):await watermarkPdf(invoice.pdf,'invoice');if(pdf!==invoice.pdf){await prisma.finalInvoice.update({where:{id:invoice.id},data:{pdf:new Uint8Array(pdf),...(wordingChanged?{snapshot:cleanSnapshot as unknown as Prisma.InputJsonValue}:{})}});updated++;}cursor=invoice.id;}
  }
  console.info(`Invoice watermarks ready: ${updated} historical PDFs updated.`);return updated;
 }
