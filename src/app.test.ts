@@ -8,7 +8,7 @@ import * as webPush from "web-push";
 import { deliverAdminPushNotifications, queueAdminSignupNotices } from "./admin-push.js";
 import { inventoryNow } from "./availability.js";
 import { deliverEstimateEmails, renderEstimatePdf, estimateSnapshot, type EstimateSnapshot } from "./estimates.js";
-import {deliverReceiptEmails,queuePaidReceipt} from "./receipts.js";
+import {deliverReceiptEmails,queuePaidReceipt,refreshPaidDocumentBalances} from "./receipts.js";
 import {areaEta,enRouteText,notifyEnRoute} from './en-route.js';
 import {runRentalReminders} from "./rental-reminders.js";
 import {brandedEmailHtml,sendEmail} from "./email.js";
@@ -256,6 +256,20 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   // Each call gets its own IP unless one is given, so rate limits don't leak between tests.
   let fixtureDay=0;
   let signupPhone=100;
+  test('a 275 Platinum invoice and 275 payment do not retain the old 300 estimate balance',async()=>{
+    const{b,user}=await reminderFixture();const paidAt=new Date();const current=await prisma.booking.update({where:{id:b.id},data:{status:'PAID',paidAt,amountPaidCents:27500,discountPercent:15,rewardTier:'Platinum',items:[{id:'diesel-mixer-9-cu-ft',name:'Mixer',term:'weekly',qty:1,periods:1,rate:175,amount:175,operator:false}]}});
+    const estimate=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}}),now=await prisma.$transaction(tx=>estimateSnapshot(tx,current,estimate.number));assert.equal(now.totalCents,27500);
+    const old={...now,discountCents:2500,totalCents:30000,pricedSubtotalCents:15000,rows:now.rows.map(r=>r.item==='Loyalty'?{...r,description:'Platinum discount (15%) — equipment only',total:'-25.00'}:r)};
+    await prisma.estimate.update({where:{bookingId:b.id},data:{snapshot:JSON.parse(JSON.stringify(old)),totalCents:30000}});
+    await queueFinalInvoice(b.id,current.updatedAt.toISOString());const invoice=await prisma.finalInvoice.findFirstOrThrow();await prisma.finalInvoice.update({where:{id:invoice.id},data:{amountPaidCents:0,emailSentAt:new Date()}});
+    const receipt=await prisma.paymentReceipt.create({data:{bookingId:b.id,key:randomUUID(),amountPaidCents:27500,paidAt,snapshot:JSON.parse(JSON.stringify(old)),pdf:new Uint8Array(await renderEstimatePdf(old,false,{number:'R-TEST',amountPaidCents:27500,paidDate:'27 Nov 2026'})),emailRecipient:current.customerEmail,emailSentAt:new Date()}});
+    const points=(await rewardsForUser(user.id)).points;assert.equal(await refreshPaidDocumentBalances(),1);assert.equal(await refreshPaidDocumentBalances(),0);
+    const fixed=await prisma.paymentReceipt.findUniqueOrThrow({where:{id:receipt.id}});assert.equal((fixed.snapshot as unknown as EstimateSnapshot).totalCents,27500);assert.equal(fixed.amountPaidCents,27500);assert.deepEqual(fixed.emailSentAt,receipt.emailSentAt);
+    const pdfText=execSync('pdftotext -layout - -',{input:Buffer.from(fixed.pdf)}).toString();assert.match(pdfText,/PAID IN FULL/);assert.match(pdfText,/Remaining balance KYD \$0.00/);
+    const refreshed=await prisma.finalInvoice.findUniqueOrThrow({where:{id:invoice.id}});assert.equal(refreshed.totalCents,27500);assert.equal(refreshed.amountPaidCents,27500);assert.equal((await rewardsForUser(user.id)).points,points);
+    const same=await prisma.$transaction(tx=>queuePaidReceipt(tx,current));assert.equal(same!.id,receipt.id);assert.equal(await prisma.paymentReceipt.count(),1);
+  });
+
   test('invoice percentage discounts cover equipment, operators, delivery and pickup together at every tier',async()=>{
     const{b}=await reminderFixture();let last;
     for(const [percent,discount]of [[5,4000],[10,8500],[15,12500]]){

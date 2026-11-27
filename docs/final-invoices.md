@@ -23,3 +23,9 @@ Historical final invoice percentage discounts are recalculated from their own sa
 ## Invoice labels and numbering — 27 November 2026
 
 Public headings, email subjects, PDF metadata, attachments and admin labels use Invoice rather than Final Invoice. A separate transactionally allocated counter starts at 6907. Existing invoice records are numbered in issue order from 6907; the counter continues after the last existing number. Duplicate booking/version submissions reuse their invoice and consume no additional number. Internal document IDs and links remain unchanged, and estimate/receipt counters are independent. Startup refreshes saved invoice PDFs to display their assigned number. Previews remain labelled PREVIEW and never consume invoice numbers.
+
+## Paid-balance consistency
+
+Paid receipts apply the current all-item percentage-discount policy to the saved estimate snapshot rather than retaining an equipment-only total. Existing active paid receipts are refreshed in place at startup; receipt numbers, payment amounts, payment dates and email-send flags are preserved. The latest active issued invoice's payment display follows admin-confirmed payments, including later corrections/removal, without reissuing or re-emailing it. Booking payments and rewards are never inferred from an invoice total or changed by document refresh.
+
+Regression case: gross KYD 325, Platinum discount previously 25 (equipment-only) versus 50 (all items), invoice total 275 and confirmed payment 275. The receipt must use 275 rather than the stale 300 and show zero remaining balance.

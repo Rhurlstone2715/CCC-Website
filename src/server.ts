@@ -2,7 +2,7 @@ import{startFinalInvoiceDelivery,backfillInvoiceWatermarks}from'./final-invoices
 import {startRentalReminderDelivery} from './rental-reminders.js';
 import {runConfiguredDocumentCorrection} from "./booking-document-correction.js";
 import {runConfiguredTransportRepair} from './booking-transport-repair.js';
-import {startReceiptEmailDelivery} from './receipts.js';
+import {startReceiptEmailDelivery,refreshPaidDocumentBalances} from './receipts.js';
 import { startAdminPushDelivery } from "./admin-push.js";
 import { startCompanyLogoRefresh } from "./company-logos.js";
 import { startEstimateEmailDelivery } from "./estimates.js";
@@ -16,6 +16,7 @@ import { prisma } from "./db.js";
 await ensureCatalogSeeded();
 await backfillInvoiceWatermarks();
 await runConfiguredTransportRepair();
+await refreshPaidDocumentBalances();
 await runConfiguredDocumentCorrection();
 const googleCalendarTimer = startGoogleCalendarSync();
 const accountEmailTimer = startAccountEmailDelivery();

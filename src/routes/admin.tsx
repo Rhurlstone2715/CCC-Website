@@ -7,7 +7,7 @@ import {adminCustomerBrands,type RewardsBrand} from "../company-logos.js";
 import {memberSinceDate} from "../views/layout.js";
 import { phoneProblem } from "../phone.js";
 import {sessionLabel} from '../booking-sessions.js';
-import {queuePaidReceipt,deliverReceiptEmails} from '../receipts.js';
+import {queuePaidReceipt,deliverReceiptEmails,syncIssuedInvoicePayment} from '../receipts.js';
 import { assertAvailability, AvailabilityError, lockInventory } from "../availability.js";
 import { estimateMetadata } from "../estimates.js";
 import { PaymentProofSection, paymentProofMetadata } from "../payment-proofs.js";
@@ -682,6 +682,7 @@ admin.post("/bookings/:id{[0-9]+}/:action", async c => {
     const changed=await tx.booking.update({where:{id},data});
     if(['PENDING','APPROVED','PAID'].includes(changed.status)&&('status' in data||'scheduleStart' in data||'scheduleEnd' in data))await assertAvailability(tx,Array.isArray(changed.items)?changed.items as unknown as PricedLine[]:[],changed,id);
     if(changed.status==='PAID'&&('status' in data||'amountPaidCents' in data))await queuePaidReceipt(tx,changed);
+    if(changed.status!=='PAID'&&('status' in data||'amountPaidCents' in data))await syncIssuedInvoicePayment(tx,changed);
     if(changed.status!=='PAID')await tx.paymentReceipt.updateMany({where:{bookingId:id,supersededAt:null,emailSentAt:null},data:{supersededAt:new Date()}});
     return changed;
   },{timeout:30000,maxWait:15000});
