@@ -1,3 +1,4 @@
+import{queueFinalInvoice,deliverFinalInvoiceEmails,invoiceNumber}from'../final-invoices.js';
 import {randomUUID} from 'node:crypto';
 import {CREW_NAMES,areaEta,etaTime,notifyEnRoute} from '../en-route.js';
 import {weeklyMonthlyLines,confirmedReminderEnd,reminderRecipientVerified} from '../rental-reminder-plan.js';
@@ -33,6 +34,9 @@ const NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string
   "enroute-failed": {tone:"error",text:"The email did not send. Retry the saved notification below."},
   "enroute-invalid": {tone:"error",text:"Choose different crew members for each role and enter a valid ETA window (1–240 minutes) when no area default exists."},
   "enroute-unconfigured": {tone:"error",text:"Customer email delivery is not configured."},
+  "invoice-queued": {tone:"success",text:"Final invoice saved. Email delivery is queued; see the invoice history below for its send status."},
+  "invoice-stale": {tone:"error",text:"This booking has changed. Review the latest details before sending the final invoice."},
+  "invoice-unpriced": {tone:"error",text:"Confirm every price and delivery charge before issuing a final invoice."},
   "rental-returned": {tone:"success",text:"Equipment marked returned. Pending rental reminders have been stopped."},
   "rental-resumed": {tone:"success",text:"Rental reminder eligibility will be checked again."},
   "booking-created": { tone: "success", text: "Booking created. Its PDF estimate is saved and queued for email to the customer." },
@@ -486,6 +490,7 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
   ]);
   const notice = noticeFrom(c);
   const ref = bookingRef(booking.id);
+  const invoices=await prisma.finalInvoice.findMany({where:{bookingId:booking.id},orderBy:{id:"desc"},select:{id:true,createdAt:true,emailSentAt:true,supersededAt:true,bookingVersion:true}});
   const dispatches=await prisma.enRouteNotification.findMany({where:{bookingId:booking.id},orderBy:{createdAt:'desc'},take:10});
   const travel=areaEta(booking.area);
   const reminderLines=weeklyMonthlyLines(booking.items);
@@ -562,6 +567,11 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
                 </button>
               </form>
             ) : null}
+          </section>
+          <section class="card"><h2>Final invoice</h2><p>When the service or rental is completed, review the actual duration, equipment, quantities, rates and charges before sending.</p><a class="button secondary" href={`/admin/bookings/${booking.id}/edit`}>Edit booking before invoicing</a>
+            {['APPROVED','PAID'].includes(booking.status)?<form method="post" action={`/admin/bookings/${booking.id}/final-invoice`} data-confirm="Confirm this rental/service is completed and email the final invoice using the current booking details?"><input type="hidden" name="version" value={booking.updatedAt.toISOString()}/><button type="submit" class="button primary">Send Final Invoice</button></form>:<p>Approve the booking before issuing a final invoice.</p>}
+            {!customerEmailsEnabled()?<p class="notice info">Customer email delivery is not configured; invoices will be saved for delivery once configured.</p>:null}
+            {invoices.length?<ul>{invoices.map(i=><li><a href={`/admin/bookings/${booking.id}/documents/invoice-${i.id}`}>{invoiceNumber(i.id)}</a> · {caymanDate(i.createdAt)} · {i.emailSentAt?'Emailed':i.supersededAt?'Superseded — not sent':'Queued for email'}{i.bookingVersion.getTime()!==booking.updatedAt.getTime()?' · Earlier booking version':''}</li>)}</ul>:null}
           </section>
           <section class="card">
             <h2>Equipment en route</h2>
@@ -677,6 +687,7 @@ admin.post("/bookings/:id{[0-9]+}/:action", async c => {
   },{timeout:30000,maxWait:15000});
 
   try { switch (action) {
+    case "final-invoice": {const notice=await queueFinalInvoice(id,text(body.version));if(notice==='invoice-queued')void deliverFinalInvoiceEmails();return back(notice);}
     case "en-route": return back(await notifyEnRoute(id,{key:text(body.dispatchKey),operator:text(body.operator),rigger:text(body.rigger),min:text(body.etaMin),max:text(body.etaMax)}));
     case "approve": {
       if (booking.status !== "PENDING") return back("bad-transition");

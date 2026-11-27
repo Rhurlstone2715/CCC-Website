@@ -15,6 +15,8 @@ async function documentFor(bookingId:number,kind:string){
   const r=await prisma.paymentReceipt.findFirst({where:{bookingId,supersededAt:null,booking:{status:'PAID'}},orderBy:{id:'desc'}});
   return r?{title:`Paid receipt R-${String(r.id).padStart(6,'0')}`,pdf:r.pdf,mark:'paid' as const,download:`/account/bookings/${bookingId}/receipt.pdf`}:null;
  }
+ const invoice=/^invoice-(\d+)$/.exec(kind);
+ if(invoice){const i=await prisma.finalInvoice.findFirst({where:{bookingId,id:Number(invoice[1])}});return i?{title:`Final invoice FIN-${String(i.id).padStart(6,'0')}`,pdf:i.pdf,mark:null,download:`/account/bookings/${bookingId}/invoices/${i.id}.pdf`}:null;}
  const archive=/^estimate-(\d+)$/.exec(kind);
  if(archive){
   const e=await prisma.estimateArchive.findFirst({where:{bookingId,number:Number(archive[1])}});
@@ -25,7 +27,7 @@ async function documentFor(bookingId:number,kind:string){
 adminDocuments.get('/:id{[0-9]+}/documents/:kind/pdf',async c=>{
  const document=await documentFor(Number(c.req.param('id')),c.req.param('kind'));if(!document)return c.notFound();
  c.header('Content-Type','application/pdf');c.header('Cache-Control','private, no-store');c.header('X-Content-Type-Options','nosniff');
- return c.body(new Uint8Array(await watermarkPdf(document.pdf,document.mark)));
+ return c.body(new Uint8Array(document.mark?await watermarkPdf(document.pdf,document.mark):document.pdf));
 });
 adminDocuments.get('/:id{[0-9]+}/documents/:kind',async c=>{
  const id=Number(c.req.param('id')),kind=c.req.param('kind'),document=await documentFor(id,kind);if(!document)return c.notFound();

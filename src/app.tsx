@@ -1,3 +1,4 @@
+import{finalInvoiceDocuments}from'./final-invoices.js';
 import {craneSelector} from "./routes/crane-selector.js";
 import {rewardsBrand} from "./company-logos.js";
 import {memberSinceDate} from "./views/layout.js";
@@ -120,6 +121,7 @@ app.route("/admin/push",adminPush);
 app.route("/admin/bookings",adminBookingEditor);
 app.route("/admin/bookings",adminDocuments);
 app.route("/company-logos",companyLogos);
+app.route("/account/bookings", finalInvoiceDocuments);
 app.route("/account/bookings", estimates);
 app.route("/account/bookings", paymentProofs);
 app.route("/account", account);

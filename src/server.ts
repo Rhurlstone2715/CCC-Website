@@ -1,3 +1,4 @@
+import{startFinalInvoiceDelivery}from'./final-invoices.js';
 import {startRentalReminderDelivery} from './rental-reminders.js';
 import {runConfiguredDocumentCorrection} from "./booking-document-correction.js";
 import {runConfiguredTransportRepair} from './booking-transport-repair.js';
@@ -21,6 +22,7 @@ const estimateEmailTimer = startEstimateEmailDelivery();
 const receiptEmailTimer=startReceiptEmailDelivery();
 const companyLogoTimer=startCompanyLogoRefresh();
 const adminPushTimer=startAdminPushDelivery();
+const finalInvoiceTimer=startFinalInvoiceDelivery();
 const rentalReminderTimer=startRentalReminderDelivery();
 
 const port = Number(process.env.PORT) || 3000;
@@ -34,6 +36,7 @@ function shutdown() {
   clearInterval(companyLogoTimer);
   clearInterval(adminPushTimer);
   clearInterval(rentalReminderTimer);
+  clearInterval(finalInvoiceTimer);
   server.close(() => {
     prisma.$disconnect().finally(() => process.exit(0));
   });

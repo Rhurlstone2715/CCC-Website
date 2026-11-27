@@ -2,6 +2,8 @@
 // Run with `npm test`; needs TEST_DATABASE_URL (see .env.example).
 // test-env must stay the first import: it points Prisma at the test database.
 import "./test-env.js";
+import{queueFinalInvoice,deliverFinalInvoiceEmails}from'./final-invoices.js';
+
 import * as webPush from "web-push";
 import { deliverAdminPushNotifications, queueAdminSignupNotices } from "./admin-push.js";
 import { inventoryNow } from "./availability.js";
@@ -253,6 +255,35 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   // Each call gets its own IP unless one is given, so rate limits don't leak between tests.
   let fixtureDay=0;
   let signupPhone=100;
+  test('final invoices are admin-only, use fresh booking totals and retain the estimate branding without its watermark',async()=>{
+    const{b}=await reminderFixture(),admin=await makeAdmin();
+    assert.equal((await req(`/admin/bookings/${b.id}/final-invoice`,{form:{version:b.updatedAt.toISOString()}})).status,302);assert.equal(await prisma.finalInvoice.count(),0);
+    const page=await(await req(`/admin/bookings/${b.id}`,{cookie:admin})).text();assert.match(page,/Send Final Invoice/);assert.match(page,/Edit booking before invoicing/);
+    const r=await req(`/admin/bookings/${b.id}/final-invoice`,{cookie:admin,form:{version:b.updatedAt.toISOString()}});assert.match(r.headers.get('location')!,/invoice-queued/);
+    await queueFinalInvoice(b.id,b.updatedAt.toISOString());assert.equal(await prisma.finalInvoice.count(),1);
+    const i=await prisma.finalInvoice.findFirstOrThrow();assert.equal(i.emailSentAt,null);assert.equal(i.amountPaidCents,0);assert.equal(i.totalCents,50000);
+    const pdf=await PDFDocument.load(i.pdf);assert.match(pdf.getTitle()!,/Final Invoice FIN-000001/);assert.ok(!pdf.getKeywords()?.includes('watermark'));
+    const text=execSync('pdftotext -layout - -',{input:Buffer.from(i.pdf)}).toString();assert.match(text,/FINAL INVOICE/);assert.match(text,/Balance due KYD \$500.00/);assert.ok(!text.includes('PROVISIONAL ESTIMATE'));assert.match(text,/TOTAL KYD/);assert.match(text,/TOTAL USD/);
+    execSync('cat > /tmp/final-invoice-sample.pdf',{input:Buffer.from(i.pdf)});
+    const viewer=await(await req(`/admin/bookings/${b.id}/documents/invoice-${i.id}`,{cookie:admin})).text();assert.match(viewer,/Back to booking/);assert.equal((await req(`/account/bookings/${b.id}/invoices/${i.id}.pdf`,{cookie:admin})).status,200);
+    const other=await signup('other-invoice@example.com');assert.equal((await req(`/account/bookings/${b.id}/invoices/${i.id}.pdf`,{cookie:other})).status,404);
+    assert.equal((await prisma.booking.findUniqueOrThrow({where:{id:b.id}})).status,'APPROVED');assert.equal(await prisma.paymentReceipt.count(),0);
+  });
+  test('final invoices reflect actual edited equipment and durations; earlier unsent versions cannot email',async t=>{
+    const{b}=await reminderFixture();await queueFinalInvoice(b.id,b.updatedAt.toISOString());const original=await prisma.finalInvoice.findFirstOrThrow();
+    const edited=await prisma.booking.update({where:{id:b.id},data:{items:[{id:'diesel-mixer-9-cu-ft',name:'Mixer',term:'daily',qty:1,periods:2,rate:40,amount:80,operator:false}],jobDetails:'Shortened actual rental',status:'PAID',paidAt:new Date(),amountPaidCents:50000}});
+    assert.equal(await queueFinalInvoice(b.id,b.updatedAt.toISOString()),'invoice-stale');await queueFinalInvoice(b.id,edited.updatedAt.toISOString());
+    const invoices=await prisma.finalInvoice.findMany({orderBy:{id:'asc'}});assert.equal(invoices.length,2);assert.ok(invoices[0].supersededAt);assert.deepEqual(invoices[0].pdf,original.pdf);assert.equal(invoices[1].amountPaidCents,50000);assert.equal(invoices[1].totalCents,38000);
+    enableReminderTest(t);const sent:Parameters<typeof sendEmail>[0][]=[];await deliverFinalInvoiceEmails(async e=>{sent.push(e);return true;});await deliverFinalInvoiceEmails(async()=>{throw Error('duplicate');});assert.equal(sent.length,1);assert.match(sent[0].text,/Credit: KYD \$120.00/);assert.match(sent[0].text,/FIN-000002/);
+    assert.equal((await prisma.booking.findUniqueOrThrow({where:{id:b.id}})).amountPaidCents,50000);
+  });
+  test('final invoice retries keep one PDF and provider key and cancel stale or unpriced work',async t=>{
+    enableReminderTest(t);const{b}=await reminderFixture();await queueFinalInvoice(b.id,b.updatedAt.toISOString());const sent:Parameters<typeof sendEmail>[0][]=[];let ok=false;const sender=async(e:Parameters<typeof sendEmail>[0])=>{sent.push(e);return ok;};
+    await deliverFinalInvoiceEmails(sender);await prisma.finalInvoice.updateMany({data:{nextEmailAttemptAt:new Date(0)}});ok=true;await deliverFinalInvoiceEmails(sender);assert.equal(sent.length,2);assert.equal(sent[0].idempotencyKey,sent[1].idempotencyKey);assert.deepEqual(sent[0].attachments,sent[1].attachments);
+    let edited=await prisma.booking.update({where:{id:b.id},data:{adminNote:'New booking version'}});await queueFinalInvoice(b.id,edited.updatedAt.toISOString());await prisma.booking.update({where:{id:b.id},data:{status:'CANCELLED'}});await deliverFinalInvoiceEmails(sender);assert.equal(sent.length,2);assert.ok((await prisma.finalInvoice.findFirstOrThrow({orderBy:{id:'desc'}})).supersededAt);
+    edited=await prisma.booking.update({where:{id:b.id},data:{status:'APPROVED',area:null}});assert.equal(await queueFinalInvoice(b.id,edited.updatedAt.toISOString()),'invoice-unpriced');
+  });
+
   test("en route ETAs cover requested areas and Cayman clock boundaries",()=>{
     for(const area of ['West Bay','George Town','George town','Red Bay','Prospect','Savannah'])assert.deepEqual(areaEta(area),[15,30]);
     assert.deepEqual(areaEta('Bodden Town'),[20,30]);for(const area of ['North Side','East End'])assert.deepEqual(areaEta(area),[30,40]);assert.equal(areaEta('7 Mile Beach'),null);

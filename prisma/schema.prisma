@@ -101,6 +101,7 @@ model EmailVerification {
 }
 
 model Booking {
+ finalInvoices FinalInvoice[]
   enRouteNotifications EnRouteNotification[]
   rentalReminders RentalReminder[]
   rentalReturnedAt DateTime?
@@ -445,4 +446,23 @@ model EnRouteNotification {
  sentAt DateTime?
  createdAt DateTime @default(now())
  @@index([bookingId,createdAt])
+}
+
+model FinalInvoice {
+ id Int @id @default(autoincrement())
+ bookingId Int
+ booking Booking @relation(fields:[bookingId],references:[id],onDelete:Cascade)
+ bookingVersion DateTime
+ snapshot Json
+ pdf Bytes
+ totalCents Int
+ amountPaidCents Int
+ emailRecipient String
+ emailSentAt DateTime?
+ emailAttempts Int @default(0)
+ nextEmailAttemptAt DateTime @default(now())
+ supersededAt DateTime?
+ createdAt DateTime @default(now())
+ @@unique([bookingId,bookingVersion])
+ @@index([emailSentAt,nextEmailAttemptAt])
 }
