@@ -2,7 +2,7 @@
 // Run with `npm test`; needs TEST_DATABASE_URL (see .env.example).
 // test-env must stay the first import: it points Prisma at the test database.
 import "./test-env.js";
-import{queueFinalInvoice,deliverFinalInvoiceEmails,backfillInvoiceWatermarks}from'./final-invoices.js';
+import{queueFinalInvoice,deliverFinalInvoiceEmails,backfillInvoiceWatermarks,invoiceWideDiscount}from'./final-invoices.js';
 
 import * as webPush from "web-push";
 import { deliverAdminPushNotifications, queueAdminSignupNotices } from "./admin-push.js";
@@ -255,6 +255,17 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   // Each call gets its own IP unless one is given, so rate limits don't leak between tests.
   let fixtureDay=0;
   let signupPhone=100;
+  test('invoice percentage discounts cover equipment, operators, delivery and pickup together at every tier',async()=>{
+    const{b}=await reminderFixture();let last;
+    for(const [percent,discount]of [[5,4000],[10,8500],[15,12500]]){
+      const current=await prisma.booking.update({where:{id:b.id},data:{discountPercent:percent,rewardTier:'Silver',items:[{id:'diesel-mixer-9-cu-ft',name:'Mixer',term:'daily',qty:2,periods:1,rate:40,amount:80,operator:false},{id:'rigger-banksman',name:'Rigger',term:'daily',qty:1,periods:1,rate:315,amount:315,operator:true}]}});
+      const s=await prisma.$transaction(tx=>estimateSnapshot(tx,current,999));assert.equal(s.deliveryCents,45000);assert.equal(s.discountCents,discount);assert.equal(s.totalCents,84500-discount);assert.match(s.rows.at(-1)!.description,/all items/);last={current,s};
+    }
+    const old={...last!.s,discountCents:500,totalCents:84000,pricedSubtotalCents:39000,rows:last!.s.rows.map(r=>r.item==='Loyalty'?{...r,description:'Silver discount (5%) — equipment only',total:'-5.00'}:r)};
+    const updated=invoiceWideDiscount(old);assert.equal(updated.discountCents,4000);assert.equal(updated.totalCents,80500);
+    await queueFinalInvoice(b.id,last!.current.updatedAt.toISOString());const i=await prisma.finalInvoice.findFirstOrThrow();await prisma.finalInvoice.update({where:{id:i.id},data:{snapshot:JSON.parse(JSON.stringify(old)),totalCents:84000,amountPaidCents:40000,emailSentAt:new Date()}});await backfillInvoiceWatermarks();const corrected=await prisma.finalInvoice.findFirstOrThrow();assert.equal(corrected.totalCents,80500);assert.equal(corrected.amountPaidCents,40000);assert.ok(corrected.emailSentAt);
+  });
+
   test('final invoices are admin-only, use fresh booking totals and retain the estimate branding without its watermark',async()=>{
     const{b}=await reminderFixture(),admin=await makeAdmin();
     assert.equal((await req(`/admin/bookings/${b.id}/final-invoice`,{form:{version:b.updatedAt.toISOString()}})).status,302);assert.equal(await prisma.finalInvoice.count(),0);
@@ -499,10 +510,10 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   test("admins grant booking-only tier discounts without changing earned points or future eligibility",async()=>{
     const cookie=await signup(),admin=await makeAdmin();const user=await prisma.user.findUniqueOrThrow({where:{email:'kim@example.com'}});
     const form={userId:String(user.id),customerName:user.name,customerEmail:user.email,startDate:'2034-04-01',startTime:'08:00',area:'George Town',siteAddress:'Courtesy discount job',discountChoice:'Silver',tierDiscountReason:'Goodwill discount authorized by admin',items:JSON.stringify([{id:'rt40',term:'daily',qty:1,periods:1,rate:985},{id:'telehandler-operator',term:'hourly',qty:2,periods:1,rate:35}])};
-    assert.match((await req('/admin/bookings/new',{cookie:admin,form})).headers.get('location')!,/booking-created/);let b=await prisma.booking.findFirstOrThrow();assert.equal(b.discountPercent,5);assert.equal(b.rewardTier,'Silver');assert.equal(b.estimateCents,100500);
-    let e=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}}),s=e.snapshot as unknown as EstimateSnapshot;assert.equal(s.discountCents,5000);assert.equal(s.totalCents,115500);assert.match((await prisma.bookingRevision.findFirstOrThrow()).reason,/Booking-only Silver tier \(5%\).*Goodwill/);
+    assert.match((await req('/admin/bookings/new',{cookie:admin,form})).headers.get('location')!,/booking-created/);let b=await prisma.booking.findFirstOrThrow();assert.equal(b.discountPercent,5);assert.equal(b.rewardTier,'Silver');assert.equal(b.estimateCents,100000);
+    let e=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}}),s=e.snapshot as unknown as EstimateSnapshot;assert.equal(s.discountCents,6000);assert.equal(s.totalCents,114500);assert.match((await prisma.bookingRevision.findFirstOrThrow()).reason,/Booking-only Silver tier \(5%\).*Goodwill/);
     assert.equal((await rewardsForUser(user.id)).tier,'Member');assert.equal((await rewardsForUser(user.id)).points,0);assert.equal((await prisma.user.findUniqueOrThrow({where:{id:user.id}})).rewardCreditCents,0);
-    const edit={...form,version:b.updatedAt.toISOString(),reason:'Additional goodwill discount',discountChoice:'Platinum',tierDiscountReason:'Manager approved Platinum for this booking'};assert.match((await req(`/admin/bookings/${b.id}/edit`,{cookie:admin,form:edit})).headers.get('location')!,/booking-edited/);b=await prisma.booking.findUniqueOrThrow({where:{id:b.id}});assert.equal(b.discountPercent,15);assert.equal(b.rewardTier,'Platinum');e=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}});s=e.snapshot as unknown as EstimateSnapshot;assert.equal(s.discountCents,15000);assert.equal(e.totalCents,105500);assert.equal(s.rows.at(-1)!.item,'Loyalty');assert.ok(await prisma.estimateArchive.findFirst({where:{bookingId:b.id}}));
+    const edit={...form,version:b.updatedAt.toISOString(),reason:'Additional goodwill discount',discountChoice:'Platinum',tierDiscountReason:'Manager approved Platinum for this booking'};assert.match((await req(`/admin/bookings/${b.id}/edit`,{cookie:admin,form:edit})).headers.get('location')!,/booking-edited/);b=await prisma.booking.findUniqueOrThrow({where:{id:b.id}});assert.equal(b.discountPercent,15);assert.equal(b.rewardTier,'Platinum');e=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}});s=e.snapshot as unknown as EstimateSnapshot;assert.equal(s.discountCents,18000);assert.equal(e.totalCents,102500);assert.equal(s.rows.at(-1)!.item,'Loyalty');assert.ok(await prisma.estimateArchive.findFirst({where:{bookingId:b.id}}));
     const earned={...form,version:b.updatedAt.toISOString(),reason:'Return to earned account tier',discountChoice:'earned',tierDiscountReason:''};assert.match((await req(`/admin/bookings/${b.id}/edit`,{cookie:admin,form:earned})).headers.get('location')!,/booking-edited/);b=await prisma.booking.findUniqueOrThrow({where:{id:b.id}});assert.equal(b.discountPercent,0);assert.equal(b.rewardTier,'Member');assert.equal((await rewardsForUser(user.id)).points,0);
     await req('/api/bookings',{cookie,json:{...booking,discountChoice:'Platinum',discountPercent:15,rewardTier:'Platinum'}});const later=await prisma.booking.findFirstOrThrow({where:{id:{not:b.id}}});assert.equal(later.discountPercent,0);assert.equal(later.rewardTier,'Member');
   });
@@ -737,7 +748,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const response=await req("/api/bookings",{cookie:customer,json:{...booking,customerEmail:"wrong@example.com",details:{billingAddress:"123 Customer Road, George Town",jobDetails:"Lift roof materials",phone:"345 555 0100",company:"Customer Company",startDate:"2030-05-15",startTime:"08:00",area:"7 Mile Beach",siteAddress:"50 Job Site Road",items:[{id:"rt40",term:"daily",qty:1}]}}});
     const body=await response.json();assert.equal(body.estimateNumber,524);assert.equal(body.estimateUrl,"/account/bookings/1/estimate.pdf");
     const estimate=await prisma.estimate.findUniqueOrThrow({where:{number:524}});const snapshot=estimate.snapshot as unknown as EstimateSnapshot;
-    assert.equal(estimate.emailRecipient,"kim@example.com");assert.equal(snapshot.rows.at(-1)?.item,"Loyalty");assert.equal(snapshot.discountCents,5000);assert.equal(snapshot.deliveryCents,20000);assert.equal(estimate.totalCents,113500);
+    assert.equal(estimate.emailRecipient,"kim@example.com");assert.equal(snapshot.rows.at(-1)?.item,"Loyalty");assert.equal(snapshot.discountCents,6000);assert.equal(snapshot.deliveryCents,20000);assert.equal(estimate.totalCents,112500);
     assert.equal(snapshot.billingAddress,"123 Customer Road, George Town");assert.equal(snapshot.requestedStart,"15 May 2030 at 08:00 (Cayman time)");assert.equal(snapshot.location,"50 Job Site Road, 7 Mile Beach");assert.equal(snapshot.jobDetails,"Lift roof materials");
     assert.equal(snapshot.date,estimate.createdAt.toLocaleDateString("en-GB",{timeZone:"America/Cayman",day:"numeric",month:"short",year:"numeric"}));
     const pdf=await PDFDocument.load(estimate.pdf);assert.equal(pdf.getTitle(),"Cayman Crane Estimate 524");assert.ok(pdf.getPageCount()>=1);
@@ -1772,13 +1783,13 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal((await prisma.booking.findUniqueOrThrow({where:{id:first.id}})).estimateCents,93500);
   });
 
-  test("bookings are priced on the server, with the tier discount on equipment only", async () => {
+  test("bookings are priced on the server, with the tier discount on all priced items", async () => {
     const customer = await signup();
     const admin = await makeAdmin();
     await prisma.user.update({ where: { id: 1 }, data: { rewardCreditCents: 5_000_00 } }); // Silver, 5%
     const items = [
       { id: "rt40", term: "hourly", qty: 4 }, // 145 × 4 = 580
-      { id: "telehandler-operator", term: "hourly", qty: 4 }, // operator, 35 × 4 = 140, no discount
+      { id: "telehandler-operator", term: "hourly", qty: 4 }, // operator, 35 × 4 = 140, eligible for discount
       { id: "lifting-10", term: "daily", qty: 1 }, // size option, 50
       { id: "spreaderbar-9", term: "quote", qty: 1 }, // known inventory, unpriced
     ];
@@ -1788,7 +1799,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const lines = saved.items as { id: string; amount: number | null; operator: boolean; name: string }[];
     assert.deepEqual(lines.map(l => l.amount), [580, 140, 50, null]);
     assert.equal(lines[2].name, "Lifting Beams — 10′ × 8″");
-    assert.equal(saved.estimateCents, (580 + 50 - 30) * 100 + 140 * 100);
+    assert.equal(saved.estimateCents, (580 + 50 + 140 - 40) * 100);
     assert.equal(saved.startDate?.toISOString().slice(0, 10), "2030-05-15");
     assert.equal(saved.area, "George Town");
     const page = await (await req(`/admin/bookings/${saved.id}`, { cookie: admin })).text();

@@ -13,3 +13,9 @@ The queue is unique per booking/version. Duplicate clicks do not produce duplica
 Final invoices carry the same large red diagonal translucent watermark as estimates, labelled INVOICE. Rendering, email attachments, customer downloads and admin previews all apply it idempotently. Startup backfills every saved historical final invoice (including superseded/sent copies), updating only PDF bytes. Totals, snapshots, invoice numbers, dates, payment status and email-send status are unchanged; previously emailed attachments are not recalled or resent.
 
 Every admin booking has Preview final invoice. `/admin/bookings/preview/jr-latest` selects the newest J&R company booking and opens its private preview, labelled SAMPLE ONLY / PREVIEW. It reads current saved booking data without creating an invoice, consuming a sequence number or emailing the customer. The preview retains the iPhone back toolbar.
+
+## All-item percentage discounts — 27 November 2026
+
+Standard tier percentages apply once to the entire priced invoice subtotal: equipment, operators/banksmen, delivery, pickup and any other priced service lines. Round the combined discount to the nearest KYD $5. Fixed admin-approved discount amounts remain fixed. Unpriced items still require confirmation before issuing a final invoice. Checkout/welcome/rewards wording reflects the same scope.
+
+Historical final invoice percentage discounts are recalculated from their own saved gross subtotal and saved tier percentage, preserving original charges, invoice numbers, dates, confirmed payments and send status. The PDF and final total/balance are refreshed without re-emailing old invoices. Explicit fixed-amount overrides are preserved. Estimates/receipts already emailed are historical records; newly generated estimates and final invoices use the all-item policy.

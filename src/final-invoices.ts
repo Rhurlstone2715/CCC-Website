@@ -1,3 +1,4 @@
+import{loyaltyDiscountCents}from'./loyalty-tiers.js';
 import{watermarkPdf}from'./pdf-watermarks.js';
 import{prisma}from'./db.js';
 import{estimateSnapshot,renderEstimatePdf,type EstimateSnapshot}from'./estimates.js';
@@ -6,6 +7,13 @@ import type{Prisma}from'./generated/prisma/client.js';
 import{Hono}from'hono';
 import{currentUser,requireCustomer,mustConfirmEmail,type AppEnv}from'./auth.js';
 export const invoiceNumber=(id:number)=>`FIN-${String(id).padStart(6,'0')}`;
+export function invoiceWideDiscount(s:EstimateSnapshot):EstimateSnapshot{
+ const row=s.rows.find(r=>r.item==='Loyalty'),match=row?.description.match(/\((\d+)%\)/);
+ if(!row||!match||s.totalCents===null)return s;
+ const percent=Number(match[1]);if(![5,10,15].includes(percent))return s;
+ const discount=loyaltyDiscountCents(s.totalCents+s.discountCents,percent);
+ return {...s,discountCents:discount,totalCents:s.totalCents+s.discountCents-discount,pricedSubtotalCents:s.pricedSubtotalCents+s.discountCents-discount,rows:s.rows.map(r=>r!==row?r:{...r,description:r.description.replace(/; rounded to the nearest KYD \$5/g,'').replace('equipment only','all items'),total:'-'+(discount/100).toFixed(2)})};
+}
 export async function queueFinalInvoice(id:number,version:string){
  return prisma.$transaction(async tx=>{
   await tx.$queryRaw`SELECT "id" FROM "Booking" WHERE "id"=${id} FOR UPDATE`;
@@ -53,11 +61,12 @@ finalInvoiceDocuments.get('/:id{[0-9]+}/invoices/:invoice',async c=>{
  c.header('Content-Type','application/pdf');c.header('Cache-Control','private, no-store');c.header('X-Content-Type-Options','nosniff');c.header('Content-Disposition',`attachment; filename="Cayman-Crane-${invoiceNumber(invoice.id)}.pdf"`);return c.body(new Uint8Array(await watermarkPdf(invoice.pdf,'invoice')));
 });
 
-// Update saved historical PDFs without changing their financial snapshots or emailing them again.
+// Refresh historical PDFs and percentage-discount totals from their own saved charges.
+// Confirmed payments, invoice identity and email-send status remain unchanged.
 export async function backfillInvoiceWatermarks(){
  let cursor=0,updated=0;
- for(;;){const invoices=await prisma.finalInvoice.findMany({where:{id:{gt:cursor}},orderBy:{id:'asc'},take:50,select:{id:true,pdf:true,snapshot:true,amountPaidCents:true}});if(!invoices.length)break;
-  for(const invoice of invoices){const snapshot=invoice.snapshot as unknown as EstimateSnapshot;const wordingChanged=snapshot.rows.some(row=>row.description.includes('; rounded to the nearest KYD $5'));const cleanSnapshot={...snapshot,rows:snapshot.rows.map(row=>({...row,description:row.description.replace(/; rounded to the nearest KYD \$5/g,'')}))};const pdf=wordingChanged?await renderEstimatePdf(cleanSnapshot,false,undefined,{number:invoiceNumber(invoice.id),amountPaidCents:invoice.amountPaidCents}):await watermarkPdf(invoice.pdf,'invoice');if(pdf!==invoice.pdf){await prisma.finalInvoice.update({where:{id:invoice.id},data:{pdf:new Uint8Array(pdf),...(wordingChanged?{snapshot:cleanSnapshot as unknown as Prisma.InputJsonValue}:{})}});updated++;}cursor=invoice.id;}
+ for(;;){const invoices=await prisma.finalInvoice.findMany({where:{id:{gt:cursor}},orderBy:{id:'asc'},take:50,select:{id:true,pdf:true,snapshot:true,amountPaidCents:true,totalCents:true}});if(!invoices.length)break;
+  for(const invoice of invoices){const snapshot=invoice.snapshot as unknown as EstimateSnapshot;const wordingChanged=snapshot.rows.some(row=>row.description.includes('; rounded to the nearest KYD $5'));const cleanSnapshot=invoiceWideDiscount({...snapshot,rows:snapshot.rows.map(row=>({...row,description:row.description.replace(/; rounded to the nearest KYD \$5/g,'')}))});const policyChanged=JSON.stringify(snapshot)!==JSON.stringify(cleanSnapshot);const pdf=wordingChanged||policyChanged?await renderEstimatePdf(cleanSnapshot,false,undefined,{number:invoiceNumber(invoice.id),amountPaidCents:invoice.amountPaidCents}):await watermarkPdf(invoice.pdf,'invoice');if(pdf!==invoice.pdf){await prisma.finalInvoice.update({where:{id:invoice.id},data:{pdf:new Uint8Array(pdf),...(wordingChanged||policyChanged?{snapshot:cleanSnapshot as unknown as Prisma.InputJsonValue,totalCents:cleanSnapshot.totalCents??invoice.totalCents}:{})}});updated++;}cursor=invoice.id;}
  }
  console.info(`Invoice watermarks ready: ${updated} historical PDFs updated.`);return updated;
 }

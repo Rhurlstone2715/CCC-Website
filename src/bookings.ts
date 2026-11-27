@@ -145,7 +145,7 @@ function caymanTime(date: Date): string {
 export async function sendBookingAlert(booking: Booking, account: Pick<User, "name" | "email"> | null): Promise<boolean> {
   const ref = bookingRef(booking.id);
   const accountLine = account
-    ? `Account: ${account.name} <${account.email}>${booking.discountPercent ? ` · ${booking.rewardTier} tier, ${booking.discountPercent}% off equipment` : ""}`
+    ? `Account: ${account.name} <${account.email}>${booking.discountPercent ? ` · ${booking.rewardTier} tier, ${booking.discountPercent}% off all invoice items` : ""}`
     : "Account: none (guest booking)";
   const body = [
     `New booking request ${ref}`,

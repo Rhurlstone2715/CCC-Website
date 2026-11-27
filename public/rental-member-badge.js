@@ -9,7 +9,7 @@
   el('memberCustomerName').textContent=p.company?`${p.name} · Company rewards`:'Personal rewards account';
   el('memberSince').textContent=p.memberSince?`Member since ${p.memberSince}`:'';
   el('memberTierName').textContent=`${tier} member`;
-  el('memberTierBenefit').textContent=r.discountPercent?`${r.discountPercent}% equipment discount`:'Your rewards start here';
+  el('memberTierBenefit').textContent=r.discountPercent?`${r.discountPercent}% invoice discount`:'Your rewards start here';
   badge.querySelector('.member-rewards-card').dataset.tier=tier;
   const name=data.brand?.name||p.company||p.name;el('memberInitials').textContent=name.split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
   const image=el('memberCompanyLogo'),url=data.brand?.logoUrl;

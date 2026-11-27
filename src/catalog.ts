@@ -192,8 +192,8 @@ export async function priceItems(items: CartItem[], discountPercent: number): Pr
     return { id: item.id, name, term: item.term, qty: item.qty, rate, amount, operator, ...(periods>1||CREW_SERVICE_IDS.includes(item.id)?{periods}:{}), ...(product?.fuelType && !/crane|boom.?truck/i.test(product.category) ? { fuelType: product.fuelType } : {}) };
   });
 
-  // Round the combined equipment discount once to the nearest KYD $5.
-  const discountCents = loyaltyDiscountCents(equipmentCents,discountPercent);
+  // Round the combined item discount once to the nearest KYD $5.
+  const discountCents = loyaltyDiscountCents(equipmentCents+operatorCents,discountPercent);
   const estimateCents = anyPriced ? equipmentCents - discountCents + operatorCents : null;
   return { lines, estimateCents };
 }

@@ -322,7 +322,7 @@ const RewardsCard: FC<{ rewards: Rewards; brand: RewardsBrand|null; pending: {po
     </p>
     <div class={`tier-name tier-${rewards.tier.toLowerCase()}`}>{rewards.tier}</div>
     <p class="progress-label">
-      {rewards.discountPercent ? `${rewards.discountPercent}% off equipment rentals at checkout` : "Your discount starts at Silver"}
+      {rewards.discountPercent ? `${rewards.discountPercent}% off all invoice items rentals at checkout` : "Your discount starts at Silver"}
     </p>
     <div class="rewards-stats">
       <div>

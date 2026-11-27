@@ -553,7 +553,7 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
               <dt>Booking rewards</dt>
               <dd>{['PENDING','APPROVED'].includes(booking.status) ? `${pendingBookingPoints(booking)?.toLocaleString('en-US') ?? 'To be confirmed'} pending points — ${booking.paymentProofs.length ? 'proof received; ' : ''}awaiting admin payment confirmation. Pending points do not unlock tiers.` : booking.status === 'PAID' ? `${Math.floor((booking.amountPaidCents ?? 0)/100).toLocaleString('en-US')} earned points — payment confirmed` : 'No points — booking inactive'}</dd>
               <dt>Discount tier on this booking</dt>
-              <dd>{booking.discountPercent ? `${booking.rewardTier}, ${booking.discountPercent}% off equipment` : booking.rewardTier ?? "None"}</dd>
+              <dd>{booking.discountPercent ? `${booking.rewardTier}, ${booking.discountPercent}% off all invoice items` : booking.rewardTier ?? "None"}</dd>
               <dt>Alert email</dt>
               <dd>{booking.alertSentAt ? `Sent ${caymanDate(booking.alertSentAt)}` : "Not sent (customer was offered the email fallback)"}</dd>
             </dl>
@@ -961,7 +961,7 @@ async function renderCustomer(c: Context<AppEnv>, customer: User, extra: { profi
             <h2>{loyaltyCompany ? `${loyaltyCompany.name} — ${loyaltyCompany.domain ? "shared company rewards" : "single-email company rewards"}` : "Rewards"}</h2>
             <dl class="facts mt-3">
               <dt>Tier</dt>
-              <dd>{rewards.discountPercent ? `${rewards.tier}, ${rewards.discountPercent}% off equipment` : rewards.tier}</dd>
+              <dd>{rewards.discountPercent ? `${rewards.tier}, ${rewards.discountPercent}% off all invoice items` : rewards.tier}</dd>
               <dt>Points</dt>
               <dd>{rewards.points.toLocaleString("en-US")}</dd>
               <dt>Counted spend</dt>
