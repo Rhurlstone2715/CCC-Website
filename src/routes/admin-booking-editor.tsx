@@ -39,7 +39,7 @@ async function editor(c:Context<AppEnv>,booking:Booking|null,values:Record<strin
  const field=(name:keyof typeof initial,label:string,type='text',required=false)=><label>{label}<input name={name} type={type} value={String(initial[name]??'')} required={required} /></label>;
  return c.html(<AdminPage title={booking?`Edit ${bookingRef(booking.id)}`:'Add customer booking'} user={(await currentUser(c))!} pending={await pendingCount()} active="bookings">
   <p><a href={booking?`/admin/bookings/${booking.id}`:'/admin/bookings'}>← Back to bookings</a></p><h1>{booking?`Edit ${bookingRef(booking.id)}`:'Add customer booking'}</h1>
-  <p class="lede">Admin-only booking entry. Stock and totals are checked when you save. The customer receives a PDF estimate.</p>{error?<p class="notice notice-error" role="alert">{error}</p>:null}
+  <p class="lede">Admin-only booking entry. Stock and totals are checked when you save. Choose whether to email the revised PDFs when saving.</p>{error?<p class="notice notice-error" role="alert">{error}</p>:null}
   <form id="adminBookingEditor" method="post" action={booking?`/admin/bookings/${booking.id}/edit`:'/admin/bookings/new'} class="form">
    {booking?<input type="hidden" name="version" value={String(values.version??booking.updatedAt.toISOString())} />:null}
    <section class="card"><h2>Customer & location</h2><div class="form-grid">
@@ -54,7 +54,7 @@ async function editor(c:Context<AppEnv>,booking:Booking|null,values:Record<strin
    <section class="card"><h2>Booking-only rewards discount</h2><label>Discount tier for this booking<select name="discountChoice" id="editorDiscountChoice">{booking?<option value="keep" selected={initial.discountChoice==='keep'}>Keep current booking discount {booking.loyaltyDiscountOverrideCents!==null?`KYD $${(booking.loyaltyDiscountOverrideCents/100).toFixed(2)} `:""}({booking.rewardTier??'Member'} — {booking.discountPercent}%)</option>:null}<option value="earned" selected={initial.discountChoice==='earned'}>Use the customer/company’s earned tier</option>{TIERS.map(t=><option value={t.name} selected={initial.discountChoice===t.name}>{t.name} — {t.discountPercent}% {t.discountPercent?'invoice discount':'(no discount)'}</option>)}</select></label><label id="editorTierReasonLabel" hidden={!TIERS.some(t=>t.name===initial.discountChoice)}>Reason for booking-only discount<input type="text" name="tierDiscountReason" id="editorTierReason" maxlength={1000} value={String(initial.tierDiscountReason)} /></label><p class="hint">Admins may apply any tier to this booking, even if the customer has not earned it. This does not change earned points, company rewards or future-booking eligibility. Discounts apply to all invoice items, including operator services, delivery and pickup. Discounts are rounded to the nearest KYD $5. The reason is kept in admin history.</p></section>
    <section class="card"><h2>Admin record</h2><label>Admin note<textarea name="adminNote" rows={3}>{String(initial.adminNote)}</textarea></label>{booking?field('reason','Reason for change','text',true):<p class="hint">This is an admin-entered booking, not a customer-signed online agreement. Arrange acceptance with the customer.</p>}
    {booking?.status==='PAID'?<><label>Confirmed amount paid (KYD)<input name="paidAmount" type="number" min="0" step="0.01" value={String(initial.paidAmount)} required /></label><p class="hint">Enter the actual payment retained after any extra charge or refund. Rewards use this confirmed payment, not the estimate.</p></>:null}
-   <button type="submit" class="button primary">{booking?'Save changes & email revised estimate':'Create booking & email estimate'}</button></section>
+   {booking?<><button type="submit" name="emailAction" value="silent" class="button primary">Save without emailing customer</button> <button type="submit" name="emailAction" value="send" class="button secondary">Save & email revision</button><p class="hint">Saving without email updates the booking, estimate and paid receipt, with no customer revision email queued.</p></>:<button type="submit" class="button primary">Create booking & email estimate</button>}</section>
   </form><script id="adminBookingData" type="application/json">{raw(data)}</script><script src="/admin-booking-editor.js" defer></script>
   {archives.length?<section class="card"><h2>Previous estimates</h2>{archives.map(e=><p><a href={`/admin/bookings/${booking!.id}/documents/estimate-${e.number}`}>View estimate #{e.number} (replaced)</a></p>)}</section>:null}
   {revisions.length?<section class="card"><h2>Change history</h2>{revisions.map(r=><p><b>{r.actorName}</b> · {r.createdAt.toLocaleString('en-US',{timeZone:'America/Cayman'})}<br/>{r.reason}</p>)}</section>:null}
@@ -63,7 +63,7 @@ async function editor(c:Context<AppEnv>,booking:Booking|null,values:Record<strin
 adminBookingEditor.get('/new',c=>editor(c,null));
 adminBookingEditor.get('/:id{[0-9]+}/edit',async c=>{const b=await prisma.booking.findUnique({where:{id:Number(c.req.param('id'))}});return b?editor(c,b):c.notFound();});
 async function save(c:Context<AppEnv>,existing:Booking|null){
- const body=await c.req.parseBody();const fail=(message:string,status:400|409|500=400)=>editor(c,existing,body,message,status);
+ const body=await c.req.parseBody();const emailCustomer=!(existing&&body.emailAction==='silent');const fail=(message:string,status:400|409|500=400)=>editor(c,existing,body,message,status);
  const name=text(body.customerName,200),email=text(body.customerEmail,254).toLowerCase(),startDate=parseDate(body.startDate),startTime=text(body.startTime,5),reason=text(body.reason,1000);
  if(String(body.customerName??'').length>200||String(body.customerEmail??'').length>254||!name||!EMAIL_PATTERN.test(email)||!startDate||!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(startTime))return fail('Enter the customer name, valid email and scheduled date/time.');
  if(existing&&!reason)return fail('Enter a reason for this change.');
@@ -107,13 +107,14 @@ async function save(c:Context<AppEnv>,existing:Booking|null){
    const old=await tx.estimate.findUnique({where:{bookingId:b.id}});
    if(old){await tx.estimateArchive.create({data:{number:old.number,bookingId:b.id,snapshot:old.snapshot as Prisma.InputJsonValue,totalCents:old.totalCents,pdf:old.pdf,emailRecipient:old.emailRecipient,originalCreatedAt:old.createdAt}});await tx.estimate.delete({where:{number:old.number}});}
    const estimate=await createBookingEstimate(tx,b,old?.number);
-   if(b.status==='PAID')await queuePaidReceipt(tx,b);
-   await tx.bookingRevision.create({data:{bookingId:b.id,actorId:actor.id,actorName:actor.name,reason:[existing?reason:'Created by administrator',discountAudit].filter(Boolean).join(' — '),before:existing?audit(existing):{},after:audit(b)}});
+   const receipt=b.status==='PAID'?await queuePaidReceipt(tx,b):null;
+   if(!emailCustomer){await tx.estimate.update({where:{number:estimate.number},data:{emailSuppressed:true}});if(receipt)await tx.paymentReceipt.update({where:{id:receipt.id},data:{emailSuppressed:true}});}
+   await tx.bookingRevision.create({data:{bookingId:b.id,actorId:actor.id,actorName:actor.name,reason:[existing?reason:'Created by administrator',discountAudit,...(!emailCustomer?['Saved without customer email']:[])].filter(Boolean).join(' — '),before:existing?audit(existing):{},after:audit(b)}});
    if(!existing)await queueAdminBookingNotices(tx,b.id);
    return {b,estimate};
   },{timeout:30000,maxWait:15000});
-  void deliverAdminPushNotifications();await deliverEstimateEmails(result.estimate.number);await deliverReceiptEmails();
-  return c.redirect(`/admin/bookings/${result.b.id}?notice=${existing?'booking-edited':'booking-created'}`);
+  void deliverAdminPushNotifications();if(emailCustomer){await deliverEstimateEmails(result.estimate.number);await deliverReceiptEmails();}
+  return c.redirect(`/admin/bookings/${result.b.id}?notice=${existing?(emailCustomer?'booking-edited':'booking-edited-silent'):'booking-created'}`);
  }catch(error){if(error instanceof AvailabilityError)return fail(error.message,error.status===409?409:400);if(error instanceof Error&&error.message==='changed')return fail('Another admin changed this booking. Reload it before editing.',409);console.error('Admin booking change failed; the original booking was retained.');return fail('The booking could not be saved. Please try again.',500);}
 }
 adminBookingEditor.post('/new',c=>save(c,null));

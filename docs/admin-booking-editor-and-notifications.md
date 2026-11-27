@@ -15,3 +15,9 @@ New bookings create durable per-admin unread notices and per-device push deliver
 Railway requires stable `WEB_PUSH_PUBLIC_KEY`, `WEB_PUSH_PRIVATE_KEY`, and `WEB_PUSH_SUBJECT` variables. The private key stays in Railway. Key rotation requires devices to re-subscribe. The production keys have been configured. Schema migrations create push subscriptions/outbox and booking revisions/estimate archives.
 
 Verification: production build; 143 tests, including authorization, paid booking edits, revised PDF archives, optimistic concurrency, stock quantities/durations, push subscription validation and durable retries, service-worker notifications/badges, and calendar windows. Browser checks cover creation/editing and responsive layout at 1440/390 px, plus mocked notification permission/badge setup and iPhone installation guidance. Actual delivery to the owner's iPhone requires enabling permission there and a subsequent new booking.
+
+## Saving revisions without customer email
+
+Existing-booking editors offer two explicit submit buttons: **Save without emailing customer** and **Save & email revision**. Silent save is the first button (the default when submitting via Enter). New booking creation retains its existing email behaviour.
+
+Both choices run the same validation, inventory checks, PDF generation, estimate archiving, receipt/payment updates and audit history. Silent revisions set persistent `emailSuppressed` flags on the new estimate and, for paid bookings, revised receipt inside the save transaction. Both email workers exclude suppressed jobs; `emailSentAt` stays null. The admin booking page identifies the estimate as saved without email. A later deliberate save-and-email creates a new revision with normal email delivery. Independent future rental reminders, payment confirmations and manually issued invoices retain their own existing rules.

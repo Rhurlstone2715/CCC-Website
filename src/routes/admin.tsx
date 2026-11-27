@@ -40,6 +40,7 @@ const NOTICES: Record<string, { tone: "success" | "error" | "info"; text: string
   "rental-returned": {tone:"success",text:"Equipment marked returned. Pending rental reminders have been stopped."},
   "rental-resumed": {tone:"success",text:"Rental reminder eligibility will be checked again."},
   "booking-created": { tone: "success", text: "Booking created. Its PDF estimate is saved and queued for email to the customer." },
+  "booking-edited-silent": {tone:"success",text:"Booking and revised PDFs saved without emailing the customer. No revision email is queued."},
   "booking-edited": { tone: "success", text: "Booking updated. A revised PDF estimate is saved and queued for email; the previous estimate is kept in change history." },
   "approved-sent": { tone: "success", text: "Booking approved. The customer has been emailed their confirmation and contract." },
   "approved-manual": { tone: "info", text: "Booking approved. Customer emails aren't set up yet, so send the contract below from your own inbox." },
@@ -623,7 +624,7 @@ admin.get("/bookings/:id{[0-9]+}", async c => {
             ) : null}
           </section>
           {booking.status==='PAID'&&booking.paymentReceipts.length?<p><a class="button secondary" href={`/admin/bookings/${booking.id}/documents/receipt`}>View paid receipt PDF</a></p>:null}
-          {booking.estimate ? <section class="card"><h2>Customer estimate #{booking.estimate.number}</h2><p>{booking.estimate.totalCents === null ? "Total awaits manual pricing confirmation." : `Estimated total including delivery: ${money(booking.estimate.totalCents)}`}</p><a class="button secondary small" href={`/admin/bookings/${booking.id}/documents/estimate`}>View estimate PDF</a><p class="hint">{booking.estimate.emailSentAt ? `Emailed ${caymanDate(booking.estimate.emailSentAt)}.` : "Email copy queued. The PDF is available to download now."}</p></section> : null}
+          {booking.estimate ? <section class="card"><h2>Customer estimate #{booking.estimate.number}</h2><p>{booking.estimate.totalCents === null ? "Total awaits manual pricing confirmation." : `Estimated total including delivery: ${money(booking.estimate.totalCents)}`}</p><a class="button secondary small" href={`/admin/bookings/${booking.id}/documents/estimate`}>View estimate PDF</a><p class="hint">{booking.estimate.emailSuppressed ? "Saved without emailing the customer. No estimate email is queued." : booking.estimate.emailSentAt ? `Emailed ${caymanDate(booking.estimate.emailSentAt)}.` : "Email copy queued. The PDF is available to download now."}</p></section> : null}
           <section class="card" id="payment-proofs">
             <h2>Proof of payment</h2>
             <PaymentProofSection bookingId={booking.id} proofs={booking.paymentProofs} />

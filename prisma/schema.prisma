@@ -312,6 +312,7 @@ model Estimate {
   totalCents Int?
   pdf Bytes
   emailRecipient String
+  emailSuppressed Boolean @default(false)
   emailSentAt DateTime?
   emailAttempts Int @default(0)
   nextEmailAttemptAt DateTime @default(now())
@@ -404,6 +405,7 @@ model PaymentReceipt {
  snapshot Json
  pdf Bytes
  emailRecipient String
+ emailSuppressed Boolean @default(false)
  emailSentAt DateTime?
  emailAttempts Int @default(0)
  nextEmailAttemptAt DateTime @default(now())

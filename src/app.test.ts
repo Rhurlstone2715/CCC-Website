@@ -256,6 +256,18 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   // Each call gets its own IP unless one is given, so rate limits don't leak between tests.
   let fixtureDay=0;
   let signupPhone=100;
+  test('admin revisions can save silently and both email workers keep suppressed PDFs unsent',async t=>{
+    const{b,user}=await reminderFixture(),admin=await makeAdmin();const paid=await prisma.booking.update({where:{id:b.id},data:{status:'PAID',amountPaidCents:27500,paidAt:new Date()}});
+    const form={userId:String(user.id),customerName:paid.customerName,customerEmail:paid.customerEmail,phone:'345 555 0100',startDate:'2035-01-01',startTime:'08:00',area:'George Town',siteAddress:'Revised site',rentalCollection:'delivery',discountChoice:'keep',reason:'Corrected actual duration',paidAmount:'275',items:JSON.stringify([{id:'diesel-mixer-9-cu-ft',term:'daily',qty:1,periods:2,rate:40}]),version:paid.updatedAt.toISOString(),emailAction:'silent'};
+    const editor=await(await req(`/admin/bookings/${b.id}/edit`,{cookie:admin})).text();assert.match(editor,/Save without emailing customer/);assert.match(editor,/Save &amp; email revision/);
+    enableReminderTest(t);const messages:unknown[]=[];globalThis.fetch=async(_url,init)=>{messages.push(JSON.parse(String(init!.body)));return new Response('{}',{status:200});};
+    const response=await req(`/admin/bookings/${b.id}/edit`,{cookie:admin,form});assert.match(response.headers.get('location')!,/booking-edited-silent/);
+    const estimate=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}}),receipt=await prisma.paymentReceipt.findFirstOrThrow({where:{bookingId:b.id,supersededAt:null}});assert.ok(estimate.emailSuppressed);assert.ok(receipt.emailSuppressed);assert.equal(estimate.emailSentAt,null);assert.equal(receipt.emailSentAt,null);assert.ok(estimate.pdf.length);assert.ok(receipt.pdf.length);
+    await deliverEstimateEmails();await deliverReceiptEmails();assert.equal(messages.length,0);assert.match((await prisma.bookingRevision.findFirstOrThrow({orderBy:{createdAt:'desc'}})).reason,/Saved without customer email/);
+    const current=await prisma.booking.findUniqueOrThrow({where:{id:b.id}});assert.equal(current.siteAddress,'Revised site');assert.equal(current.amountPaidCents,27500);
+    const notify=await req(`/admin/bookings/${b.id}/edit`,{cookie:admin,form:{...form,version:current.updatedAt.toISOString(),emailAction:'send',reason:'Customer requested updated copies'}});assert.match(notify.headers.get('location')!,/booking-edited/);assert.equal(messages.length,2);const sent=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}});assert.equal(sent.emailSuppressed,false);assert.ok(sent.emailSentAt);
+  });
+
   test('a 275 Platinum invoice and 275 payment do not retain the old 300 estimate balance',async()=>{
     const{b,user}=await reminderFixture();const paidAt=new Date();const current=await prisma.booking.update({where:{id:b.id},data:{status:'PAID',paidAt,amountPaidCents:27500,discountPercent:15,rewardTier:'Platinum',items:[{id:'diesel-mixer-9-cu-ft',name:'Mixer',term:'weekly',qty:1,periods:1,rate:175,amount:175,operator:false}]}});
     const estimate=await prisma.estimate.findUniqueOrThrow({where:{bookingId:b.id}}),now=await prisma.$transaction(tx=>estimateSnapshot(tx,current,estimate.number));assert.equal(now.totalCents,27500);
