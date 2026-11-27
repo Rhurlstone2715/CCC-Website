@@ -1,4 +1,4 @@
-import{startFinalInvoiceDelivery}from'./final-invoices.js';
+import{startFinalInvoiceDelivery,backfillInvoiceWatermarks}from'./final-invoices.js';
 import {startRentalReminderDelivery} from './rental-reminders.js';
 import {runConfiguredDocumentCorrection} from "./booking-document-correction.js";
 import {runConfiguredTransportRepair} from './booking-transport-repair.js';
@@ -14,6 +14,7 @@ import { startGoogleCalendarSync } from "./google-calendar.js";
 import { prisma } from "./db.js";
 
 await ensureCatalogSeeded();
+await backfillInvoiceWatermarks();
 await runConfiguredTransportRepair();
 await runConfiguredDocumentCorrection();
 const googleCalendarTimer = startGoogleCalendarSync();

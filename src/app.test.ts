@@ -2,7 +2,7 @@
 // Run with `npm test`; needs TEST_DATABASE_URL (see .env.example).
 // test-env must stay the first import: it points Prisma at the test database.
 import "./test-env.js";
-import{queueFinalInvoice,deliverFinalInvoiceEmails}from'./final-invoices.js';
+import{queueFinalInvoice,deliverFinalInvoiceEmails,backfillInvoiceWatermarks}from'./final-invoices.js';
 
 import * as webPush from "web-push";
 import { deliverAdminPushNotifications, queueAdminSignupNotices } from "./admin-push.js";
@@ -262,13 +262,22 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const r=await req(`/admin/bookings/${b.id}/final-invoice`,{cookie:admin,form:{version:b.updatedAt.toISOString()}});assert.match(r.headers.get('location')!,/invoice-queued/);
     await queueFinalInvoice(b.id,b.updatedAt.toISOString());assert.equal(await prisma.finalInvoice.count(),1);
     const i=await prisma.finalInvoice.findFirstOrThrow();assert.equal(i.emailSentAt,null);assert.equal(i.amountPaidCents,0);assert.equal(i.totalCents,50000);
-    const pdf=await PDFDocument.load(i.pdf);assert.match(pdf.getTitle()!,/Final Invoice FIN-000001/);assert.ok(!pdf.getKeywords()?.includes('watermark'));
+    const pdf=await PDFDocument.load(i.pdf);assert.match(pdf.getTitle()!,/Final Invoice FIN-000001/);assert.ok(pdf.getKeywords()?.includes('ccc-watermark-v1-invoice'));
     const text=execSync('pdftotext -layout - -',{input:Buffer.from(i.pdf)}).toString();assert.match(text,/FINAL INVOICE/);assert.match(text,/Balance due KYD \$500.00/);assert.ok(!text.includes('PROVISIONAL ESTIMATE'));assert.match(text,/TOTAL KYD/);assert.match(text,/TOTAL USD/);
     execSync('cat > /tmp/final-invoice-sample.pdf',{input:Buffer.from(i.pdf)});
     const viewer=await(await req(`/admin/bookings/${b.id}/documents/invoice-${i.id}`,{cookie:admin})).text();assert.match(viewer,/Back to booking/);assert.equal((await req(`/account/bookings/${b.id}/invoices/${i.id}.pdf`,{cookie:admin})).status,200);
     const other=await signup('other-invoice@example.com');assert.equal((await req(`/account/bookings/${b.id}/invoices/${i.id}.pdf`,{cookie:other})).status,404);
     assert.equal((await prisma.booking.findUniqueOrThrow({where:{id:b.id}})).status,'APPROVED');assert.equal(await prisma.paymentReceipt.count(),0);
   });
+  test('invoice watermarks backfill saved PDFs once and J&R latest preview does not issue or email invoices',async()=>{
+    const{b}=await reminderFixture(),admin=await makeAdmin();const jr=await prisma.booking.update({where:{id:b.id},data:{company:'J&R Construction'}});
+    assert.equal((await req('/admin/bookings/preview/jr-latest')).status,302);
+    const preview=await req('/admin/bookings/preview/jr-latest',{cookie:admin});assert.equal(preview.headers.get('location'),`/admin/bookings/${b.id}/documents/invoice-preview`);
+    const response=await req(`/admin/bookings/${b.id}/documents/invoice-preview/pdf`,{cookie:admin});assert.equal(response.status,200);const bytes=new Uint8Array(await response.arrayBuffer());const text=execSync('pdftotext -layout - -',{input:Buffer.from(bytes)}).toString();assert.match(text,/INVOICE/);assert.match(text,/J&R Construction/);assert.match(text,/SAMPLE ONLY/);assert.equal(await prisma.finalInvoice.count(),0);assert.equal(await prisma.accountEmail.count(),0);
+    await queueFinalInvoice(b.id,jr.updatedAt.toISOString());const saved=await prisma.finalInvoice.findFirstOrThrow();const old=await PDFDocument.create();old.addPage();old.addPage();await prisma.finalInvoice.update({where:{id:saved.id},data:{pdf:new Uint8Array(await old.save()),emailSentAt:new Date()}});
+    assert.equal(await backfillInvoiceWatermarks(),1);assert.equal(await backfillInvoiceWatermarks(),0);const updated=await prisma.finalInvoice.findFirstOrThrow();assert.equal(updated.totalCents,saved.totalCents);assert.deepEqual(updated.snapshot,saved.snapshot);assert.ok(updated.emailSentAt);const marked=await PDFDocument.load(updated.pdf);assert.equal(marked.getPageCount(),2);assert.match(marked.getKeywords()!,/ccc-watermark-v1-invoice/);const extracted=execSync('pdftotext -raw - -',{input:Buffer.from(updated.pdf)}).toString();assert.equal(extracted.match(/INVOICE/g)?.length,2);
+  });
+
   test('final invoices reflect actual edited equipment and durations; earlier unsent versions cannot email',async t=>{
     const{b}=await reminderFixture();await queueFinalInvoice(b.id,b.updatedAt.toISOString());const original=await prisma.finalInvoice.findFirstOrThrow();
     const edited=await prisma.booking.update({where:{id:b.id},data:{items:[{id:'diesel-mixer-9-cu-ft',name:'Mixer',term:'daily',qty:1,periods:2,rate:40,amount:80,operator:false}],jobDetails:'Shortened actual rental',status:'PAID',paidAt:new Date(),amountPaidCents:50000}});

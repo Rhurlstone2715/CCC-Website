@@ -158,9 +158,9 @@ export async function renderEstimatePdf(s:EstimateSnapshot,preview=false,receipt
     write(text,569-bold.widthOfTextAtSize(text,size),top,size,true);
    }
   }else {write('Continued',516,638,9);write('Continued',516,666,9);}
-  if(preview)write(receipt?'SAMPLE ONLY — NOT A CUSTOMER RECEIPT':'SAMPLE ONLY — NOT A CUSTOMER ESTIMATE',317,150,8,true);
+  if(preview)write(invoice?'SAMPLE ONLY — NOT A CUSTOMER INVOICE':receipt?'SAMPLE ONLY — NOT A CUSTOMER RECEIPT':'SAMPLE ONLY — NOT A CUSTOMER ESTIMATE',317,150,8,true);
  }
- doc.setTitle(invoice?`Cayman Crane Final Invoice ${invoice.number}`:receipt?`Cayman Crane Receipt ${receipt.number}`:`Cayman Crane Estimate ${s.number}`);doc.setSubject(`Booking ${s.bookingRef}`);doc.setAuthor('Cayman Crane Company');return invoice?doc.save():watermarkPdf(await doc.save(),receipt?'paid':'estimate');
+ doc.setTitle(invoice?`Cayman Crane Final Invoice ${invoice.number}`:receipt?`Cayman Crane Receipt ${receipt.number}`:`Cayman Crane Estimate ${s.number}`);doc.setSubject(`Booking ${s.bookingRef}`);doc.setAuthor('Cayman Crane Company');return watermarkPdf(await doc.save(),invoice?'invoice':receipt?'paid':'estimate');
 }
 export async function createBookingEstimate(tx:Prisma.TransactionClient,b:Booking,revisionOf?:number){
  const counter=await tx.estimateCounter.upsert({where:{id:1},create:{id:1,lastNumber:524},update:{lastNumber:{increment:1}}});
