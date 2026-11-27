@@ -153,6 +153,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     signupPhone=100;
     await prisma.$executeRawUnsafe('TRUNCATE "CompanyLogo", "AccountEmail", "Booking", "Session", "PasswordReset", "EmailVerification", "User", "Company", "Product", "RiggingOption", "Upload" RESTART IDENTITY CASCADE');
     await ensureCatalogSeeded();
+    await prisma.invoiceCounter.updateMany({data:{lastNumber:6906}});
     globalThis.fetch = realFetch;
     delete process.env.RESEND_API_KEY;
     delete process.env.EMAIL_FROM;
@@ -269,12 +270,12 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
   test('final invoices are admin-only, use fresh booking totals and retain the estimate branding without its watermark',async()=>{
     const{b}=await reminderFixture(),admin=await makeAdmin();
     assert.equal((await req(`/admin/bookings/${b.id}/final-invoice`,{form:{version:b.updatedAt.toISOString()}})).status,302);assert.equal(await prisma.finalInvoice.count(),0);
-    const page=await(await req(`/admin/bookings/${b.id}`,{cookie:admin})).text();assert.match(page,/Send Final Invoice/);assert.match(page,/Edit booking before invoicing/);
+    const page=await(await req(`/admin/bookings/${b.id}`,{cookie:admin})).text();assert.match(page,/Send Invoice/);assert.match(page,/Edit booking before invoicing/);
     const r=await req(`/admin/bookings/${b.id}/final-invoice`,{cookie:admin,form:{version:b.updatedAt.toISOString()}});assert.match(r.headers.get('location')!,/invoice-queued/);
     await queueFinalInvoice(b.id,b.updatedAt.toISOString());assert.equal(await prisma.finalInvoice.count(),1);
-    const i=await prisma.finalInvoice.findFirstOrThrow();assert.equal(i.emailSentAt,null);assert.equal(i.amountPaidCents,0);assert.equal(i.totalCents,50000);
-    const pdf=await PDFDocument.load(i.pdf);assert.match(pdf.getTitle()!,/Final Invoice FIN-000001/);assert.ok(pdf.getKeywords()?.includes('ccc-watermark-v1-invoice'));
-    const text=execSync('pdftotext -layout - -',{input:Buffer.from(i.pdf)}).toString();assert.match(text,/FINAL INVOICE/);assert.match(text,/Balance due KYD \$500.00/);assert.ok(!text.includes('PROVISIONAL ESTIMATE'));assert.match(text,/TOTAL KYD/);assert.match(text,/TOTAL USD/);
+    const i=await prisma.finalInvoice.findFirstOrThrow();assert.equal(i.number,6907);assert.equal((await prisma.invoiceCounter.findUniqueOrThrow({where:{id:1}})).lastNumber,6907);assert.equal(i.emailSentAt,null);assert.equal(i.amountPaidCents,0);assert.equal(i.totalCents,50000);
+    const pdf=await PDFDocument.load(i.pdf);assert.match(pdf.getTitle()!,/Invoice #6907/);assert.ok(pdf.getKeywords()?.includes('ccc-watermark-v1-invoice'));
+    const text=execSync('pdftotext -layout - -',{input:Buffer.from(i.pdf)}).toString();assert.match(text,/INVOICE/);assert.match(text,/Balance due KYD \$500.00/);assert.ok(!text.includes('PROVISIONAL ESTIMATE'));assert.match(text,/TOTAL KYD/);assert.match(text,/TOTAL USD/);
     execSync('cat > /tmp/final-invoice-sample.pdf',{input:Buffer.from(i.pdf)});
     const viewer=await(await req(`/admin/bookings/${b.id}/documents/invoice-${i.id}`,{cookie:admin})).text();assert.match(viewer,/Back to booking/);assert.equal((await req(`/account/bookings/${b.id}/invoices/${i.id}.pdf`,{cookie:admin})).status,200);
     const other=await signup('other-invoice@example.com');assert.equal((await req(`/account/bookings/${b.id}/invoices/${i.id}.pdf`,{cookie:other})).status,404);
@@ -285,7 +286,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     assert.equal((await req('/admin/bookings/preview/jr-latest')).status,302);
     const preview=await req('/admin/bookings/preview/jr-latest',{cookie:admin});assert.equal(preview.headers.get('location'),`/admin/bookings/${b.id}/documents/invoice-preview`);
     const response=await req(`/admin/bookings/${b.id}/documents/invoice-preview/pdf`,{cookie:admin});assert.equal(response.status,200);const bytes=new Uint8Array(await response.arrayBuffer());const text=execSync('pdftotext -layout - -',{input:Buffer.from(bytes)}).toString();assert.match(text,/INVOICE/);assert.match(text,/J&R Construction/);assert.match(text,/SAMPLE ONLY/);assert.equal(await prisma.finalInvoice.count(),0);assert.equal(await prisma.accountEmail.count(),0);
-    await queueFinalInvoice(b.id,jr.updatedAt.toISOString());const saved=await prisma.finalInvoice.findFirstOrThrow();const old=await PDFDocument.create();old.addPage();old.addPage();await prisma.finalInvoice.update({where:{id:saved.id},data:{pdf:new Uint8Array(await old.save()),emailSentAt:new Date()}});
+    await queueFinalInvoice(b.id,jr.updatedAt.toISOString());const saved=await prisma.finalInvoice.findFirstOrThrow();const old=await PDFDocument.create();old.setTitle(`Cayman Crane Invoice #${saved.number}`);old.addPage();old.addPage();await prisma.finalInvoice.update({where:{id:saved.id},data:{pdf:new Uint8Array(await old.save()),emailSentAt:new Date()}});
     assert.equal(await backfillInvoiceWatermarks(),1);assert.equal(await backfillInvoiceWatermarks(),0);const updated=await prisma.finalInvoice.findFirstOrThrow();assert.equal(updated.totalCents,saved.totalCents);assert.deepEqual(updated.snapshot,saved.snapshot);assert.ok(updated.emailSentAt);const marked=await PDFDocument.load(updated.pdf);assert.equal(marked.getPageCount(),2);assert.match(marked.getKeywords()!,/ccc-watermark-v1-invoice/);const extracted=execSync('pdftotext -raw - -',{input:Buffer.from(updated.pdf)}).toString();assert.equal(extracted.match(/INVOICE/g)?.length,2);
   });
 
@@ -294,7 +295,7 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     const edited=await prisma.booking.update({where:{id:b.id},data:{items:[{id:'diesel-mixer-9-cu-ft',name:'Mixer',term:'daily',qty:1,periods:2,rate:40,amount:80,operator:false}],jobDetails:'Shortened actual rental',status:'PAID',paidAt:new Date(),amountPaidCents:50000}});
     assert.equal(await queueFinalInvoice(b.id,b.updatedAt.toISOString()),'invoice-stale');await queueFinalInvoice(b.id,edited.updatedAt.toISOString());
     const invoices=await prisma.finalInvoice.findMany({orderBy:{id:'asc'}});assert.equal(invoices.length,2);assert.ok(invoices[0].supersededAt);assert.deepEqual(invoices[0].pdf,original.pdf);assert.equal(invoices[1].amountPaidCents,50000);assert.equal(invoices[1].totalCents,38000);
-    enableReminderTest(t);const sent:Parameters<typeof sendEmail>[0][]=[];await deliverFinalInvoiceEmails(async e=>{sent.push(e);return true;});await deliverFinalInvoiceEmails(async()=>{throw Error('duplicate');});assert.equal(sent.length,1);assert.match(sent[0].text,/Credit: KYD \$120.00/);assert.match(sent[0].text,/FIN-000002/);
+    enableReminderTest(t);const sent:Parameters<typeof sendEmail>[0][]=[];await deliverFinalInvoiceEmails(async e=>{sent.push(e);return true;});await deliverFinalInvoiceEmails(async()=>{throw Error('duplicate');});assert.equal(sent.length,1);assert.match(sent[0].text,/Credit: KYD \$120.00/);assert.match(sent[0].text,/#6908/);
     assert.equal((await prisma.booking.findUniqueOrThrow({where:{id:b.id}})).amountPaidCents,50000);
   });
   test('final invoice retries keep one PDF and provider key and cancel stale or unpriced work',async t=>{

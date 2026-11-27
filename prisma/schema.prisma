@@ -449,6 +449,7 @@ model EnRouteNotification {
 }
 
 model FinalInvoice {
+ number Int @unique
  id Int @id @default(autoincrement())
  bookingId Int
  booking Booking @relation(fields:[bookingId],references:[id],onDelete:Cascade)
@@ -465,4 +466,9 @@ model FinalInvoice {
  createdAt DateTime @default(now())
  @@unique([bookingId,bookingVersion])
  @@index([emailSentAt,nextEmailAttemptAt])
+}
+
+model InvoiceCounter {
+ id Int @id
+ lastNumber Int
 }

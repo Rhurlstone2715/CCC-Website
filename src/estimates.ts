@@ -131,7 +131,7 @@ export async function renderEstimatePdf(s:EstimateSnapshot,preview=false,receipt
   const centered=(text:string,left:number,right:number,top:number,size=9)=>write(text,(left+right-font.widthOfTextAtSize(text,size))/2,top,size);
   if(receipt||invoice){
    page.drawRectangle({x:400,y:723,width:178,height:38,color:rgb(1,1,1)});
-   write(invoice?'FINAL INVOICE':'PAYMENT RECEIPT',423,41,16,true);
+   write(invoice?'INVOICE':'PAYMENT RECEIPT',423,41,16,true);
    page.drawRectangle({x:510,y:706,width:60,height:16,color:rgb(1,1,1)});centered(invoice?'Invoice #':'Receipt #',510,570,74);
    page.drawRectangle({x:68,y:141,width:288,height:30,color:rgb(1,1,1)});write(invoice?'Thank you for choosing Cayman Crane.':'Thank you for your payment.',90,626,9);
   }
@@ -150,7 +150,7 @@ export async function renderEstimatePdf(s:EstimateSnapshot,preview=false,receipt
    page.drawLine({start:{x:41,y:792-top+4},end:{x:575,y:792-top+4},thickness:.3,color:rgb(.8,.8,.8)});
   }
   const balance=s.totalCents===null?null:s.totalCents-(receipt?.amountPaidCents??0);
-  const footer=invoice?`FINAL INVOICE\nPayment received KYD $${currency(invoice.amountPaidCents)}\n${(s.totalCents??0)-invoice.amountPaidCents<0?'Credit':'Balance due'} KYD $${currency(Math.abs((s.totalCents??0)-invoice.amountPaidCents))}`:receipt?`${balance===0?'PAID IN FULL':'PAYMENT CONFIRMED'}\nEstimate #${s.number} · ${receipt.paidDate}\n${balance===null?'Booking total awaits confirmation.':balance<0?`Credit KYD $${currency(-balance)}`:`Remaining balance KYD $${currency(balance)}`}`:'PROVISIONAL ESTIMATE\nSubject to availability and acceptance.';
+  const footer=invoice?`INVOICE\nPayment received KYD $${currency(invoice.amountPaidCents)}\n${(s.totalCents??0)-invoice.amountPaidCents<0?'Credit':'Balance due'} KYD $${currency(Math.abs((s.totalCents??0)-invoice.amountPaidCents))}`:receipt?`${balance===0?'PAID IN FULL':'PAYMENT CONFIRMED'}\nEstimate #${s.number} · ${receipt.paidDate}\n${balance===null?'Booking total awaits confirmation.':balance<0?`Credit KYD $${currency(-balance)}`:`Remaining balance KYD $${currency(balance)}`}`:'PROVISIONAL ESTIMATE\nSubject to availability and acceptance.';
   wrap(footer,font,8,207).forEach((line,i)=>centered(line,120.6,337.55,(receipt||invoice?580:591)+i*10,8));
   write(receipt?'PAID KYD $':'TOTAL KYD $',399,638,11,true);write(receipt?'PAID USD $':'TOTAL USD $',399,666,11,true);
   if(index===pages.length-1){
@@ -161,7 +161,7 @@ export async function renderEstimatePdf(s:EstimateSnapshot,preview=false,receipt
   }else {write('Continued',516,638,9);write('Continued',516,666,9);}
   if(preview)write(invoice?'SAMPLE ONLY — NOT A CUSTOMER INVOICE':receipt?'SAMPLE ONLY — NOT A CUSTOMER RECEIPT':'SAMPLE ONLY — NOT A CUSTOMER ESTIMATE',317,150,8,true);
  }
- doc.setTitle(invoice?`Cayman Crane Final Invoice ${invoice.number}`:receipt?`Cayman Crane Receipt ${receipt.number}`:`Cayman Crane Estimate ${s.number}`);doc.setSubject(`Booking ${s.bookingRef}`);doc.setAuthor('Cayman Crane Company');return watermarkPdf(await doc.save(),invoice?'invoice':receipt?'paid':'estimate');
+ doc.setTitle(invoice?`Cayman Crane Invoice ${invoice.number==='PREVIEW'?'PREVIEW':'#'+invoice.number}`:receipt?`Cayman Crane Receipt ${receipt.number}`:`Cayman Crane Estimate ${s.number}`);doc.setSubject(`Booking ${s.bookingRef}`);doc.setAuthor('Cayman Crane Company');return watermarkPdf(await doc.save(),invoice?'invoice':receipt?'paid':'estimate');
 }
 export async function createBookingEstimate(tx:Prisma.TransactionClient,b:Booking,revisionOf?:number){
  const counter=await tx.estimateCounter.upsert({where:{id:1},create:{id:1,lastNumber:524},update:{lastNumber:{increment:1}}});

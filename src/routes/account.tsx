@@ -418,7 +418,7 @@ async function renderProfile(c: Context<AppEnv>, user: SessionUser, state: Profi
                     </p>
                   ) : null}
                   {['PENDING','APPROVED'].includes(b.status) ? <p class="booking-meta"><b>{pendingBookingPoints(b) === null ? 'Pending points: to be confirmed' : `${pendingBookingPoints(b)!.toLocaleString('en-US')} pending points`}</b><br/>{b.paymentProofs.length ? 'Proof received — awaiting admin payment confirmation.' : 'Awaiting payment or proof of payment and admin confirmation.'} Points unlock tiers only after payment is confirmed.</p> : b.status === 'PAID' ? <p class="booking-meta">Payment confirmed · {Math.floor((b.amountPaidCents ?? 0)/100).toLocaleString('en-US')} earned points</p> : null}
-                  {b.finalInvoices.length?<p class="booking-meta"><a class="text-link" href={`/account/bookings/${b.id}/invoices/${b.finalInvoices[0].id}.pdf`}>Download final invoice (PDF)</a></p>:null}
+                  {b.finalInvoices.length?<p class="booking-meta"><a class="text-link" href={`/account/bookings/${b.id}/invoices/${b.finalInvoices[0].id}.pdf`}>Download invoice (PDF)</a></p>:null}
                   {b.status==='PAID'&&b.paymentReceipts.length?<p class="booking-meta"><a class="text-link" href={`/account/bookings/${b.id}/receipt.pdf`}>Download paid receipt (PDF)</a></p>:null}
                   {b.estimate ? <p class="booking-meta"><a class="text-link" href={`/account/bookings/${b.id}/estimate.pdf`}>Download estimate #{b.estimate.number} (PDF)</a></p> : null}
                   <details>

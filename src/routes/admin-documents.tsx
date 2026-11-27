@@ -15,7 +15,7 @@ adminDocuments.get('/preview/jr-latest',async c=>{
 });
 async function documentFor(bookingId:number,kind:string){
  if(kind==='invoice-preview'){
-  return prisma.$transaction(async tx=>{const b=await tx.booking.findUnique({where:{id:bookingId}});if(!b)return null;const s=await estimateSnapshot(tx,b,0);s.date=new Date().toLocaleDateString('en-GB',{timeZone:'America/Cayman',day:'numeric',month:'short',year:'numeric'});const pdf=await renderEstimatePdf(s,true,undefined,{number:'PREVIEW',amountPaidCents:b.status==='PAID'?(b.amountPaidCents??0):0});return{title:'Final invoice preview — not issued',pdf,mark:'invoice' as const,download:`/admin/bookings/${bookingId}/documents/invoice-preview/pdf`};},{timeout:30000});
+  return prisma.$transaction(async tx=>{const b=await tx.booking.findUnique({where:{id:bookingId}});if(!b)return null;const s=await estimateSnapshot(tx,b,0);s.date=new Date().toLocaleDateString('en-GB',{timeZone:'America/Cayman',day:'numeric',month:'short',year:'numeric'});const pdf=await renderEstimatePdf(s,true,undefined,{number:'PREVIEW',amountPaidCents:b.status==='PAID'?(b.amountPaidCents??0):0});return{title:'Invoice preview — not issued',pdf,mark:'invoice' as const,download:`/admin/bookings/${bookingId}/documents/invoice-preview/pdf`};},{timeout:30000});
  }
  if(kind==='estimate'){
   const e=await prisma.estimate.findUnique({where:{bookingId}});
@@ -26,7 +26,7 @@ async function documentFor(bookingId:number,kind:string){
   return r?{title:`Paid receipt R-${String(r.id).padStart(6,'0')}`,pdf:r.pdf,mark:'paid' as const,download:`/account/bookings/${bookingId}/receipt.pdf`}:null;
  }
  const invoice=/^invoice-(\d+)$/.exec(kind);
- if(invoice){const i=await prisma.finalInvoice.findFirst({where:{bookingId,id:Number(invoice[1])}});return i?{title:`Final invoice FIN-${String(i.id).padStart(6,'0')}`,pdf:i.pdf,mark:'invoice' as const,download:`/account/bookings/${bookingId}/invoices/${i.id}.pdf`}:null;}
+ if(invoice){const i=await prisma.finalInvoice.findFirst({where:{bookingId,id:Number(invoice[1])}});return i?{title:`Invoice #${i.number}`,pdf:i.pdf,mark:'invoice' as const,download:`/account/bookings/${bookingId}/invoices/${i.id}.pdf`}:null;}
  const archive=/^estimate-(\d+)$/.exec(kind);
  if(archive){
   const e=await prisma.estimateArchive.findFirst({where:{bookingId,number:Number(archive[1])}});
