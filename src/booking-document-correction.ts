@@ -7,9 +7,15 @@ export async function inspectJRDocuments(){
  const bookings=await prisma.booking.findMany({where:{estimate:{isNot:null}},include:{companyAccount:{select:{name:true}},user:{select:{company:true}},estimate:true,paymentReceipts:{where:{supersededAt:null},select:{id:true,amountPaidCents:true,emailSentAt:true,snapshot:true}}},orderBy:{createdAt:'desc'},take:300});
  return bookings.filter(b=>[b.company,b.companyAccount?.name,b.user?.company].some(n=>n&&companyNameKey(n).includes('jrconstruction'))).map(b=>{const s=b.estimate!.snapshot as unknown as EstimateSnapshot;return {bookingId:b.id,estimateNumber:b.estimate!.number,status:b.status,discountPercent:b.discountPercent,discountCents:s.discountCents,totalCents:s.totalCents,grossCents:s.totalCents===null?null:s.totalCents+s.discountCents,deliveryCents:s.deliveryCents,amountPaidCents:b.amountPaidCents,receipts:b.paymentReceipts.map(({snapshot,...r})=>({...r,discountCents:(snapshot as unknown as EstimateSnapshot).discountCents,totalCents:(snapshot as unknown as EstimateSnapshot).totalCents}))};});
 }
+async function inspectLatestParagon(){
+ const b=await prisma.booking.findFirst({where:{OR:[{company:{contains:'paragon',mode:'insensitive'}},{companyAccount:{name:{contains:'paragon',mode:'insensitive'}}},{user:{company:{contains:'paragon',mode:'insensitive'}}}]},orderBy:[{createdAt:'desc'},{id:'desc'}],select:{id:true,status:true,discountPercent:true,amountPaidCents:true,estimate:{select:{number:true,totalCents:true,snapshot:true}},paymentReceipts:{where:{supersededAt:null},orderBy:{id:'desc'},take:1,select:{id:true,amountPaidCents:true,snapshot:true}},finalInvoices:{orderBy:{id:'desc'},take:1,select:{number:true,totalCents:true,amountPaidCents:true,emailSentAt:true}}}});
+ if(!b)return{found:false};const e=b.estimate?.snapshot as unknown as EstimateSnapshot|undefined;
+ return{bookingId:b.id,status:b.status,discountPercent:b.discountPercent,confirmedPaidCents:b.amountPaidCents,estimate:b.estimate?{number:b.estimate.number,totalCents:b.estimate.totalCents,discountCents:e?.discountCents,deliveryCents:e?.deliveryCents}:null,receipt:b.paymentReceipts.map(r=>({id:r.id,totalCents:(r.snapshot as unknown as EstimateSnapshot).totalCents,paidCents:r.amountPaidCents})),invoice:b.finalInvoices};
+}
 export async function runConfiguredDocumentCorrection(){
  const raw=process.env.BOOKING_DOCUMENT_CORRECTION;if(!raw)return;
  try{
+  if(raw==='inspect-paragon'){console.log('PARAGON_BALANCE_INSPECTION '+JSON.stringify(await inspectLatestParagon()));return;}
   const result=raw==='inspect-jr'?await inspectJRDocuments():await(async()=>{const config=JSON.parse(raw);if(config.mode!=='apply-jr')throw Error('Unsupported correction');return correctJRDocuments(config)})();
   const verification=raw==='inspect-jr'?undefined:await inspectJRDocuments();
   console.log('BOOKING_DOCUMENT_CORRECTION_RESULT '+JSON.stringify({result,verification}));
