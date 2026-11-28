@@ -36,7 +36,7 @@ export function rewardsForSpend(spendCents: number): Rewards {
 
 // Spend counts paid bookings plus any credit an admin has added.
 export async function spendForUser(userId: number): Promise<number> {
-  const user = await prisma.user.findUnique({ where: { id: userId }, include: { companyAccount: { include: { subCompanies: true } }, subCompany: true } });
+  const user = await prisma.user.findUnique({ where: { id: userId }, include: { companyAccount: { include: { subCompanies: true,emailDomains:true } }, subCompany: true } });
   if (!user) return 0;
   const companyId = user.emailVerifiedAt && user.companyAccount && companyAllowsEmail(user.companyAccount, user.email) && !subCompanyIssue(user.companyAccount, user.email, user.subCompanyId) && companyNameKey(user.company || "") === user.companyAccount.nameKey ? user.companyAccount.id : null;
   const separate = companyId && user.companyAccount?.poolSubcompanyRewards === false && user.subCompanyId;
@@ -55,7 +55,7 @@ export function pendingBookingPoints(booking: {status: string; estimate?: {total
 }
 
 export async function pendingRewardsForUser(userId: number) {
-  const user = await prisma.user.findUnique({ where: {id: userId}, include: {companyAccount: {include: {subCompanies: true}}} });
+  const user = await prisma.user.findUnique({ where: {id: userId}, include: {companyAccount: {include: {subCompanies: true,emailDomains:true}}} });
   if (!user) return {points: 0, unpricedCount: 0};
   const companyId = user.emailVerifiedAt && user.companyAccount && companyAllowsEmail(user.companyAccount, user.email) && !subCompanyIssue(user.companyAccount, user.email, user.subCompanyId) && companyNameKey(user.company || '') === user.companyAccount.nameKey ? user.companyAccount.id : null;
   const separate = companyId && user.companyAccount?.poolSubcompanyRewards === false && user.subCompanyId;

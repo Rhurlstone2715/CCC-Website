@@ -2239,6 +2239,24 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     for(const email of["staff@telecayman.ky","staff@easyconnect.ky"])assert.equal(companyEmailDomain(email),null);
   });
 
+  test("verified additional work domains retain legacy owners, share company rewards and cannot create duplicates",async()=>{
+    const legacy=await prisma.company.create({data:{name:"J&R Construction",nameKey:"jrconstruction",ownerEmail:"legacy-owner@gmail.com",rewardCreditCents:600000}});
+    const green=await prisma.company.create({data:{name:"GreenTech Solar",nameKey:"greentechsolar",domain:"greentechsolar.ky",rewardCreditCents:120000}});
+    const sql=readFileSync("prisma/migrations/20261128190000_verified_company_email_domains/migration.sql","utf8");
+    const apply=async()=>{for(const match of sql.matchAll(/INSERT INTO "CompanyEmailDomain"[^;]+;/g))await prisma.$executeRawUnsafe(match[0]);};
+    await apply();await apply();assert.equal(await prisma.companyEmailDomain.count(),2);
+    for(const [domain,name]of[["jrconstructionltd.ky",legacy.name],["greentech.ky",green.name]])assert.equal((await(await req(`/account/company-suggestion?email=staff%40${domain}`)).json()).company,name);
+    const users=[];for(const email of["legacy-owner@gmail.com","one@jrconstructionltd.ky","two@jrconstructionltd.ky"]){const user=await prisma.user.create({data:{name:"Staff",email,company:legacy.name,emailVerifiedAt:new Date(),passwordHash:"unused"}});await syncCompanyMembership(user.id);users.push(user);assert.equal((await rewardsForUser(user.id)).points,6000);}
+    assert.equal(await prisma.user.count({where:{companyAccountId:legacy.id}}),3);const unchanged=await prisma.company.findUniqueOrThrow({where:{id:legacy.id}});assert.equal(unchanged.ownerEmail,"legacy-owner@gmail.com");assert.equal(unchanged.rewardCreditCents,600000);assert.equal(unchanged.domain,null);
+    const duplicate=await req("/account/signup",{form:{name:"New Name",email:"third@jrconstructionltd.ky",phone:"345 555 0160",company:"Duplicate JR",password:"longenough1"}});assert.equal(duplicate.status,400);
+    const unrelated=await req("/account/signup",{form:{name:"Other",email:"other@gmail.com",phone:"345 555 0161",company:legacy.name,password:"longenough1"}});assert.equal(unrelated.status,400);
+    const admin=await makeAdmin();assert.match((await req("/admin/companies",{cookie:admin,form:{name:"Another JR",domain:"jrconstructionltd.ky"}})).headers.get("location")!,/duplicate/);
+    const deleted=await req(`/admin/companies/${legacy.id}/email-domains/remove`,{cookie:admin,form:{domain:"jrconstructionltd.ky"}});assert.match(deleted.headers.get("location")!,/detached=2/);assert.equal(await prisma.user.count({where:{companyAccountId:legacy.id}}),1);assert.equal((await rewardsForUser(users[0].id)).points,6000);
+    assert.equal((await req(`/admin/companies/${legacy.id}/email-domains`,{form:{domain:"new-jr.ky"}})).status,302);assert.equal(await prisma.companyEmailDomain.count({where:{domain:"new-jr.ky"}}),0);
+    await req(`/admin/companies/${legacy.id}/email-domains`,{cookie:admin,form:{domain:"new-jr.ky"}});assert.equal(await prisma.companyEmailDomain.count({where:{companyId:legacy.id,domain:"new-jr.ky"}}),1);
+    await req(`/admin/companies/${legacy.id}/email-domains`,{cookie:admin,form:{domain:"gmail.com"}});assert.equal(await prisma.companyEmailDomain.count({where:{domain:"gmail.com"}}),0);
+  });
+
   test("expanded business directory import preserves ownership, rewards and trading-name aliases without duplicate accounts",async()=>{
     const directory=JSON.parse(readFileSync("data/cayman-business-directory-2026.json","utf8")) as {companies:{name:string;nameKey:string;domain:string|null;aliasNames:string[]}[]};
     const alias=await prisma.company.create({data:{name:"Label C Designs",nameKey:"labelcdesigns",ownerEmail:"owner@gmail.com",rewardCreditCents:150000}});
@@ -2247,7 +2265,8 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     await apply();const count=await prisma.company.count();await apply();assert.equal(await prisma.company.count(),count);assert.ok(count>300);
     const kept=await prisma.company.findUniqueOrThrow({where:{id:alias.id}});assert.equal(kept.rewardCreditCents,150000);assert.equal(kept.ownerEmail,"owner@gmail.com");assert.equal(kept.domain,null);assert.equal(await prisma.company.count({where:{nameKey:"cynthiatranelstudio"}}),0);
     assert.equal(await prisma.user.count(),0);assert.equal(await prisma.accountEmail.count(),0);
-    const audit=await(await import("./company-directory.js")).auditCompanyDirectory();assert.equal(audit.mapped,directory.companies.length);assert.deepEqual(audit.missing,[]);assert.deepEqual(audit.duplicateMatches,[]);
+    const domainsSQL=readFileSync("prisma/migrations/20261128190000_verified_company_email_domains/migration.sql","utf8");for(const match of domainsSQL.matchAll(/INSERT INTO "CompanyEmailDomain"[^;]+;/g))await prisma.$executeRawUnsafe(match[0]);
+    const audit=await(await import("./company-directory.js")).auditCompanyDirectory();assert.equal(audit.mapped,directory.companies.length);assert.deepEqual(audit.missing,[]);assert.deepEqual(audit.duplicateMatches,[]);assert.deepEqual(audit.missingDomains,[]);
     const duplicate=await req("/account/signup",{form:{name:"Other Owner",email:"other@gmail.com",phone:"345 555 0148",company:"Cynthia Tranel Studio",password:"longenough1"}});assert.equal(duplicate.status,400);assert.equal(await prisma.company.count(),count);
     for(const entry of directory.companies.filter(c=>c.domain&&c.name!=="Cynthia Tranel Studio")){assert.ok(await prisma.company.findUnique({where:{domain:entry.domain!}}),entry.name);}
     const listing=await prisma.company.findFirstOrThrow({where:{name:"Growing Beauty Nursery"}});assert.equal(listing.domain,null);assert.equal(listing.ownerEmail,null);

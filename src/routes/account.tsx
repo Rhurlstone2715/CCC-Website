@@ -261,16 +261,16 @@ account.get("/company-suggestion", async c => {
   const domain = companyEmailDomain(c.req.query("email") || "");
   c.header("Cache-Control", "private, no-store");
   if (!domain) return c.json({ eligible: true, mode: "single-email", company: null });
-  const company = await prisma.company.findFirst({ where: { archivedAt: null, OR: [{ domain }, { subCompanies: { some: { domain } } }] }, include: { subCompanies: { orderBy: [{ group: "asc" }, { name: "asc" }] } } });
-  return c.json({ eligible: true, domain, companyDomain: company?.domain ?? domain, company: company?.name ?? null, requiresSubCompany: company?.poolSubcompanyRewards === false && Boolean(company.subCompanies.length), subCompanies: company?.subCompanies.filter(sub => domain === company.domain || domain === sub.domain).map(sub => ({ id: sub.id, name: sub.name, group: sub.group })) ?? [], suggestion: domain.split('.')[0].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) });
+  const company = await prisma.company.findFirst({ where: { archivedAt: null, OR: [{ domain },{emailDomains:{some:{domain}}}, { subCompanies: { some: { domain } } }] }, include: { emailDomains:true,subCompanies: { orderBy: [{ group: "asc" }, { name: "asc" }] } } });
+  return c.json({ eligible: true, domain, companyDomain: company?.emailDomains.some(d=>d.domain===domain)?domain:company?.domain ?? domain, company: company?.name ?? null, requiresSubCompany: company?.poolSubcompanyRewards === false && Boolean(company.subCompanies.length), subCompanies: company?.subCompanies.filter(sub => domain === company.domain || company.emailDomains.some(d=>d.domain===domain) || domain === sub.domain).map(sub => ({ id: sub.id, name: sub.name, group: sub.group })) ?? [], suggestion: domain.split('.')[0].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) });
 });
 
 account.get("/company-search", async c => {
   c.header("Cache-Control", "private, no-store");
   const q=(c.req.query("q")||"").trim().slice(0,120),email=(c.req.query("email")||"").trim().toLowerCase(),domain=companyEmailDomain(email);
   if(q.length<2)return c.json({companies:[]});
-  const companies=await prisma.company.findMany({where:{archivedAt:null,AND:[{OR:[{name:{contains:q,mode:"insensitive"}},{nameKey:{in:companyNameKeys(q)}}]},{OR:[{domain:null,ownerEmail:null},...(EMAIL_PATTERN.test(email)?[{ownerEmail:email}]:[]),...(domain?[{domain},{subCompanies:{some:{domain}}}]:[])]}]},select:{name:true,domain:true},orderBy:{name:"asc"},take:12});
-  return c.json({companies});
+  const companies=await prisma.company.findMany({where:{archivedAt:null,AND:[{OR:[{name:{contains:q,mode:"insensitive"}},{nameKey:{in:companyNameKeys(q)}}]},{OR:[{domain:null,ownerEmail:null,emailDomains:{none:{}}},...(EMAIL_PATTERN.test(email)?[{ownerEmail:email}]:[]),...(domain?[{domain},{emailDomains:{some:{domain}}},{subCompanies:{some:{domain}}}]:[])]}]},select:{name:true,domain:true,emailDomains:{select:{domain:true}}},orderBy:{name:"asc"},take:12});
+  return c.json({companies:companies.map(co=>({name:co.name,domain:co.domain||co.emailDomains[0]?.domain||null}))});
 });
 
 account.post("/signup", async c => {

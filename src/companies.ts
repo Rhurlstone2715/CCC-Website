@@ -24,38 +24,38 @@ try{
   for(const row of directory.companies){const keys=[...new Set([row.name,...row.aliasNames].map(companyNameKey))];for(const key of keys)researchedAliases.set(key,keys);}
 }catch{ /* A missing optional research file must not prevent account access. */ }
 export function companyNameKeys(name:string):string[]{const key=companyNameKey(name);return researchedAliases.get(key)||[key];}
-type MembershipCompany = { id?: number; domain: string | null; ownerEmail: string | null; archivedAt?: Date | null; poolSubcompanyRewards?: boolean; subCompanies?: { id: number; companyId: number; domain: string | null }[] };
+type MembershipCompany = { emailDomains?:{domain:string}[]; id?: number; domain: string | null; ownerEmail: string | null; archivedAt?: Date | null; poolSubcompanyRewards?: boolean; subCompanies?: { id: number; companyId: number; domain: string | null }[] };
 export function companyAllowsEmail(company: MembershipCompany, email: string): boolean {
   if (company.archivedAt) return false;
-  if (company.ownerEmail) return company.ownerEmail === email.trim().toLowerCase();
+  if (company.ownerEmail === email.trim().toLowerCase()) return true;
   const domain = companyEmailDomain(email);
-  return Boolean(domain && (company.domain === domain || company.subCompanies?.some(sub => sub.domain === domain)));
+  return Boolean(domain && (company.domain === domain || company.emailDomains?.some(d=>d.domain===domain) || company.subCompanies?.some(sub => sub.domain === domain)));
 }
 export function subCompanyIssue(company: MembershipCompany, email: string, id: number | null): string | null {
   if (!id) return company.poolSubcompanyRewards === false && company.subCompanies?.length ? "Select your office, department or sub-company." : null;
   const sub = company.subCompanies?.find(sub => sub.id === id && sub.companyId === company.id);
   if (!sub) return "Select a sub-company belonging to your selected company.";
   const domain = companyEmailDomain(email);
-  return domain && (domain === company.domain || domain === sub.domain) ? null : "Use the work-email domain associated with this sub-company.";
+  return domain && (domain === company.domain || company.emailDomains?.some(d=>d.domain===domain) || domain === sub.domain) ? null : "Use the work-email domain associated with this sub-company.";
 }
 export async function validateCompany(email: string, name: string | null, subCompanyId: number | null = null): Promise<string | null> {
   if (!name) return subCompanyId ? "Select the parent company for your sub-company." : null;
   const key = companyNameKey(name);
   if (!key) return "Enter a valid company name.";
-  const named = await prisma.company.findFirst({ where: { nameKey: { in:companyNameKeys(name) } }, include: { subCompanies: true } });
+  const named = await prisma.company.findFirst({ where: { nameKey: { in:companyNameKeys(name) } }, include: { subCompanies: true, emailDomains:true } });
   if (named?.archivedAt) return "That company is no longer active. Contact Cayman Crane or use a different company.";
   // A researched listing with no published work domain is claimed only after email verification.
-  if (named && !named.domain && !named.ownerEmail) {
+  if (named && !named.domain && !named.ownerEmail && !named.emailDomains.length) {
     if (subCompanyId) return "This company does not have a registered sub-company.";
     const owned = await prisma.company.findUnique({ where: { ownerEmail: email.trim().toLowerCase() } });
     return owned && owned.id !== named.id ? `This email is already registered to ${owned.name}. Use that company name.` : null;
   }
-  if (named) return companyAllowsEmail(named, email) ? subCompanyIssue(named, email, subCompanyId) : named.ownerEmail
+  if (named) return companyAllowsEmail(named, email) ? subCompanyIssue(named, email, subCompanyId) : named.ownerEmail && !named.emailDomains.length
     ? "That company is limited to its registered email login. Use that email address or choose a different company."
     : "That company requires its matching work-email domain. Use a company work email.";
   if (subCompanyId) return "Select the registered parent company for this sub-company.";
   const domain = companyEmailDomain(email);
-  const parent = domain ? await prisma.company.findFirst({ where: { archivedAt: null, OR: [{ domain }, { subCompanies: { some: { domain } } }] }, select: { name: true, subCompanies: { select: { id: true } } } }) : null;
+  const parent = domain ? await prisma.company.findFirst({ where: { archivedAt: null, OR: [{ domain },{emailDomains:{some:{domain}}}, { subCompanies: { some: { domain } } }] }, select: { name: true, subCompanies: { select: { id: true } } } }) : null;
   if (parent) return `Your work email is registered under ${parent.name}. Select that company${parent.subCompanies.length ? " and your office or department" : ""}.`;
   const owned = await prisma.company.findUnique({ where: { ownerEmail: email.toLowerCase() } });
   if (owned) return `This email is already registered to ${owned.name}. Use that company name.`;
@@ -72,26 +72,26 @@ export async function syncCompanyMembership(userId: number): Promise<void> {
     }
     const key = companyNameKey(user.company);
     if (!key) return;
-    let company = await tx.company.findFirst({ where: { nameKey: { in:companyNameKeys(user.company) } }, include: { subCompanies: true } });
+    let company = await tx.company.findFirst({ where: { nameKey: { in:companyNameKeys(user.company) } }, include: { subCompanies: true, emailDomains:true } });
     if (!company) {
       const domain = companyEmailDomain(user.email);
-      const domainCompany = domain ? await tx.company.findUnique({ where: { domain } }) : null;
+      const domainCompany = domain ? await tx.company.findFirst({ where: { OR:[{domain},{emailDomains:{some:{domain}}}] } }) : null;
       const owned = await tx.company.findUnique({ where: { ownerEmail: user.email } });
       if (owned) return;
       // Another staff member may have registered this domain while this email awaited verification.
       if (domainCompany) {
-        company = await tx.company.findUniqueOrThrow({ where: { id: domainCompany.id }, include: { subCompanies: true } });
+        company = await tx.company.findUniqueOrThrow({ where: { id: domainCompany.id }, include: { subCompanies: true, emailDomains:true } });
       } else {
         // Verified business emails establish a shared company domain, including full trading names.
-        company = await tx.company.upsert({ where: { nameKey: key }, create: { name: user.company, nameKey: key, domain, ownerEmail: domain ? null : user.email }, update: {}, include: { subCompanies: true } });
+        company = await tx.company.upsert({ where: { nameKey: key }, create: { name: user.company, nameKey: key, domain, ownerEmail: domain ? null : user.email }, update: {}, include: { subCompanies: true, emailDomains:true } });
       }
     }
-    if (!company.domain && !company.ownerEmail && !company.archivedAt) {
+    if (!company.domain && !company.ownerEmail && !company.emailDomains.length && !company.archivedAt) {
       // Conditional row update serializes simultaneous claims. A work email does not
       // automatically turn a domainless directory listing into a shared staff account.
       const owned = await tx.company.findUnique({ where: { ownerEmail: user.email } });
       if (!owned || owned.id === company.id) await tx.company.updateMany({ where: { id: company.id, domain: null, ownerEmail: null, archivedAt: null }, data: { ownerEmail: user.email } });
-      company = await tx.company.findUniqueOrThrow({ where: { id: company.id }, include: { subCompanies: true } });
+      company = await tx.company.findUniqueOrThrow({ where: { id: company.id }, include: { subCompanies: true, emailDomains:true } });
     }
     if (!companyAllowsEmail(company, user.email) || subCompanyIssue(company, user.email, user.subCompanyId)) {
       if (user.companyAccountId) await tx.user.update({ where: { id: user.id }, data: { companyAccountId: null } });
@@ -101,7 +101,7 @@ export async function syncCompanyMembership(userId: number): Promise<void> {
   });
 }
 export async function verifiedCompanyMembership(userId: number) {
-  const user = await prisma.user.findUnique({ where: { id: userId }, include: { companyAccount: { include: { subCompanies: true } }, subCompany: { select: { name: true } } } });
+  const user = await prisma.user.findUnique({ where: { id: userId }, include: { companyAccount: { include: { subCompanies: true, emailDomains:true } }, subCompany: { select: { name: true } } } });
   if (!user?.emailVerifiedAt || !user.companyAccount || !companyAllowsEmail(user.companyAccount, user.email) || subCompanyIssue(user.companyAccount, user.email, user.subCompanyId) || companyNameKey(user.company || "") !== user.companyAccount.nameKey) return null;
   return { companyAccountId: user.companyAccount.id, subCompanyId: user.subCompanyId, companyDisplayName: `${user.companyAccount.name}${user.subCompany ? ` / ${user.subCompany.name}` : ""}` };
 }

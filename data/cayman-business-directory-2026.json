@@ -25,6 +25,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "1503propertygroup.com"
+      ],
       "nameKey": "1503propertygroup",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/1503-property-group-ltd"
@@ -54,6 +57,9 @@
       "domain": "360holdingsltd.com",
       "publishedEmail": "info@360holdingsltd.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "360holdingsltd.com"
+      ],
       "nameKey": "360holdings",
       "sources": [
         "https://www.renuspace.ky/business-profile/360-holdings",
@@ -80,6 +86,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "3dkyubearchitects",
       "sources": [
         "https://www.renuspace.ky/business-profile/3d-kyube-architects"
@@ -98,6 +105,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://5star.ky",
+      "verifiedDomains": [
+        "5star.ky"
+      ],
       "nameKey": "5starbuildingconstruction",
       "aliasNames": [
         "5 Star Building & Construction"
@@ -133,6 +143,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "aspropertymaintenance",
       "sources": [
         "https://www.renuspace.ky/business-profile/a-s-property-maintenance"
@@ -159,6 +170,9 @@
         "building supplies"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "althompson.com"
+      ],
       "nameKey": "althompsonconstruction",
       "sources": [
         "https://www.cca.ky/al-thompson-construction-ltd",
@@ -181,6 +195,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "aaaadvancedacappliance",
       "sources": [
         "https://www.renuspace.ky/business-profile/aaa-advanced-ac-appliance"
@@ -201,6 +216,9 @@
       ],
       "domain": "survey.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "survey.ky"
+      ],
       "nameKey": "abernethyassociates",
       "sources": [
         "https://caymanresident.com/housing/building-a-home/building-professionals/land-surveyors"
@@ -217,6 +235,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://abodecayman.com",
+      "verifiedDomains": [
+        "abodecayman.com"
+      ],
       "nameKey": "abodepropertymanagement",
       "aliasNames": [
         "Abode Property Management"
@@ -247,6 +268,9 @@
       "domain": "advancefireltd.com",
       "publishedEmail": "info@advancefireltd.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "advancefireltd.com"
+      ],
       "nameKey": "advancefireplumbing",
       "sources": [
         "https://www.renuspace.ky/business-profile/advance-fire-plumbing-ltd"
@@ -272,6 +296,9 @@
       "domain": "affordablesolar.ky",
       "publishedEmail": "info@affordablesolar.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "affordablesolar.ky"
+      ],
       "nameKey": "affordablesolar",
       "sources": [
         "https://www.renuspace.ky/business-profile/affordable-solar"
@@ -297,6 +324,9 @@
       "domain": "airsupply.ky",
       "publishedEmail": "admin@airsupply.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "airsupply.ky"
+      ],
       "nameKey": "airsupplycayman",
       "sources": [
         "https://www.renuspace.ky/business-profile/air-supply-cayman"
@@ -317,6 +347,9 @@
       "domain": "alivedesign.net",
       "publishedEmail": "kendra@alivedesign.net",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "alivedesign.net"
+      ],
       "nameKey": "alivedesign",
       "sources": [
         "https://www.renuspace.ky/business-profile/alive-design"
@@ -338,6 +371,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "allinclusiveconstruction",
       "sources": [
         "https://www.renuspace.ky/business-profile/all-inclusive-construction"
@@ -363,6 +397,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "allthingselectrical",
       "sources": [
         "https://www.renuspace.ky/business-profile/all-things-electrical"
@@ -379,6 +414,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.alpha.ky",
+      "verifiedDomains": [
+        "alpha.ky"
+      ],
       "nameKey": "alphaconstructiondevelopment",
       "aliasNames": [
         "Alpha Construction & Development"
@@ -398,6 +436,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://ambltd.org",
+      "verifiedDomains": [
+        "ambltd.org"
+      ],
       "nameKey": "ambconstruction",
       "aliasNames": [
         "AMB Construction Ltd."
@@ -420,6 +461,9 @@
       "domain": "amr.ky",
       "publishedEmail": "info@amr.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "amr.ky"
+      ],
       "nameKey": "amrconsultingengineers",
       "sources": [
         "https://www.amr.ky/",
@@ -439,6 +483,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://andro.ky",
+      "verifiedDomains": [
+        "andro.ky"
+      ],
       "nameKey": "androgroup",
       "aliasNames": [
         "Androgroup Ltd."
@@ -469,6 +516,9 @@
       "domain": "apexgroup.ky",
       "publishedEmail": "info@apexgroup.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "apexgroup.ky"
+      ],
       "nameKey": "apexperimeterprotection",
       "sources": [
         "https://www.renuspace.ky/business-profile/apex-perimeter-protection-ltd"
@@ -489,6 +539,9 @@
       ],
       "domain": "appliancepros.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "appliancepros.ky"
+      ],
       "nameKey": "appliancepros",
       "sources": [
         "https://caymanresident.com/housing/home-improvements/general-maintenance-repairs"
@@ -505,6 +558,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.aquabayclub.com",
+      "verifiedDomains": [
+        "aquabayclub.com"
+      ],
       "nameKey": "aquabayclub",
       "aliasNames": [
         "Aqua Bay Club"
@@ -525,6 +581,9 @@
       "location": "Unit 3 JJT Warehouses, Industrial Way, Grand Cayman",
       "existingDirectory": true,
       "website": "https://www.aquadynamics.ky",
+      "verifiedDomains": [
+        "aquadynamics.ky"
+      ],
       "nameKey": "aquadynamics",
       "aliasNames": [
         "Aqua Dynamics"
@@ -560,6 +619,9 @@
       "domain": "arcadia.ky",
       "publishedEmail": "info@arcadia.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "arcadia.ky"
+      ],
       "nameKey": "arcadialandscapedesignandconsulting",
       "sources": [
         "https://www.renuspace.ky/business-profile/arcadia-landscape-design-and-consulting"
@@ -576,6 +638,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://arch-godfrey.com",
+      "verifiedDomains": [
+        "arch-godfrey.com"
+      ],
       "nameKey": "archandgodfreycayman",
       "aliasNames": [
         "Arch and Godfrey (Cayman) Ltd."
@@ -604,6 +669,9 @@
       "domain": "archglasscayman.com",
       "publishedEmail": "richard@archglasscayman.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "archglasscayman.com"
+      ],
       "nameKey": "archglassaluminum",
       "sources": [
         "https://www.renuspace.ky/business-profile/arch-glass-aluminum-ltd"
@@ -629,6 +697,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "articairconditioning",
       "sources": [
         "https://www.renuspace.ky/business-profile/artic-air-conditioning"
@@ -654,6 +723,9 @@
         "fencing"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "amw.ky"
+      ],
       "nameKey": "artisanmetalworks",
       "sources": [
         "https://www.cca.ky/artisan-metal-works",
@@ -683,6 +755,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "ashmorealexander.com"
+      ],
       "nameKey": "ashmorealexander",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/ashmore-alexander"
@@ -701,6 +776,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://aslcourier.com",
+      "verifiedDomains": [
+        "aslcourier.com"
+      ],
       "nameKey": "aslshippinglogistics",
       "aliasNames": [
         "ASL Shipping & Logistics"
@@ -720,6 +798,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.avatapsl.com",
+      "verifiedDomains": [
+        "avatapsl.com"
+      ],
       "nameKey": "avatapropertyservices",
       "aliasNames": [
         "Avata Property Services Ltd."
@@ -751,6 +832,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "azurerealtycayman.com"
+      ],
       "nameKey": "azurerealty",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/azure-realty-ltd"
@@ -776,6 +860,9 @@
       "domain": "byg.ky",
       "publishedEmail": "info@byg.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "byg.ky"
+      ],
       "nameKey": "backyardgardeners",
       "sources": [
         "https://www.renuspace.ky/business-profile/backyard-gardeners"
@@ -794,6 +881,9 @@
         "quantity surveying"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "bcqs.com"
+      ],
       "nameKey": "bcqsinternational",
       "sources": [
         "https://www.careers.ky/jobs/W6Y4J4"
@@ -810,6 +900,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.bcqspropertymanagement.com",
+      "verifiedDomains": [
+        "bcqspropertymanagement.com"
+      ],
       "nameKey": "bcqspropertymanagement",
       "aliasNames": [
         "BCQS Property Management Ltd."
@@ -831,6 +924,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://bdcl.ky",
+      "verifiedDomains": [
+        "bdcl.ky"
+      ],
       "nameKey": "bdclarchitects",
       "aliasNames": [
         "BDCL Architects"
@@ -860,6 +956,9 @@
       "domain": "bedsidemanor.ky",
       "publishedEmail": "sales@bedsidemanor.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "bedsidemanor.ky"
+      ],
       "nameKey": "bedsidemanor",
       "sources": [
         "https://www.renuspace.ky/business-profile/bedside-manor"
@@ -888,6 +987,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "bhhscaymanislands.com"
+      ],
       "nameKey": "berkshirehathawayhomeservicescaymanislands",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/berkshire-hathaway-homeservices-cayman-islands"
@@ -916,6 +1018,7 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "betterpropertiesintl",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/better-properties-intl"
@@ -941,6 +1044,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "bettleelectrical",
       "sources": [
         "https://www.renuspace.ky/business-profile/bettle-electrical-ltd"
@@ -968,6 +1072,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "blueeagle",
       "sources": [
         "https://www.renuspace.ky/business-profile/blue-eagle-company-ltd"
@@ -993,6 +1098,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "boddenpoolsspas",
       "sources": [
         "https://www.renuspace.ky/business-profile/bodden-pools-spas-ltd"
@@ -1021,6 +1127,9 @@
       "domain": "brandsourcecayman.com",
       "publishedEmail": "sales@brandsourcecayman.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "brandsourcecayman.com"
+      ],
       "nameKey": "brandsourcehomegallery",
       "sources": [
         "https://www.renuspace.ky/business-profile/custom-closets",
@@ -1041,6 +1150,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://britthay.com",
+      "verifiedDomains": [
+        "britthay.com"
+      ],
       "nameKey": "britthayelectric",
       "aliasNames": [
         "BrittHay Electric Ltd.",
@@ -1073,6 +1185,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "bryanconstruction",
       "sources": [
         "https://www.renuspace.ky/business-profile/bryan-construction"
@@ -1089,6 +1202,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://buildcayman.ky",
+      "verifiedDomains": [
+        "buildcayman.ky"
+      ],
       "nameKey": "buildcayman",
       "aliasNames": [
         "Build (Cayman) Ltd.",
@@ -1121,6 +1237,9 @@
       "domain": "cdshuttersandscreens.com",
       "publishedEmail": "info@cdshuttersandscreens.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "cdshuttersandscreens.com"
+      ],
       "nameKey": "cdshuttersandscreens",
       "sources": [
         "https://www.renuspace.ky/business-profile/c-d-shutters-and-screens"
@@ -1147,6 +1266,9 @@
       "domain": "candwltd.ky",
       "publishedEmail": "info@candwltd.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "candwltd.ky"
+      ],
       "nameKey": "cwelectricalrenovations",
       "sources": [
         "https://www.renuspace.ky/business-profile/c-w-electrical-renovations-ltd"
@@ -1163,6 +1285,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.caribclub.com",
+      "verifiedDomains": [
+        "caribclub.com"
+      ],
       "nameKey": "caribbeanclub",
       "aliasNames": [
         "Caribbean Club"
@@ -1191,6 +1316,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "caribbeandoorswindowrepairs",
       "sources": [
         "https://www.renuspace.ky/business-profile/caribbean-doors-window-repairs-ltd"
@@ -1216,6 +1342,9 @@
       "domain": "ciwindows.com",
       "publishedEmail": "info@ciwindows.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "ciwindows.com"
+      ],
       "nameKey": "caribbeanimpactwindowsdoors",
       "sources": [
         "https://www.renuspace.ky/business-profile/caribbean-impact-windows-doors"
@@ -1242,6 +1371,9 @@
       "domain": "catalyst.ky",
       "publishedEmail": "info@catalyst.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "catalyst.ky"
+      ],
       "nameKey": "catalyst",
       "sources": [
         "https://www.renuspace.ky/business-profile/catalyst"
@@ -1263,6 +1395,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "cattconstruction2018",
       "sources": [
         "https://www.renuspace.ky/business-profile/catt-construction-2018-ltd"
@@ -1280,6 +1413,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://caycargo.ky",
+      "verifiedDomains": [
+        "caycargo.ky"
+      ],
       "nameKey": "caycargo",
       "aliasNames": [
         "CAY Cargo Ltd."
@@ -1303,6 +1439,9 @@
       "domain": "cayconstruction.ky",
       "publishedEmail": "info@cayconstruction.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "cayconstruction.ky"
+      ],
       "nameKey": "cayconstruction",
       "sources": [
         "https://www.renuspace.ky/business-profile/cay-construction"
@@ -1319,6 +1458,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.caymanclimatecontrols.com",
+      "verifiedDomains": [
+        "ccc.ky"
+      ],
       "nameKey": "caymanclimatecontrols",
       "aliasNames": [
         "Cayman Climate Controls",
@@ -1351,6 +1493,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "caymancoatingindustries",
       "sources": [
         "https://www.renuspace.ky/business-profile/cayman-coating-industries-ltd"
@@ -1376,6 +1519,9 @@
       "domain": "caymanepoxy.com",
       "publishedEmail": "info@caymanepoxy.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "caymanepoxy.com"
+      ],
       "nameKey": "caymanepoxysolutions",
       "sources": [
         "https://www.renuspace.ky/business-profile/caymanepoxysolutions"
@@ -1393,6 +1539,9 @@
       "location": "Unit 210-212 Canon Place, North Sound Road, Grand Cayman",
       "existingDirectory": true,
       "website": "https://www.seaboardmarine.com",
+      "verifiedDomains": [
+        "seaboardcayman.com"
+      ],
       "nameKey": "caymanfreightshippingservicesseaboardmarine",
       "aliasNames": [
         "Cayman Freight Shipping Services Ltd. / Seaboard Marine"
@@ -1419,6 +1568,9 @@
       "domain": "caymangeneral.com",
       "publishedEmail": "support@caymangeneral.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "caymangeneral.com"
+      ],
       "nameKey": "caymangeneralcontractors",
       "sources": [
         "https://www.renuspace.ky/business-profile/cayman-general-contractors",
@@ -1440,6 +1592,9 @@
       ],
       "domain": "caymangrowers.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "caymangrowers.com"
+      ],
       "nameKey": "caymangrowers",
       "sources": [
         "https://caymanresident.com/shopping/garden-centres",
@@ -1470,6 +1625,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "cip.realestate"
+      ],
       "nameKey": "caymanislandsproperties",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/cayman-islands-properties"
@@ -1495,6 +1653,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "caymanislandsroofing",
       "sources": [
         "https://www.renuspace.ky/business-profile/cayman-islands-roofing"
@@ -1511,6 +1670,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.cisheetmetal.com",
+      "verifiedDomains": [
+        "cisheetmetal.com"
+      ],
       "nameKey": "caymanislandssheetmetal",
       "aliasNames": [
         "Cayman Islands Sheet Metal Ltd."
@@ -1542,6 +1704,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "sothebysrealty.ky"
+      ],
       "nameKey": "caymanislandssothebysintlrealty",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/cayman-islands-sotheby-s-int-l-realty"
@@ -1563,6 +1728,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://caymanmechanical.com",
+      "verifiedDomains": [
+        "caymanmechanical.com"
+      ],
       "nameKey": "caymanmechanical",
       "aliasNames": [
         "Cayman Mechanical Company Ltd.",
@@ -1591,6 +1759,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://caymanpropertyconsulting.com",
+      "verifiedDomains": [
+        "caymanpropertyconsulting.com"
+      ],
       "nameKey": "caymanpropertyconsulting",
       "aliasNames": [
         "Cayman Property Consulting"
@@ -1614,6 +1785,7 @@
       ],
       "domain": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "caymanpropertymaintenancebillperigo",
       "sources": [
         "https://caymanresident.com/housing/home-improvements/general-maintenance-repairs"
@@ -1642,6 +1814,7 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "caymanrealtyspecialists",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/cayman-realty-specialists"
@@ -1669,6 +1842,9 @@
       "domain": "caymanrepairs.com",
       "publishedEmail": "info@caymanrepairs.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "caymanrepairs.com"
+      ],
       "nameKey": "caymanrepairs",
       "sources": [
         "https://www.renuspace.ky/business-profile/cayman-repairs"
@@ -1685,6 +1861,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://caymanroutes.com",
+      "verifiedDomains": [
+        "caymanroutes.com"
+      ],
       "nameKey": "caymanroutesislandtours",
       "aliasNames": [
         "Cayman Routes Island Tours"
@@ -1708,6 +1887,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "caymanstructuralgroup",
       "sources": [
         "https://www.caymanstructuralgroup.ky/"
@@ -1724,6 +1904,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.caymanvillas.com",
+      "verifiedDomains": [
+        "caymanvillas.com"
+      ],
       "nameKey": "caymanvillas",
       "aliasNames": [
         "Cayman Villas"
@@ -1743,6 +1926,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://caytechac.com",
+      "verifiedDomains": [
+        "caytechac.com"
+      ],
       "nameKey": "caytechairconditioning",
       "aliasNames": [
         "Caytech Air Conditioning"
@@ -1779,6 +1965,9 @@
       "domain": "cel.ky",
       "publishedEmail": "cel.cooling@cel.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "cel.ky"
+      ],
       "nameKey": "celcoolingsupply",
       "sources": [
         "https://www.renuspace.ky/business-profile/cel-cooling-supply"
@@ -1807,6 +1996,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "c21cayman.com"
+      ],
       "nameKey": "century21thompsonrealty",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/century-21-thompson"
@@ -1825,6 +2017,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://chalmersgibbs.ky",
+      "verifiedDomains": [
+        "chalmersgibbs.ky"
+      ],
       "nameKey": "chalmersgibbsarchitects",
       "aliasNames": [
         "Chalmers Gibbs Architects"
@@ -1852,6 +2047,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.charterland.ky",
+      "verifiedDomains": [
+        "charterland.ky"
+      ],
       "nameKey": "charterland",
       "aliasNames": [
         "Charterland Ltd."
@@ -1880,6 +2078,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "christinanoelinteriors",
       "sources": [
         "https://www.renuspace.ky/business-profile/christina-noel-interiors"
@@ -1896,6 +2095,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://christophercolumbuscondos.com",
+      "verifiedDomains": [
+        "christophercolumbuscondos.com"
+      ],
       "nameKey": "christophercolumbuscondos",
       "aliasNames": [
         "Christopher Columbus Condos"
@@ -1915,6 +2117,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://clan.ky",
+      "verifiedDomains": [
+        "clan.ky"
+      ],
       "nameKey": "clanconstruction",
       "aliasNames": [
         "Clan Construction Ltd."
@@ -1943,6 +2148,9 @@
       "domain": "cleancayman.com",
       "publishedEmail": "info@cleancayman.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "cleancayman.com"
+      ],
       "nameKey": "cleancayman",
       "sources": [
         "https://www.renuspace.ky/business-profile/clean-cayman"
@@ -1963,6 +2171,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "cleangas",
       "sources": [
         "https://cleangas.ky/"
@@ -1979,6 +2188,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://cmec.ky",
+      "verifiedDomains": [
+        "cmec.ky"
+      ],
       "nameKey": "cmec",
       "aliasNames": [
         "CMEC Ltd."
@@ -2005,6 +2217,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.coastalrealty.ky",
+      "verifiedDomains": [
+        "coastalrealty.ky"
+      ],
       "nameKey": "coastalrealty",
       "aliasNames": [
         "Coastal Realty Ltd."
@@ -2024,6 +2239,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.compasspointdiveresort.com",
+      "verifiedDomains": [
+        "compasspoint.ky"
+      ],
       "nameKey": "compasspointdiveresort",
       "aliasNames": [
         "Compass Point Dive Resort"
@@ -2047,6 +2265,9 @@
       "domain": "completeconstruction.ky",
       "publishedEmail": "info@completeconstruction.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "completeconstruction.ky"
+      ],
       "nameKey": "completeconstruction",
       "sources": [
         "https://www.completeconstruction.ky/"
@@ -2072,6 +2293,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "coolingcaymanairconditioning",
       "sources": [
         "https://www.renuspace.ky/business-profile/cooling-cayman-air-conditioning"
@@ -2089,6 +2311,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://coolingpros.ky",
+      "verifiedDomains": [
+        "coolingpros.ky"
+      ],
       "nameKey": "coolingpros",
       "aliasNames": [
         "Cooling Pros"
@@ -2115,6 +2340,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.coralstoneclub.com",
+      "verifiedDomains": [
+        "coralstoneclub.com"
+      ],
       "nameKey": "coralstoneclub",
       "aliasNames": [
         "Coral Stone Club"
@@ -2146,6 +2374,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "corcorancayman.com"
+      ],
       "nameKey": "corcorancaymanislands",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/corcoran-cayman-islands"
@@ -2170,6 +2401,7 @@
         "construction"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "coreconstruction",
       "sources": [
         "https://www.cca.ky/core-construction"
@@ -2195,6 +2427,9 @@
       "domain": "cornerstonegroup.ky",
       "publishedEmail": "chris@cornerstonegroup.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "cornerstonegroup.ky"
+      ],
       "nameKey": "cornerstonegroup",
       "sources": [
         "https://www.renuspace.ky/business-profile/cornerstone-group"
@@ -2211,6 +2446,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://corporate-electric.ky",
+      "verifiedDomains": [
+        "corporate-electric.ky"
+      ],
       "nameKey": "corporateelectric",
       "aliasNames": [
         "Corporate Electric Ltd."
@@ -2245,6 +2483,7 @@
         "construction"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "coxlumber",
       "sources": [
         "https://www.cca.ky/cox-lumber"
@@ -2273,6 +2512,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "crightonproperties.com"
+      ],
       "nameKey": "crightonproperties",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/crighton-properties"
@@ -2290,6 +2532,10 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.cynthiatranel.com",
+      "verifiedDomains": [
+        "cynthiatranel.com",
+        "labelcdesigns.com"
+      ],
       "nameKey": "cynthiatranelstudio",
       "aliasNames": [
         "Cynthia Tranel Studio",
@@ -2322,6 +2568,9 @@
       "domain": "dart.ky",
       "publishedEmail": "info@dart.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "dart.ky"
+      ],
       "nameKey": "dart",
       "sources": [
         "https://www.dart.ky/contact-us/"
@@ -2338,6 +2587,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://davenport.ky",
+      "verifiedDomains": [
+        "davenport.ky"
+      ],
       "nameKey": "davenportdevelopment",
       "aliasNames": [
         "Davenport Development Ltd."
@@ -2364,6 +2616,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.davenportpropertyservices.ky",
+      "verifiedDomains": [
+        "dpms.ky"
+      ],
       "nameKey": "davenportpropertymanagementservices",
       "aliasNames": [
         "Davenport Property Management & Services Ltd."
@@ -2383,6 +2638,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.dbmconstruction.ky",
+      "verifiedDomains": [
+        "dbmconstruction.ky"
+      ],
       "nameKey": "dbmconstruction",
       "aliasNames": [
         "DBM Construction Ltd."
@@ -2405,6 +2663,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://ddlstudio.com",
+      "verifiedDomains": [
+        "ddlstudio.com"
+      ],
       "nameKey": "ddlstudio",
       "aliasNames": [
         "DDL Studio Ltd."
@@ -2434,6 +2695,9 @@
         "construction"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "deccoltd.com"
+      ],
       "nameKey": "decco",
       "sources": [
         "https://www.casecayman.org/engineering"
@@ -2454,6 +2718,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "decraroofing",
       "sources": [
         "https://www.renuspace.ky/business-profile/decra-roofing"
@@ -2471,6 +2736,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.design-cayman.ky",
+      "verifiedDomains": [
+        "design-cayman.ky"
+      ],
       "nameKey": "designcayman",
       "aliasNames": [
         "Design Cayman",
@@ -2499,6 +2767,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://designstudio.ky",
+      "verifiedDomains": [
+        "designstudio.ky"
+      ],
       "nameKey": "designstudio",
       "aliasNames": [
         "Design Studio"
@@ -2535,6 +2806,9 @@
       "domain": "dewpointair.com",
       "publishedEmail": "info@dewpointair.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "dewpointair.com"
+      ],
       "nameKey": "dewpointairconditioningrefrigeration",
       "sources": [
         "https://www.renuspace.ky/business-profile/dew-point-air-conditioning-refrigeration-ltd"
@@ -2551,6 +2825,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://discoverypointclub.com",
+      "verifiedDomains": [
+        "discoverypointclub.com"
+      ],
       "nameKey": "discoverypointclubstrata81",
       "aliasNames": [
         "Discovery Point Club (Strata 81)"
@@ -2580,6 +2857,9 @@
       "domain": "doortek.ky",
       "publishedEmail": "info@doortek.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "doortek.ky"
+      ],
       "nameKey": "doortek",
       "sources": [
         "https://www.renuspace.ky/business-profile/doortek"
@@ -2600,6 +2880,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "dreammakerairconditioncoolingsystems",
       "sources": [
         "https://www.renuspace.ky/business-profile/dream-maker-air-condition-cooling-systems-ltd"
@@ -2621,6 +2902,9 @@
       "domain": "dreamscapedesign.ky",
       "publishedEmail": "robert@dreamscapedesign.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "dreamscapedesign.ky"
+      ],
       "nameKey": "dreamscapedesign",
       "sources": [
         "https://www.renuspace.ky/business-profile/dreamscape-design"
@@ -2646,6 +2930,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "ecoairconditioning",
       "sources": [
         "https://www.renuspace.ky/business-profile/eco-air-conditioning"
@@ -2671,6 +2956,9 @@
       "domain": "ecohousecayman.com",
       "publishedEmail": "info@ecohousecayman.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "ecohousecayman.com"
+      ],
       "nameKey": "ecohousecayman",
       "sources": [
         "https://www.renuspace.ky/business-profile/eco-house-cayman"
@@ -2696,6 +2984,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "ecopools",
       "sources": [
         "https://www.renuspace.ky/business-profile/eco-pools-ltd"
@@ -2713,6 +3002,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://ecosmart.ky",
+      "verifiedDomains": [
+        "ecosmart.ky"
+      ],
       "nameKey": "ecosmartcooling",
       "aliasNames": [
         "EcoSmart Cooling Ltd.",
@@ -2741,6 +3033,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://edgewater.ky",
+      "verifiedDomains": [
+        "edgewater.ky"
+      ],
       "nameKey": "edgewaterdevelopment",
       "aliasNames": [
         "Edgewater Development Ltd.",
@@ -2780,6 +3075,9 @@
       "domain": "ediesdecor.ky",
       "publishedEmail": "info@ediesdecor.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "ediesdecor.ky"
+      ],
       "nameKey": "ediesdecor",
       "sources": [
         "https://www.renuspace.ky/business-profile/edie-s-decor"
@@ -2796,6 +3094,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://efcon.ky",
+      "verifiedDomains": [
+        "efcon.ky"
+      ],
       "nameKey": "efconconstruction",
       "aliasNames": [
         "EFCON Construction"
@@ -2826,6 +3127,9 @@
       ],
       "domain": "81west.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "81west.ky"
+      ],
       "nameKey": "eightyonewestbotanicemporium",
       "sources": [
         "https://caymanresident.com/shopping/garden-centres",
@@ -2844,6 +3148,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://alarm.ky",
+      "verifiedDomains": [
+        "electratech.ky"
+      ],
       "nameKey": "electratechservices",
       "aliasNames": [
         "Electra-Tech Services Ltd.",
@@ -2875,6 +3182,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "electricalsystemsinnovation",
       "sources": [
         "https://www.renuspace.ky/business-profile/electrical-systems-innovation"
@@ -2894,6 +3202,9 @@
       "domain": "elevar.ky",
       "publishedEmail": "info@elevar.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "elevar.ky"
+      ],
       "nameKey": "elevar",
       "sources": [
         "https://www.elevar.ky/"
@@ -2910,6 +3221,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://encompasscayman.com",
+      "verifiedDomains": [
+        "encompasscayman.com"
+      ],
       "nameKey": "encompass",
       "aliasNames": [
         "Encompass Ltd."
@@ -2941,6 +3255,7 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "engelvolkers",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/engel-volkers"
@@ -2966,6 +3281,9 @@
       "domain": "entechky.com",
       "publishedEmail": "info@entechky.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "entechky.com"
+      ],
       "nameKey": "entech",
       "sources": [
         "https://www.renuspace.ky/business-profile/entech-ltd",
@@ -2992,6 +3310,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "epicdrywallfinishers",
       "sources": [
         "https://www.renuspace.ky/business-profile/epic-drywall-finishers-ltd"
@@ -3020,6 +3339,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "eracayman.com"
+      ],
       "nameKey": "eracaymanislands",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/era-cayman-islands"
@@ -3040,6 +3362,9 @@
       "domain": "emscayman.com",
       "publishedEmail": "info@emscayman.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "emscayman.com"
+      ],
       "nameKey": "estatemanagementservices",
       "sources": [
         "https://emscayman.com/"
@@ -3060,6 +3385,7 @@
       ],
       "domain": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "everestcoolair",
       "sources": [
         "https://caymanresident.com/housing/running-your-home/air-conditioning"
@@ -3081,6 +3407,9 @@
       "domain": "ebt.com.ky",
       "publishedEmail": "info@ebt.com.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "ebt.com.ky"
+      ],
       "nameKey": "everybloomingthing",
       "sources": [
         "https://www.renuspace.ky/business-profile/every-blooming-thing"
@@ -3107,6 +3436,9 @@
       "domain": "evolvingisland.com",
       "publishedEmail": "queries@evolvingisland.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "evolvingisland.com"
+      ],
       "nameKey": "evolvingisland",
       "sources": [
         "https://www.renuspace.ky/business-profile/evolving-island"
@@ -3131,6 +3463,7 @@
         "construction"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "fgconstruction",
       "sources": [
         "https://www.cca.ky/f-g-construction"
@@ -3150,6 +3483,9 @@
       "domain": "fsgroup.ky",
       "publishedEmail": "info@fsgroup.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "fsgroup.ky"
+      ],
       "nameKey": "fairwaystructuralgroup",
       "sources": [
         "https://www.fsgroup.ky/"
@@ -3171,6 +3507,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://fedaservices.com",
+      "verifiedDomains": [
+        "fedaservices.com"
+      ],
       "nameKey": "fedamaintenanceservices",
       "aliasNames": [
         "FEDA Maintenance Services"
@@ -3198,6 +3537,9 @@
       "domain": "firstimpression.ky",
       "publishedEmail": "info@firstimpression.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "firstimpression.ky"
+      ],
       "nameKey": "firstimpression",
       "sources": [
         "https://www.firstimpression.ky/contact-first-impression"
@@ -3214,6 +3556,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://flowersgroup.com",
+      "verifiedDomains": [
+        "flowersgroup.com"
+      ],
       "nameKey": "flowersblockflowersgroup",
       "aliasNames": [
         "Flowers Block (Flowers Group)"
@@ -3233,6 +3578,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.forged-construction.com",
+      "verifiedDomains": [
+        "forged-construction.com"
+      ],
       "nameKey": "forgedconstruction",
       "aliasNames": [
         "Forged Construction"
@@ -3264,6 +3612,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "frasercayman.com"
+      ],
       "nameKey": "fraserpropertiescayman",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/fraser-properties-cayman-ltd"
@@ -3291,6 +3642,9 @@
       "domain": "frederickmcrae.com",
       "publishedEmail": "info@frederickmcrae.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "frederickmcrae.com"
+      ],
       "nameKey": "frederickmcrae",
       "sources": [
         "https://www.renuspace.ky/business-profile/frederick-mcrae-ltd",
@@ -3310,6 +3664,9 @@
       "location": "86 Sound Way, George Town, Cayman Islands",
       "existingDirectory": true,
       "website": "https://freightproscayman.com",
+      "verifiedDomains": [
+        "freightproscayman.com"
+      ],
       "nameKey": "freightproscayman",
       "aliasNames": [
         "Freight Pros Cayman"
@@ -3333,6 +3690,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "gehomerepairs",
       "sources": [
         "https://www.renuspace.ky/business-profile/g-e-home-repairs"
@@ -3353,6 +3711,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "gardenofeden",
       "sources": [
         "https://www.goecayman.com/"
@@ -3378,6 +3737,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "garrisonindustries",
       "sources": [
         "https://www.renuspace.ky/business-profile/garrison-industries"
@@ -3398,6 +3758,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "gmcelectric",
       "sources": [
         "https://www.renuspace.ky/business-profile/gmc-electric-ltd"
@@ -3414,6 +3775,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://gmcgeneralcontractors.com",
+      "verifiedDomains": [
+        "gmcgeneralcontractors.com"
+      ],
       "nameKey": "gmcgeneralcontractors",
       "aliasNames": [
         "GMC General Contractors Ltd."
@@ -3449,6 +3813,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "gogas",
       "sources": [
         "https://www.renuspace.ky/business-profile/go-gas-ltd"
@@ -3467,6 +3832,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://gpepro.com",
+      "verifiedDomains": [
+        "gpepro.com"
+      ],
       "nameKey": "gpeservices",
       "aliasNames": [
         "GPE Services"
@@ -3503,6 +3871,9 @@
       "domain": "gracerms.com",
       "publishedEmail": "info@gracerms.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "gracerms.com"
+      ],
       "nameKey": "gracerepairsmaintenanceservices",
       "sources": [
         "https://www.renuspace.ky/business-profile/grace-repairs-and-maintenance-services"
@@ -3519,6 +3890,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://grandcaymanpropertyservices.com",
+      "verifiedDomains": [
+        "grandcaymanpropertyservices.com"
+      ],
       "nameKey": "grandcaymanpropertyservices",
       "aliasNames": [
         "Grand Cayman Property Services"
@@ -3538,6 +3912,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.grandcaymanvillas.com",
+      "verifiedDomains": [
+        "grandcaymanvillas.com"
+      ],
       "nameKey": "grandcaymanvillascondos",
       "aliasNames": [
         "Grand Cayman Villas & Condos"
@@ -3557,6 +3934,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://grandcaymanian.com",
+      "verifiedDomains": [
+        "grandcaymanian.com"
+      ],
       "nameKey": "grandcaymanianresortsuitesholidayinnresortgrandcayman",
       "aliasNames": [
         "Grand Caymanian Resort & Suites / Holiday Inn Resort Grand Cayman"
@@ -3585,6 +3965,9 @@
       "domain": "graniteexpresscayman.com",
       "publishedEmail": "info@graniteexpresscayman.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "graniteexpresscayman.com"
+      ],
       "nameKey": "graniteexpresscayman",
       "sources": [
         "https://www.renuspace.ky/business-profile/granite-express"
@@ -3608,6 +3991,9 @@
       "domain": "greentech.ky",
       "publishedEmail": "jwhittaker@greentech.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "greentech.ky"
+      ],
       "nameKey": "greentechcayman",
       "sources": [
         "https://www.renuspace.ky/business-profile/green-tech-cayman",
@@ -3628,6 +4014,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "greencutlandscaping",
       "sources": [
         "https://greencutky.com/"
@@ -3653,6 +4040,9 @@
       "domain": "grimexltd.com",
       "publishedEmail": "info@grimexltd.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "grimexltd.com"
+      ],
       "nameKey": "grimex",
       "sources": [
         "https://www.renuspace.ky/business-profile/grimex"
@@ -3674,6 +4064,9 @@
       "domain": "growwiththeflow.ky",
       "publishedEmail": "info@growwiththeflow.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "growwiththeflow.ky"
+      ],
       "nameKey": "growwiththeflow",
       "sources": [
         "https://www.renuspace.ky/business-profile/grow-with-the-flow"
@@ -3697,6 +4090,7 @@
       ],
       "domain": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "growingbeautynursery",
       "sources": [
         "https://caymanresident.com/shopping/garden-centres",
@@ -3722,6 +4116,7 @@
         "construction"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "gumtreecayman",
       "sources": [
         "https://www.cca.ky/gum-tree-cayman-ltd"
@@ -3744,6 +4139,9 @@
       ],
       "domain": "handydandy.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "handydandy.ky"
+      ],
       "nameKey": "handydandy",
       "sources": [
         "https://caymanresident.com/housing/home-improvements/general-maintenance-repairs",
@@ -3762,6 +4160,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://handyhome.ky",
+      "verifiedDomains": [
+        "handyhome.ky"
+      ],
       "nameKey": "handyhome",
       "aliasNames": [
         "HandyHome"
@@ -3781,6 +4182,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://handymencan.com",
+      "verifiedDomains": [
+        "handymencan.com"
+      ],
       "nameKey": "handymencan",
       "aliasNames": [
         "Handymen Can"
@@ -3800,6 +4204,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.harbourheightscayman.com",
+      "verifiedDomains": [
+        "harbourheightscayman.com"
+      ],
       "nameKey": "harbourheightscondominiums",
       "aliasNames": [
         "Harbour Heights Condominiums"
@@ -3827,6 +4234,7 @@
         "construction"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "haroldsbuildingandmaintenance",
       "sources": [
         "https://www.cca.ky/harolds-building-and-maintenance"
@@ -3855,6 +4263,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "heritageandhinton.com"
+      ],
       "nameKey": "heritagehintonrealestate",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/heritage-hinton-real-estate-ltd"
@@ -3875,6 +4286,9 @@
       "domain": "heritageholdings.ky",
       "publishedEmail": "info@heritageholdings.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "heritageholdings.ky"
+      ],
       "nameKey": "heritageholdings",
       "sources": [
         "https://heritageholdings.ky/contact/"
@@ -3895,6 +4309,9 @@
       "domain": "hislopcayman.com",
       "publishedEmail": "anna@hislopcayman.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "hislopcayman.com"
+      ],
       "nameKey": "hislopwindowsdoors",
       "sources": [
         "https://www.renuspace.ky/business-profile/hislop-windows-doors"
@@ -3915,6 +4332,9 @@
       "domain": "homeandoutdoor.net",
       "publishedEmail": "sales@homeandoutdoor.net",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "homeandoutdoor.net"
+      ],
       "nameKey": "homeoutdoor",
       "sources": [
         "https://www.renuspace.ky/business-profile/home-outdoor"
@@ -3941,6 +4361,9 @@
         "gas services"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "homegas.com"
+      ],
       "nameKey": "homegas",
       "sources": [
         "https://www.cca.ky/home-gas-ltd",
@@ -3962,6 +4385,9 @@
       ],
       "domain": "hometailor.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "hometailor.ky"
+      ],
       "nameKey": "hometailor",
       "sources": [
         "https://caymanresident.com/housing/home-improvements/interior-designers"
@@ -3982,6 +4408,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "howellstruckingservices",
       "sources": [
         "https://www.renuspace.ky/business-profile/howells-trucking-services"
@@ -4002,6 +4429,9 @@
       "domain": "huiscayman.com",
       "publishedEmail": "info@huiscayman.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "huiscayman.com"
+      ],
       "nameKey": "huis",
       "sources": [
         "https://www.renuspace.ky/business-profile/huis"
@@ -4027,6 +4457,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "huntersremovalandmovingservice",
       "sources": [
         "https://www.renuspace.ky/business-profile/hunters-removal-and-moving-service"
@@ -4055,6 +4486,9 @@
       "domain": "hydessons.ky",
       "publishedEmail": "service@hydessons.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "hydessons.ky"
+      ],
       "nameKey": "hydessons",
       "sources": [
         "https://www.renuspace.ky/business-profile/hydes-sons"
@@ -4071,6 +4505,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://idesignltd.com",
+      "verifiedDomains": [
+        "idesignltd.com"
+      ],
       "nameKey": "idesigninteriordesign",
       "aliasNames": [
         "iDesign Interior Design"
@@ -4093,6 +4530,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "imadefleurslandscaping",
       "sources": [
         "https://imadefleurs.com/"
@@ -4113,6 +4551,9 @@
       ],
       "domain": "icia.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "icia.ky"
+      ],
       "nameKey": "instituteofcaymanislandsarchitects",
       "sources": [
         "https://caymanresident.com/housing/building-a-home/building-professionals/architects"
@@ -4141,6 +4582,7 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "interislandrealty",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/inter-island-realty"
@@ -4160,6 +4602,9 @@
       "domain": "interiorconcepts.ky",
       "publishedEmail": "judy@interiorconcepts.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "interiorconcepts.ky"
+      ],
       "nameKey": "interiorconcepts",
       "sources": [
         "https://interiorconcepts.ky/"
@@ -4177,6 +4622,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://idgcayman.com",
+      "verifiedDomains": [
+        "idgcayman.com"
+      ],
       "nameKey": "interiordesigngroupidg",
       "aliasNames": [
         "Interior Design Group (IDG)"
@@ -4205,6 +4653,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "internationalglasscayman",
       "sources": [
         "https://www.renuspace.ky/business-profile/international-glass-cayman-ltd"
@@ -4222,6 +4671,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.irgcayman.com",
+      "verifiedDomains": [
+        "irg.ky"
+      ],
       "nameKey": "internationalrealtygroupirg",
       "aliasNames": [
         "International Realty Group (IRG)",
@@ -4253,6 +4705,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://ironshore.ky",
+      "verifiedDomains": [
+        "ironshore.ky"
+      ],
       "nameKey": "ironshorecontracting",
       "aliasNames": [
         "Ironshore Contracting"
@@ -4282,6 +4737,9 @@
       "domain": "ishmealshutters.ky",
       "publishedEmail": "info@ishmealshutters.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "ishmealshutters.ky"
+      ],
       "nameKey": "ishmealshutters",
       "sources": [
         "https://www.renuspace.ky/business-profile/ishmeal-shutters"
@@ -4302,6 +4760,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "islandaggregatesupply",
       "sources": [
         "https://www.renuspace.ky/business-profile/island-aggregate-supply"
@@ -4318,6 +4777,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://islandac.ky",
+      "verifiedDomains": [
+        "islandac.ky"
+      ],
       "nameKey": "islandairconditioningandmechanical",
       "aliasNames": [
         "Island Air Conditioning and Mechanical Ltd."
@@ -4346,6 +4808,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "islandbreezeservices",
       "sources": [
         "https://www.renuspace.ky/business-profile/island-breeze-services-ltd"
@@ -4367,6 +4830,9 @@
       "domain": "islandinteriors.com.ky",
       "publishedEmail": "cecile@islandinteriors.com.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "islandinteriors.com.ky"
+      ],
       "nameKey": "islandinteriors",
       "sources": [
         "https://www.renuspace.ky/business-profile/island-interiors-ltd"
@@ -4387,6 +4853,9 @@
       "domain": "islandpainting.ky",
       "publishedEmail": "info@islandpainting.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "islandpainting.ky"
+      ],
       "nameKey": "islandpainting",
       "sources": [
         "https://www.renuspace.ky/business-profile/island-painting"
@@ -4412,6 +4881,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "islandtoolssalesandrental",
       "sources": [
         "https://www.renuspace.ky/business-profile/island-tools-sales-and-rental"
@@ -4428,6 +4898,9 @@
       "location": "19E33 Sparky Drive, George Town, Grand Cayman",
       "existingDirectory": true,
       "website": "https://islandwastecarriers.com",
+      "verifiedDomains": [
+        "iwc.ky"
+      ],
       "nameKey": "islandwastecarriers",
       "aliasNames": [
         "Island Waste Carriers"
@@ -4457,6 +4930,9 @@
       "domain": "itctile.net",
       "publishedEmail": "floors@itctile.net",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "itctile.net"
+      ],
       "nameKey": "itctile",
       "sources": [
         "https://www.renuspace.ky/business-profile/itc-tile"
@@ -4475,6 +4951,9 @@
         "construction"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "jrconstructionltd.ky"
+      ],
       "nameKey": "jrconstruction",
       "sources": [
         "https://jrconstructionltd.ky/"
@@ -4499,6 +4978,7 @@
         "construction"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "jairambuildingcontractor",
       "sources": [
         "https://www.cca.ky/jairam-building-contractor"
@@ -4523,6 +5003,7 @@
         "construction"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "jdkservices",
       "sources": [
         "https://www.cca.ky/jdk-services-company-ltd"
@@ -4541,6 +5022,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.jec.ky",
+      "verifiedDomains": [
+        "jec.ky"
+      ],
       "nameKey": "jecpropertyconsultants",
       "aliasNames": [
         "JEC Property Consultants Ltd."
@@ -4576,6 +5060,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "jnmequipment",
       "sources": [
         "https://www.renuspace.ky/business-profile/jnm-equipment"
@@ -4594,6 +5079,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://johndoak.com",
+      "verifiedDomains": [
+        "johndoak.com"
+      ],
       "nameKey": "johndoakarchitecture",
       "aliasNames": [
         "John Doak Architecture"
@@ -4618,6 +5106,9 @@
       ],
       "domain": "rjda.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "rjda.ky"
+      ],
       "nameKey": "johnsondesignarchitecture",
       "sources": [
         "https://caymanresident.com/housing/building-a-home/building-professionals/architects"
@@ -4638,6 +5129,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "jptradeselectrical",
       "sources": [
         "https://www.renuspace.ky/business-profile/jp-trades-electrical"
@@ -4658,6 +5150,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "ktechelectrical",
       "sources": [
         "https://www.renuspace.ky/business-profile/k-tech-electrical-ltd"
@@ -4678,6 +5171,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "kleelectricalservices",
       "sources": [
         "https://www.renuspace.ky/business-profile/k-l-e-electrical-services"
@@ -4706,6 +5200,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "kellerwilliams.ky"
+      ],
       "nameKey": "kellerwilliams",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/keller-williams"
@@ -4726,6 +5223,9 @@
       "domain": "kensington.ky",
       "publishedEmail": "info@kensington.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "kensington.ky"
+      ],
       "nameKey": "kensington",
       "sources": [
         "https://kensington.ky/"
@@ -4751,6 +5251,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "kerbyselectrical",
       "sources": [
         "https://www.renuspace.ky/business-profile/kerby-s-electrical"
@@ -4767,6 +5268,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.seafireresortandspa.com",
+      "verifiedDomains": [
+        "seafireresortandspa.com"
+      ],
       "nameKey": "kimptonseafireresortspa",
       "aliasNames": [
         "Kimpton Seafire Resort + Spa"
@@ -4786,6 +5290,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.kirkconcrete.ky",
+      "verifiedDomains": [
+        "kirkconcrete.ky"
+      ],
       "nameKey": "kirkconcrete",
       "aliasNames": [
         "Kirk Concrete"
@@ -4806,6 +5313,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.kuavo.ky",
+      "verifiedDomains": [
+        "kuavo.com"
+      ],
       "nameKey": "kuavocayman",
       "aliasNames": [
         "Kuavo Cayman",
@@ -4838,6 +5348,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://kwwoodwork.com",
+      "verifiedDomains": [
+        "kwwoodwork.com"
+      ],
       "nameKey": "kwwoodwork",
       "aliasNames": [
         "KWWOODWORK LTD.",
@@ -4870,6 +5383,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "lawnsecure",
       "sources": [
         "https://www.renuspace.ky/business-profile/lawn-secure"
@@ -4891,6 +5405,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://lehabitat.ky",
+      "verifiedDomains": [
+        "lehabitat.ky"
+      ],
       "nameKey": "lehabitat",
       "aliasNames": [
         "Le Habitat Ltd.",
@@ -4919,6 +5436,9 @@
       "location": "Cayman Brac, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.lesoleildor.com",
+      "verifiedDomains": [
+        "lesoleildor.com"
+      ],
       "nameKey": "lesoleildor",
       "aliasNames": [
         "Le Soleil d’Or"
@@ -4942,6 +5462,9 @@
       "domain": "ledgerandlooms.com",
       "publishedEmail": "guru@ledgerandlooms.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "ledgerandlooms.com"
+      ],
       "nameKey": "ledgerlooms",
       "sources": [
         "https://www.renuspace.ky/business-profile/ledger-looms"
@@ -4962,6 +5485,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "letsgobuildingandmaintenance",
       "sources": [
         "https://www.renuspace.ky/business-profile/let-s-go-building-and-maintenance"
@@ -4986,6 +5510,7 @@
         "construction"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "lgcontracting",
       "sources": [
         "https://www.cca.ky/lg-contracting-ltd"
@@ -5006,6 +5531,9 @@
       "domain": "libertydesigns.ky",
       "publishedEmail": "info@libertydesigns.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "libertydesigns.ky"
+      ],
       "nameKey": "libertydesigns",
       "sources": [
         "https://www.renuspace.ky/business-profile/liberty-designs"
@@ -5026,6 +5554,9 @@
       "domain": "lightbox.ky",
       "publishedEmail": "sales@lightbox.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "lightbox.ky"
+      ],
       "nameKey": "lightbox",
       "sources": [
         "https://www.renuspace.ky/business-profile/lightbox"
@@ -5042,6 +5573,9 @@
       "location": "Little Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://littlecayman.com",
+      "verifiedDomains": [
+        "littlecayman.com"
+      ],
       "nameKey": "littlecaymanbeachresort",
       "aliasNames": [
         "Little Cayman Beach Resort"
@@ -5063,6 +5597,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://living.ky",
+      "verifiedDomains": [
+        "living.ky"
+      ],
       "nameKey": "livingky",
       "aliasNames": [
         "LIVING.KY",
@@ -5092,6 +5629,9 @@
       "location": "George Town, Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.logisticscaymanltd.com",
+      "verifiedDomains": [
+        "logisticscaymanlimited.com"
+      ],
       "nameKey": "logisticscayman",
       "aliasNames": [
         "Logistics Cayman Limited"
@@ -5111,6 +5651,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://londonhouse.ky",
+      "verifiedDomains": [
+        "londonhouse.ky"
+      ],
       "nameKey": "londonhousecondominiums",
       "aliasNames": [
         "London House Condominiums"
@@ -5132,6 +5675,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://macplumbing.ky",
+      "verifiedDomains": [
+        "macplumbing.ky"
+      ],
       "nameKey": "macplumbingandmaintenanceservices",
       "aliasNames": [
         "MAC Plumbing and Maintenance Services Ltd."
@@ -5153,6 +5699,9 @@
       "location": "10 Market Street, Camana Bay, Grand Cayman",
       "existingDirectory": true,
       "website": "https://mbe.ky",
+      "verifiedDomains": [
+        "mbe.ky"
+      ],
       "nameKey": "mailboxesetccayman",
       "aliasNames": [
         "Mail Boxes Etc. Cayman"
@@ -5181,6 +5730,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "marathonmovers",
       "sources": [
         "https://www.renuspace.ky/business-profile/marathon-movers"
@@ -5206,6 +5756,9 @@
       "domain": "marksons.ky",
       "publishedEmail": "arwashburn@marksons.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "marksons.ky"
+      ],
       "nameKey": "marksonsfurnitureandwindows",
       "sources": [
         "https://www.renuspace.ky/business-profile/marksons-furniture-and-windows"
@@ -5232,6 +5785,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "mbejanitorialms",
       "sources": [
         "https://www.renuspace.ky/business-profile/mbe-janitorial-m-s"
@@ -5248,6 +5802,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://mcalpineky.com",
+      "verifiedDomains": [
+        "mcalpineky.com"
+      ],
       "nameKey": "mcalpine",
       "aliasNames": [
         "McAlpine Ltd."
@@ -5276,6 +5833,9 @@
         "engineering"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "mcruss.ky"
+      ],
       "nameKey": "mcruss",
       "sources": [
         "https://www.casecayman.org/engineering"
@@ -5301,6 +5861,9 @@
       "domain": "milanofurniture.ky",
       "publishedEmail": "sales@milanofurniture.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "milanofurniture.ky"
+      ],
       "nameKey": "milanofurniture",
       "sources": [
         "https://www.renuspace.ky/business-profile/milano-furniture"
@@ -5329,6 +5892,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "milestone.ky"
+      ],
       "nameKey": "milestonepropertiescayman",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/milestone-properties-cayman"
@@ -5354,6 +5920,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "millersplumbing",
       "sources": [
         "https://www.renuspace.ky/business-profile/miller-s-plumbing"
@@ -5380,6 +5947,9 @@
       "domain": "mjmdesignstudio.com",
       "publishedEmail": "michael@mjmdesignstudio.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "mjmdesignstudio.com"
+      ],
       "nameKey": "mjmdesignstudio",
       "sources": [
         "https://www.renuspace.ky/business-profile/mjm-design-studio",
@@ -5406,6 +5976,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "mjsplumbing",
       "sources": [
         "https://www.renuspace.ky/business-profile/mjs-plumbing"
@@ -5426,6 +5997,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "mosquitosolutions",
       "sources": [
         "https://www.renuspace.ky/business-profile/mosquito-solutions"
@@ -5451,6 +6023,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "mrelectric",
       "sources": [
         "https://www.renuspace.ky/business-profile/mr-electric"
@@ -5467,6 +6040,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://mrpowerguy.com",
+      "verifiedDomains": [
+        "mrpowerguy.com"
+      ],
       "nameKey": "mrpowerguy",
       "aliasNames": [
         "Mr. Power Guy"
@@ -5495,6 +6071,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "munroeelectrical",
       "sources": [
         "https://www.renuspace.ky/business-profile/munroe-electrical-company"
@@ -5520,6 +6097,9 @@
       "domain": "mustcoolac.com",
       "publishedEmail": "sales@mustcoolac.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "mustcoolac.com"
+      ],
       "nameKey": "mustcoolac",
       "sources": [
         "https://www.renuspace.ky/business-profile/must-cool-ac"
@@ -5538,6 +6118,9 @@
         "property management"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "mwproperty.management"
+      ],
       "nameKey": "mwpropertymanagement",
       "sources": [
         "https://caymanresident.com/housing/real-estate/property-management-services"
@@ -5564,6 +6147,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "nathangeneralmaintenanceconstruction",
       "sources": [
         "https://www.renuspace.ky/business-profile/nathan-general-maintenance-construction"
@@ -5580,6 +6164,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://nationalconcrete.framer.website",
+      "verifiedDomains": [
+        "nationalconcrete.ky"
+      ],
       "nameKey": "nationalconcrete",
       "aliasNames": [
         "National Concrete"
@@ -5601,6 +6188,9 @@
       "location": "142 Lincoln Drive, George Town, Grand Cayman",
       "existingDirectory": true,
       "website": "https://www.nationallogistics.ky",
+      "verifiedDomains": [
+        "nationallogistics.ky"
+      ],
       "nameKey": "nationallogistics",
       "aliasNames": [
         "National Logistics"
@@ -5629,6 +6219,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "nationwideairconditioning",
       "sources": [
         "https://www.renuspace.ky/business-profile/nationwide-air-conditioning-ltd"
@@ -5645,6 +6236,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://nautic.ky",
+      "verifiedDomains": [
+        "nautic.ky"
+      ],
       "nameKey": "nauticpropertyconsultants",
       "aliasNames": [
         "Nautic Property Consultants Ltd."
@@ -5664,6 +6258,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://ncbgroup.ky",
+      "verifiedDomains": [
+        "ncbgroup.ky"
+      ],
       "nameKey": "ncbgroup",
       "aliasNames": [
         "NCB Group"
@@ -5685,6 +6282,9 @@
       "location": "PO Box 1515, George Town, Cayman Islands",
       "existingDirectory": true,
       "website": "https://ncifreight.com",
+      "verifiedDomains": [
+        "ncifreight.com"
+      ],
       "nameKey": "ncifreightlogistics",
       "aliasNames": [
         "NCI Freight & Logistics Ltd."
@@ -5709,6 +6309,7 @@
       ],
       "domain": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "newageplumbingmaintenance",
       "sources": [
         "https://caymanresident.com/housing/home-improvements/general-maintenance-repairs",
@@ -5738,6 +6339,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "nudevelopments.com"
+      ],
       "nameKey": "nudevelopments",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/netclues-4"
@@ -5754,6 +6358,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://nuenergy.ky",
+      "verifiedDomains": [
+        "nuenergy.ky"
+      ],
       "nameKey": "nuenergy",
       "aliasNames": [
         "NU Energy Ltd."
@@ -5784,6 +6391,9 @@
       "domain": "oadarchitects.com",
       "publishedEmail": "info@oadarchitects.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "oadarchitects.com"
+      ],
       "nameKey": "oadarchitects",
       "sources": [
         "https://www.renuspace.ky/business-profile/oad-architects",
@@ -5802,6 +6412,9 @@
       "location": "Harbour Walk, Grand Harbour, Cayman Islands",
       "existingDirectory": true,
       "website": "https://oasis.ky",
+      "verifiedDomains": [
+        "oasis.ky"
+      ],
       "nameKey": "oasispoolspa",
       "aliasNames": [
         "Oasis Pool & Spa"
@@ -5832,6 +6445,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "obmicayman",
       "sources": [
         "https://obmi.com/contact/"
@@ -5848,6 +6462,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.oceanclubcayman.com",
+      "verifiedDomains": [
+        "oceanclubcayman.com"
+      ],
       "nameKey": "oceanclubstrata",
       "aliasNames": [
         "Ocean Club Strata"
@@ -5879,6 +6496,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "oceanfrontrealty.ky"
+      ],
       "nameKey": "oceanfrontrealty",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/oceanfront-realty-ltd"
@@ -5897,6 +6517,9 @@
         "engineering"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "optimumengineering.ky"
+      ],
       "nameKey": "optimumengineering",
       "sources": [
         "https://www.optimumengineering.ky/"
@@ -5915,6 +6538,9 @@
         "mechanical"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "otisair.ky"
+      ],
       "nameKey": "otisair",
       "sources": [
         "https://www.casecayman.org/engineering"
@@ -5935,6 +6561,9 @@
       "domain": "paintpros.ky",
       "publishedEmail": "info@paintpros.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "paintpros.ky"
+      ],
       "nameKey": "paintpros",
       "sources": [
         "https://www.renuspace.ky/business-profile/paint-pros-ltd"
@@ -5951,6 +6580,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://palmheights.com",
+      "verifiedDomains": [
+        "palmheights.com"
+      ],
       "nameKey": "palmheights",
       "aliasNames": [
         "Palm Heights"
@@ -5974,6 +6606,9 @@
       "domain": "paradise.ky",
       "publishedEmail": "info@paradise.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "paradise.ky"
+      ],
       "nameKey": "paradiselandscaping",
       "sources": [
         "https://www.renuspace.ky/business-profile/paradise-landscaping"
@@ -6002,6 +6637,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "paradisepropertiescayman.com"
+      ],
       "nameKey": "paradisepropertiescayman",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/paradise-properties-cayman"
@@ -6020,6 +6658,9 @@
         "construction"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "paragon.ky"
+      ],
       "nameKey": "paragonbuilders",
       "sources": [
         "https://www.paragon.ky/contact-us"
@@ -6045,6 +6686,9 @@
       "domain": "paramountcarpets.ky",
       "publishedEmail": "info@paramountcarpets.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "paramountcarpets.ky"
+      ],
       "nameKey": "paramount",
       "sources": [
         "https://www.renuspace.ky/business-profile/paramount"
@@ -6062,6 +6706,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://parsonsac.com",
+      "verifiedDomains": [
+        "parsonsac.com"
+      ],
       "nameKey": "parsonsairconditioning",
       "aliasNames": [
         "Parsons Air Conditioning"
@@ -6097,6 +6744,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "passioncleaningservices",
       "sources": [
         "https://www.renuspace.ky/business-profile/passion-cleaning-services"
@@ -6117,6 +6765,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "perrysbackhoeservice",
       "sources": [
         "https://www.renuspace.ky/business-profile/perry-s-backhoe-service"
@@ -6137,6 +6786,9 @@
       "domain": "pestkil.com",
       "publishedEmail": "sales@pestkil.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "pestkil.com"
+      ],
       "nameKey": "pestkil",
       "sources": [
         "https://pestkil.com/"
@@ -6163,6 +6815,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "phillipselectricalsupply",
       "sources": [
         "https://www.renuspace.ky/business-profile/phillips-electrical-supply"
@@ -6179,6 +6832,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://phoenix.com.ky",
+      "verifiedDomains": [
+        "phoenix.com.ky"
+      ],
       "nameKey": "phoenixconstruction",
       "aliasNames": [
         "Phoenix Construction"
@@ -6209,6 +6865,9 @@
       "domain": "pjconstruction.org",
       "publishedEmail": "info@pjconstruction.org",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "pjconstruction.org"
+      ],
       "nameKey": "pjconstruction",
       "sources": [
         "https://www.pjconstruction.org/"
@@ -6225,6 +6884,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.plantanacayman.com",
+      "verifiedDomains": [
+        "plantanacayman.com"
+      ],
       "nameKey": "plantanacondominiums",
       "aliasNames": [
         "Plantana Condominiums"
@@ -6253,6 +6915,9 @@
       "domain": "platinumpools.ky",
       "publishedEmail": "info@platinumpools.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "platinumpools.ky"
+      ],
       "nameKey": "platinumpoolcare",
       "sources": [
         "https://www.renuspace.ky/business-profile/platinum-pool-care-ltd"
@@ -6281,6 +6946,7 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "platinumpropertygroupcaymanislands",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/platinum-prorerty"
@@ -6302,6 +6968,9 @@
       "domain": "polarbear.ky",
       "publishedEmail": "info@polarbear.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "polarbear.ky"
+      ],
       "nameKey": "polarbearairconditioning",
       "sources": [
         "https://polarbear.ky/",
@@ -6320,6 +6989,9 @@
       "location": "North Sound Road, George Town, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.poolpatrol.ky",
+      "verifiedDomains": [
+        "poolpatrol.ky"
+      ],
       "nameKey": "poolpatrol",
       "aliasNames": [
         "Pool Patrol"
@@ -6357,6 +7029,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "pooleycabinets",
       "sources": [
         "https://www.renuspace.ky/business-profile/pooley-cabinet-industries",
@@ -6383,6 +7056,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "poolsbyuscayman",
       "sources": [
         "https://www.renuspace.ky/business-profile/pools-by-us-cayman"
@@ -6399,6 +7073,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://poolscayman.ky",
+      "verifiedDomains": [
+        "poolscayman.ky"
+      ],
       "nameKey": "poolscayman",
       "aliasNames": [
         "Pools Cayman"
@@ -6422,6 +7099,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "poolsinparadise",
       "sources": [
         "https://www.renuspace.ky/business-profile/pools-in-paradise"
@@ -6447,6 +7125,9 @@
       ],
       "domain": "powerflower.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "powerflower.ky"
+      ],
       "nameKey": "powerflower",
       "sources": [
         "https://caymanresident.com/shopping/garden-centres",
@@ -6475,6 +7156,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "powerysgaragedoors",
       "sources": [
         "https://www.renuspace.ky/business-profile/powerys-garage-doors"
@@ -6500,6 +7182,9 @@
       "domain": "premierplumbing.ky",
       "publishedEmail": "info@premierplumbing.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "premierplumbing.ky"
+      ],
       "nameKey": "premierplumbingservices",
       "sources": [
         "https://www.renuspace.ky/business-profile/premier-plumbing-services"
@@ -6525,6 +7210,7 @@
         "construction"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "premiumoneplusconstruction",
       "sources": [
         "https://www.cca.ky/premiumone-plus-construction"
@@ -6551,6 +7237,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "premiumtruckingservices",
       "sources": [
         "https://www.renuspace.ky/business-profile/premium-trucking-services"
@@ -6577,6 +7264,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "proclean",
       "sources": [
         "https://www.renuspace.ky/business-profile/pro-clean"
@@ -6598,6 +7286,9 @@
       "domain": "propluscayman.com",
       "publishedEmail": "info@propluscayman.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "propluscayman.com"
+      ],
       "nameKey": "proplusgardencentre",
       "sources": [
         "https://www.renuspace.ky/business-profile/pro-plus-garden-centre"
@@ -6618,6 +7309,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "progreenlandscapingandmaintenanceservices",
       "sources": [
         "https://www.renuspace.ky/business-profile/progreen-landscaping-and-maintenance-services"
@@ -6646,6 +7338,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "propertycayman.com"
+      ],
       "nameKey": "propertycayman",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/property-cayman-ltd"
@@ -6662,6 +7357,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.propertymanagementcayman.com",
+      "verifiedDomains": [
+        "propertymanagementcayman.com"
+      ],
       "nameKey": "propertymanagementcayman",
       "aliasNames": [
         "Property Management Cayman Ltd."
@@ -6693,6 +7391,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "propertypals.ky"
+      ],
       "nameKey": "propertypals",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/property-pals-ltd"
@@ -6709,6 +7410,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://prostarsconstruction.com",
+      "verifiedDomains": [
+        "prostarsconstruction.com"
+      ],
       "nameKey": "prostarsconstruction",
       "aliasNames": [
         "ProStars Construction Ltd."
@@ -6739,6 +7443,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "protectivemetalproductsfabrication",
       "sources": [
         "https://www.renuspace.ky/business-profile/protective-metal-products-fabrication"
@@ -6767,6 +7472,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "provenanceproperties.com"
+      ],
       "nameKey": "provenancepropertiesofcayman",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/provenance-properties-of-cayman-ltd"
@@ -6792,6 +7500,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "pyramidconstruction",
       "sources": [
         "https://www.renuspace.ky/business-profile/pyramid-construction-ltd"
@@ -6817,6 +7526,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "qualityelectric",
       "sources": [
         "https://www.renuspace.ky/business-profile/quality-electric"
@@ -6834,6 +7544,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://rainbow.ky",
+      "verifiedDomains": [
+        "rainbow.ky"
+      ],
       "nameKey": "rainbowdevelopment",
       "aliasNames": [
         "Rainbow Development Ltd.",
@@ -6866,6 +7579,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "rakeemplumbing",
       "sources": [
         "https://www.renuspace.ky/business-profile/rakeem-plumbing"
@@ -6886,6 +7600,9 @@
       "domain": "ramelectricalsupply.com",
       "publishedEmail": "info@ramelectricalsupply.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "ramelectricalsupply.com"
+      ],
       "nameKey": "ramelectricalsupply",
       "sources": [
         "https://caymanchamber.ky/chamber-profile-ram-electrical-supply-ltd/"
@@ -6908,6 +7625,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "ramdinconstructionroofing",
       "sources": [
         "https://www.renuspace.ky/business-profile/ramdin-construction-and-roofing-company"
@@ -6928,6 +7646,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "rankingroup",
       "sources": [
         "https://www.renuspace.ky/business-profile/rankin-group-ltd"
@@ -6956,6 +7675,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "remax.ky"
+      ],
       "nameKey": "remaxcaymanislands",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/remax-cayman-islands"
@@ -6981,6 +7703,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "realwoodcabinets",
       "sources": [
         "https://www.renuspace.ky/business-profile/real-wood-cabinets"
@@ -7000,6 +7723,9 @@
       "domain": "reedconsultingengineers.com",
       "publishedEmail": "alex@reedconsultingengineers.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "reedconsultingengineers.com"
+      ],
       "nameKey": "reedconsultingengineers",
       "sources": [
         "https://www.reedconsultingengineers.com/",
@@ -7017,6 +7743,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.regalbeach.ky",
+      "verifiedDomains": [
+        "regalbeach.ky"
+      ],
       "nameKey": "regalbeachclub",
       "aliasNames": [
         "Regal Beach Club"
@@ -7045,6 +7774,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "reliableelectricalcontractors",
       "sources": [
         "https://www.renuspace.ky/business-profile/reliable-electrical-contractors"
@@ -7065,6 +7795,9 @@
       "domain": "reliable.ky",
       "publishedEmail": "support@reliable.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "reliable.ky"
+      ],
       "nameKey": "reliableindustries",
       "sources": [
         "https://reliable.ky/"
@@ -7085,6 +7818,9 @@
       "domain": "remservices.ky",
       "publishedEmail": "rent@remservices.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "remservices.ky"
+      ],
       "nameKey": "remservices",
       "sources": [
         "https://www.remservices.ky/"
@@ -7113,6 +7849,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "rhulens.com"
+      ],
       "nameKey": "rhulens",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/rhulens"
@@ -7130,6 +7869,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://ritchrealty.ky",
+      "verifiedDomains": [
+        "ritchrealty.ky"
+      ],
       "nameKey": "ritchrealty",
       "aliasNames": [
         "Ritch Realty Ltd.",
@@ -7170,6 +7912,9 @@
       "domain": "rmsairconditioning.com",
       "publishedEmail": "service@rmsairconditioning.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "rmsairconditioning.com"
+      ],
       "nameKey": "rmsairconditioning",
       "sources": [
         "https://www.renuspace.ky/business-profile/rms-air-conditioning"
@@ -7190,6 +7935,9 @@
       ],
       "domain": "roberttowell.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "roberttowell.com"
+      ],
       "nameKey": "roberttowellarchitect",
       "sources": [
         "https://caymanresident.com/housing/building-a-home/building-professionals/architects"
@@ -7207,6 +7955,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://robson.construction",
+      "verifiedDomains": [
+        "robson.construction"
+      ],
       "nameKey": "robsonconstruction",
       "aliasNames": [
         "Robson Construction Ltd."
@@ -7227,6 +7978,9 @@
       "location": "250 Owen Roberts Drive, Suite 10, Grand Cayman",
       "existingDirectory": true,
       "website": "https://royallimocayman.com",
+      "verifiedDomains": [
+        "royallimocayman.com"
+      ],
       "nameKey": "royallimo",
       "aliasNames": [
         "Royal Limo"
@@ -7250,6 +8004,9 @@
       "domain": "senergysolar.ky",
       "publishedEmail": "info@senergysolar.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "senergysolar.ky"
+      ],
       "nameKey": "senergysolarcayman",
       "sources": [
         "https://www.renuspace.ky/business-profile/senergy-solar-cayman-ltd"
@@ -7275,6 +8032,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "shamooelectric",
       "sources": [
         "https://www.renuspace.ky/business-profile/shamoo-electric"
@@ -7303,6 +8061,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "shoreline.ky"
+      ],
       "nameKey": "shorelinepropertiescaymanislands",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/shoreline-properties-cayman-islands"
@@ -7328,6 +8089,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "solidcayman",
       "sources": [
         "https://www.renuspace.ky/business-profile/solid-cayman"
@@ -7354,6 +8116,9 @@
       "domain": "somanservicesltd.ky",
       "publishedEmail": "info@somanservicesltd.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "somanservicesltd.ky"
+      ],
       "nameKey": "somanservices",
       "sources": [
         "https://www.renuspace.ky/business-profile/soman-services-ltd"
@@ -7374,6 +8139,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "sourceelectrical",
       "sources": [
         "https://www.renuspace.ky/business-profile/source-electrical"
@@ -7402,6 +8168,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "srcayman.com"
+      ],
       "nameKey": "sovereignrealty",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/sovereign-realty-10"
@@ -7427,6 +8196,9 @@
       "domain": "spartanfencingky.com",
       "publishedEmail": "info@spartanfencingky.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "spartanfencingky.com"
+      ],
       "nameKey": "spartanfencing",
       "sources": [
         "https://www.renuspace.ky/business-profile/spartan-fencing"
@@ -7443,6 +8215,9 @@
       "location": "52 Lincoln Drive, George Town, Cayman Islands",
       "existingDirectory": true,
       "website": "https://splashinc.ky",
+      "verifiedDomains": [
+        "splashinc.ky"
+      ],
       "nameKey": "splash",
       "aliasNames": [
         "Splash Inc."
@@ -7464,6 +8239,9 @@
       "location": "25 Dorcy Drive, Grand Cayman",
       "existingDirectory": true,
       "website": "https://sprint.ky",
+      "verifiedDomains": [
+        "sprint.ky"
+      ],
       "nameKey": "sprintexpressservices",
       "aliasNames": [
         "Sprint Express Services"
@@ -7497,6 +8275,9 @@
       "domain": "sshcayman.com",
       "publishedEmail": "info@sshcayman.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "sshcayman.com"
+      ],
       "nameKey": "sshcayman",
       "sources": [
         "https://www.renuspace.ky/business-profile/ssh-cayman"
@@ -7517,6 +8298,9 @@
       "domain": "staffordflooring.com",
       "publishedEmail": "info@staffordflooring.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "staffordflooring.com"
+      ],
       "nameKey": "staffordflooring",
       "sources": [
         "https://www.renuspace.ky/business-profile/stafford-flooring"
@@ -7542,6 +8326,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "storagesolutions",
       "sources": [
         "https://www.renuspace.ky/business-profile/storage-solutions"
@@ -7567,6 +8352,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "sublimerentalsservices",
       "sources": [
         "https://www.renuspace.ky/business-profile/sublime-rentals-services"
@@ -7592,6 +8378,9 @@
       "domain": "superiordrywallcayman.com",
       "publishedEmail": "info@superiordrywallcayman.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "superiordrywallcayman.com"
+      ],
       "nameKey": "superiordrywall",
       "sources": [
         "https://www.renuspace.ky/business-profile/superior-drywall-ltd"
@@ -7608,6 +8397,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.supermix.ky",
+      "verifiedDomains": [
+        "supermix.ky"
+      ],
       "nameKey": "supermix",
       "aliasNames": [
         "Supermix"
@@ -7636,6 +8428,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "supremepowerwash",
       "sources": [
         "https://www.renuspace.ky/business-profile/supreme-power-wash"
@@ -7656,6 +8449,9 @@
       "domain": "surebuilt.ky",
       "publishedEmail": "info@surebuilt.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "surebuilt.ky"
+      ],
       "nameKey": "surebuiltconstruction",
       "sources": [
         "https://heritageholdings.ky/surebuilt/"
@@ -7674,6 +8470,9 @@
         "roofing"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "synergycayman.com"
+      ],
       "nameKey": "synergycayman",
       "sources": [
         "https://synergy.ky/contact-us/"
@@ -7699,6 +8498,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "themerrendesign",
       "sources": [
         "https://www.renuspace.ky/business-profile/t-h-e-merren-design"
@@ -7727,6 +8527,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "tensails.ky"
+      ],
       "nameKey": "tensailspropertygroup",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/ten-sails-property-group-ltd"
@@ -7756,6 +8559,7 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "theagencycaymanislands",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/the-agency-real-estate",
@@ -7782,6 +8586,9 @@
       "domain": "theguru.ky",
       "publishedEmail": "fixit@theguru.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "theguru.ky"
+      ],
       "nameKey": "theapplianceguru",
       "sources": [
         "https://www.renuspace.ky/business-profile/the-appliance-guru"
@@ -7798,6 +8605,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.avaloncayman.com",
+      "verifiedDomains": [
+        "avaloncayman.com"
+      ],
       "nameKey": "theavaloncondominiums",
       "aliasNames": [
         "The Avalon Condominiums"
@@ -7817,6 +8627,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://beachcombergrandcayman.com",
+      "verifiedDomains": [
+        "beachcombergrandcayman.com"
+      ],
       "nameKey": "thebeachcombergrandcayman",
       "aliasNames": [
         "The Beachcomber Grand Cayman"
@@ -7846,6 +8659,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "thecraftsmanthedraftsman",
       "sources": [
         "https://www.renuspace.ky/business-profile/the-craftsman-the-draftsman"
@@ -7866,6 +8680,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "thefinaltouch",
       "sources": [
         "https://www.renuspace.ky/business-profile/the-final-touch"
@@ -7882,6 +8697,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://grandviewcondos.com",
+      "verifiedDomains": [
+        "grandviewcondos.com"
+      ],
       "nameKey": "thegrandviewcondosstrata205",
       "aliasNames": [
         "The Grandview Condos (Strata 205)"
@@ -7901,6 +8719,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://staylocale.com",
+      "verifiedDomains": [
+        "staylocale.com"
+      ],
       "nameKey": "thelocalehotelgrandcayman",
       "aliasNames": [
         "The Locale Hotel Grand Cayman"
@@ -7921,6 +8742,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.thepoolstoreltd.com",
+      "verifiedDomains": [
+        "thepoolstoreltd.com"
+      ],
       "nameKey": "thepoolstore",
       "aliasNames": [
         "The Pool Store Limited",
@@ -7956,6 +8780,7 @@
         "construction"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "therealestate",
       "sources": [
         "https://www.cca.ky/the-real-estate-company"
@@ -7972,6 +8797,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://thereef.com",
+      "verifiedDomains": [
+        "thereef.com"
+      ],
       "nameKey": "thereefbeachresortgrandcayman",
       "aliasNames": [
         "The Reef Beach Resort Grand Cayman"
@@ -7997,6 +8825,9 @@
       "domain": "security.ky",
       "publishedEmail": "info@security.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "security.ky"
+      ],
       "nameKey": "thesecuritycentre",
       "sources": [
         "https://www.security.ky/"
@@ -8013,6 +8844,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://westin-cayman.com",
+      "verifiedDomains": [
+        "westin-cayman.com"
+      ],
       "nameKey": "thewestingrandcaymansevenmilebeachresortspa",
       "aliasNames": [
         "The Westin Grand Cayman Seven Mile Beach Resort & Spa"
@@ -8041,6 +8875,9 @@
       "domain": "thermashield.ky",
       "publishedEmail": "staycool@thermashield.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "thermashield.ky"
+      ],
       "nameKey": "thermashield",
       "sources": [
         "https://www.renuspace.ky/business-profile/therma-shield"
@@ -8062,6 +8899,9 @@
       "domain": "tqh.ky",
       "publishedEmail": "info@tqh.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "tqh.ky"
+      ],
       "nameKey": "thompsonqualityhomes",
       "sources": [
         "https://www.renuspace.ky/business-profile/thompson-quality-homes",
@@ -8081,6 +8921,9 @@
       "location": "10 Shipping Lane, Industrial Park, Grand Cayman",
       "existingDirectory": true,
       "website": "https://thompsonshipping.com",
+      "verifiedDomains": [
+        "thompsonshipping.com"
+      ],
       "nameKey": "thompsonshipping",
       "aliasNames": [
         "Thompson Shipping Company Ltd."
@@ -8100,6 +8943,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.thpm.ky",
+      "verifiedDomains": [
+        "thpm.ky"
+      ],
       "nameKey": "thpmrealestate",
       "aliasNames": [
         "THPM Real Estate"
@@ -8120,6 +8966,9 @@
       "location": "48 Washington Road, George Town, Grand Cayman",
       "existingDirectory": true,
       "website": "https://tibbettslogisticsci.com",
+      "verifiedDomains": [
+        "tibbettslogisticsci.com"
+      ],
       "nameKey": "tibbettslogistics",
       "aliasNames": [
         "Tibbetts Logistics Ltd."
@@ -8150,6 +8999,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "topchoiceroofing",
       "sources": [
         "https://www.renuspace.ky/business-profile/top-choice-roofing"
@@ -8175,6 +9025,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "totalwindowfashions",
       "sources": [
         "https://www.renuspace.ky/business-profile/total-window-fashions-ltd"
@@ -8203,6 +9054,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "tridentproperties.ky"
+      ],
       "nameKey": "tridentpropertiescaymanislands",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/trident-properties-cayman-islands-ltd"
@@ -8221,6 +9075,10 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://trioarchitects.com",
+      "verifiedDomains": [
+        "trioarchitects.com",
+        "trio-design.net"
+      ],
       "nameKey": "trioarchitecture",
       "aliasNames": [
         "Trio Architecture",
@@ -8250,6 +9108,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://tag.ky",
+      "verifiedDomains": [
+        "tag.ky"
+      ],
       "nameKey": "tropicalarchitecturaldevelopmentgrouptag",
       "aliasNames": [
         "Tropical Architectural & Development Group (TAG Ltd.)",
@@ -8290,6 +9151,7 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "tropicalrealestate",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/tropical-real-estate"
@@ -8315,6 +9177,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "trydenroofingandwaterproofing",
       "sources": [
         "https://www.renuspace.ky/business-profile/tryden-roofing-and-waterproofing"
@@ -8331,6 +9194,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.turtlenestinn.com",
+      "verifiedDomains": [
+        "turtlenestinn.com"
+      ],
       "nameKey": "turtlenestinncondos",
       "aliasNames": [
         "Turtle Nest Inn & Condos"
@@ -8354,6 +9220,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "tysonconstruction",
       "sources": [
         "https://www.renuspace.ky/business-profile/tyson-construction"
@@ -8375,6 +9242,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "uniqueconstructionmaintenance",
       "sources": [
         "https://www.renuspace.ky/business-profile/unique-construction-maintenance"
@@ -8391,6 +9259,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://ucltd.ky",
+      "verifiedDomains": [
+        "ucltd.ky"
+      ],
       "nameKey": "unitedcontracting",
       "aliasNames": [
         "United Contracting"
@@ -8421,6 +9292,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "unitedequipment",
       "sources": [
         "https://www.renuspace.ky/business-profile/united-equipment-ltd"
@@ -8437,6 +9309,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://units.ky",
+      "verifiedDomains": [
+        "units.ky"
+      ],
       "nameKey": "units",
       "aliasNames": [
         "UNITS Ltd"
@@ -8475,6 +9350,9 @@
       ],
       "domain": "vigoro.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "vigoro.ky"
+      ],
       "nameKey": "vigoronursery",
       "sources": [
         "https://caymanresident.com/shopping/garden-centres",
@@ -8493,6 +9371,9 @@
       "location": "Grand Cayman, Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.villasofthegalleon.com",
+      "verifiedDomains": [
+        "villasofthegalleon.com"
+      ],
       "nameKey": "villasofthegalleon",
       "aliasNames": [
         "Villas of the Galleon"
@@ -8521,6 +9402,9 @@
       "domain": "equipmentservices.ky",
       "publishedEmail": "info@equipmentservices.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "equipmentservices.ky"
+      ],
       "nameKey": "watlerhislopservices",
       "sources": [
         "https://www.renuspace.ky/business-profile/walter-hislop-services"
@@ -8537,6 +9421,9 @@
       "location": "Cayman Islands",
       "existingDirectory": true,
       "website": "https://www.watlersmetalproducts.com",
+      "verifiedDomains": [
+        "watlersmetalproducts.ky"
+      ],
       "nameKey": "watlersmetalproducts",
       "aliasNames": [
         "Watler's Metal Products"
@@ -8567,6 +9454,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "weldunconstruction",
       "sources": [
         "https://www.renuspace.ky/business-profile/weldun-construction"
@@ -8592,6 +9480,7 @@
       "domain": null,
       "publishedEmail": null,
       "location": "Cayman Islands",
+      "verifiedDomains": [],
       "nameKey": "welldonealuminumproducts",
       "sources": [
         "https://www.renuspace.ky/business-profile/well-done-aluminum-products"
@@ -8620,6 +9509,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "westindiesbrokers.com"
+      ],
       "nameKey": "westindiesbrokers",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/west-indies-brokers"
@@ -8644,6 +9536,9 @@
         "construction"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "westpoint-cayman.com"
+      ],
       "nameKey": "westpointconstructiongroup",
       "sources": [
         "https://www.cca.ky/westpoint-construction-group-ltd"
@@ -8664,6 +9559,9 @@
       ],
       "domain": "westpoint-inspections.com",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "westpoint-inspections.com"
+      ],
       "nameKey": "westpointinspections",
       "sources": [
         "https://caymanresident.com/housing/building-a-home/building-professionals/land-surveyors"
@@ -8692,6 +9590,9 @@
         "brokerage"
       ],
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "williams2realestate.com"
+      ],
       "nameKey": "williams2realestate",
       "sources": [
         "https://www.cireba.com/find-cayman-real-estate-company/williams2-real-estate"
@@ -8712,6 +9613,9 @@
       "domain": "wizardscreen.ky",
       "publishedEmail": "sales@wizardscreen.ky",
       "location": "Cayman Islands",
+      "verifiedDomains": [
+        "wizardscreen.ky"
+      ],
       "nameKey": "wizardcayman",
       "sources": [
         "https://www.renuspace.ky/business-profile/wizard-cayman"

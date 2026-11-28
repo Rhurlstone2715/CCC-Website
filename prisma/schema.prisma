@@ -245,6 +245,7 @@ model Company {
   rewardCreditCents Int @default(0)
   poolSubcompanyRewards Boolean @default(true)
   subCompanies SubCompany[]
+  emailDomains CompanyEmailDomain[]
   nameKey String @unique
   domain String? @unique
   ownerEmail String? @unique
@@ -253,6 +254,15 @@ model Company {
   createdAt DateTime @default(now())
   users User[]
   bookings Booking[]
+}
+
+model CompanyEmailDomain {
+  domain String @id
+  companyId Int
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  sourceUrl String?
+  createdAt DateTime @default(now())
+  @@index([companyId])
 }
 
 model AccountEmail {

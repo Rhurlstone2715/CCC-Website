@@ -11,11 +11,11 @@ export function researchedCompanyLogos(){if(!manifest){try{manifest=JSON.parse(r
 export type RewardsBrand={name:string;parentName:string|null;initials:string;logoUrl:string|null};
 export async function rewardsBrand(userId:number):Promise<RewardsBrand|null>{
  const membership=await verifiedCompanyMembership(userId);if(!membership)return null;
- const company=await prisma.company.findUnique({where:{id:membership.companyAccountId},include:{subCompanies:true}});if(!company)return null;
+ const company=await prisma.company.findUnique({where:{id:membership.companyAccountId},include:{subCompanies:true,emailDomains:true}});if(!company)return null;
  const sub=company.subCompanies.find(s=>s.id===membership.subCompanyId);
  const name=sub?.name??company.name,initials=name.split(/\s+/).filter(w=>/[a-z0-9]/i.test(w)).slice(0,2).map(w=>w[0]).join('').toUpperCase();
- const domains=[...new Set([sub?.domain,company.domain].filter((d):d is string=>Boolean(d)))];
- const keys=[...new Set([...(sub?[`subcompany:${sub.id}`,...(sub.domain?[`domain:${sub.domain}`]:[]),...(!sub.domain&&!company.domain?[`name:${companyNameKey(sub.name)}`]:[])]:[]),`company:${company.id}`,...domains.map(d=>`domain:${d}`),...(!company.domain?[`name:${companyNameKey(company.name)}`]:[])])];
+ const domains=[...new Set([sub?.domain,company.domain,...company.emailDomains.map(d=>d.domain)].filter((d):d is string=>Boolean(d)))];
+ const keys=[...new Set([...(sub?[`subcompany:${sub.id}`,...(sub.domain?[`domain:${sub.domain}`]:[]),...(!sub.domain&&!company.domain&&!company.emailDomains.length?[`name:${companyNameKey(sub.name)}`]:[])]:[]),`company:${company.id}`,...domains.map(d=>`domain:${d}`),...(!company.domain&&!company.emailDomains.length?[`name:${companyNameKey(company.name)}`]:[])])];
  const cached=await prisma.companyLogo.findMany({where:{key:{in:keys},data:{not:null}},select:{key:true,checkedAt:true}});
  let logoUrl:string|null=null;
  for(const key of keys){const row=cached.find(c=>c.key===key);if(row){logoUrl=`/company-logos/${encodeURIComponent(key)}?v=${row.checkedAt.getTime()}`;break;}
@@ -29,8 +29,8 @@ let busy=false;
 export async function refreshCompanyLogos(){
  if(busy)return;busy=true;
  try{
-  const companies=await prisma.company.findMany({where:{archivedAt:null},select:{domain:true,subCompanies:{select:{domain:true}}}});
-  const domains=[...new Set(companies.flatMap(c=>[c.domain,...c.subCompanies.map(s=>s.domain)]).filter((d):d is string=>Boolean(d)))].filter(d=>!researchedCompanyLogos()[d]);
+  const companies=await prisma.company.findMany({where:{archivedAt:null},select:{domain:true,emailDomains:{select:{domain:true}},subCompanies:{select:{domain:true}}}});
+  const domains=[...new Set(companies.flatMap(c=>[c.domain,...c.emailDomains.map(d=>d.domain),...c.subCompanies.map(s=>s.domain)]).filter((d):d is string=>Boolean(d)))].filter(d=>!researchedCompanyLogos()[d]);
   const existing=await prisma.companyLogo.findMany({where:{key:{in:domains.map(d=>`domain:${d}`)}}});
   const due=domains.filter(domain=>{const row=existing.find(r=>r.key===`domain:${domain}`);return !row||(!row.manual&&row.nextAttemptAt<=new Date());}).slice(0,4);
   await Promise.all(due.map(async domain=>{
@@ -46,10 +46,10 @@ export function startCompanyLogoRefresh(){void refreshCompanyLogos();return setI
 
 // Bulk lookup for the admin list: no per-customer logo queries or website fetches.
 export async function adminCustomerBrands(userIds:number[]):Promise<Map<number,RewardsBrand>>{
- const users=await prisma.user.findMany({where:{id:{in:userIds}},select:{id:true,companyAccount:{select:{id:true,name:true,domain:true}},subCompany:{select:{id:true,name:true,domain:true}}}});
+ const users=await prisma.user.findMany({where:{id:{in:userIds}},select:{id:true,companyAccount:{select:{id:true,name:true,domain:true,emailDomains:{select:{domain:true}}}},subCompany:{select:{id:true,name:true,domain:true}}}});
  const candidates=users.flatMap(u=>{
   const company=u.companyAccount;if(!company)return[];const sub=u.subCompany;
-  const keys=[...new Set([...(sub?[`subcompany:${sub.id}`,...(sub.domain?[`domain:${sub.domain}`]:[])]:[]),`company:${company.id}`,...[sub?.domain,company.domain].filter(Boolean).map(d=>`domain:${d}`),...(sub&&!sub.domain&&!company.domain?[`name:${companyNameKey(sub.name)}`]:[]),...(!company.domain?[`name:${companyNameKey(company.name)}`]:[])])];
+  const keys=[...new Set([...(sub?[`subcompany:${sub.id}`,...(sub.domain?[`domain:${sub.domain}`]:[])]:[]),`company:${company.id}`,...[sub?.domain,company.domain,...company.emailDomains.map(d=>d.domain)].filter(Boolean).map(d=>`domain:${d}`),...(sub&&!sub.domain&&!company.domain&&!company.emailDomains.length?[`name:${companyNameKey(sub.name)}`]:[]),...(!company.domain&&!company.emailDomains.length?[`name:${companyNameKey(company.name)}`]:[])])];
   return[{id:u.id,name:sub?.name??company.name,parentName:sub?company.name:null,keys}];
  });
  const logos=await prisma.companyLogo.findMany({where:{key:{in:[...new Set(candidates.flatMap(c=>c.keys))]},data:{not:null}},select:{key:true,checkedAt:true}});
@@ -61,10 +61,10 @@ export async function adminCustomerBrands(userIds:number[]):Promise<Map<number,R
  }));
 }
 
-export async function registeredCompanyLogoUrls(companies:{id:number;name?:string;domain:string|null;subCompanies:{id:number;name?:string;domain:string|null}[]}[]){
+export async function registeredCompanyLogoUrls(companies:{id:number;name?:string;domain:string|null;emailDomains?:{domain:string}[];subCompanies:{id:number;name?:string;domain:string|null}[]}[]){
  const candidates=companies.flatMap(co=>{
-  const parent=[`company:${co.id}`,...(co.domain?[`domain:${co.domain}`]:[]),...(co.name&&!co.domain?[`name:${companyNameKey(co.name)}`]:[])];
-  return[{key:`company:${co.id}`,keys:parent},...co.subCompanies.map(sub=>({key:`subcompany:${sub.id}`,keys:[`subcompany:${sub.id}`,...(sub.domain?[`domain:${sub.domain}`]:[]),...(sub.name&&!sub.domain&&!co.domain?[`name:${companyNameKey(sub.name)}`]:[]),...parent]}))];
+  const parent=[`company:${co.id}`,...(co.domain?[`domain:${co.domain}`]:[]),...(co.emailDomains||[]).map(d=>`domain:${d.domain}`),...(co.name&&!co.domain&&!co.emailDomains?.length?[`name:${companyNameKey(co.name)}`]:[])];
+  return[{key:`company:${co.id}`,keys:parent},...co.subCompanies.map(sub=>({key:`subcompany:${sub.id}`,keys:[`subcompany:${sub.id}`,...(sub.domain?[`domain:${sub.domain}`]:[]),...(sub.name&&!sub.domain&&!co.domain&&!co.emailDomains?.length?[`name:${companyNameKey(sub.name)}`]:[]),...parent]}))];
  });
  const saved=await prisma.companyLogo.findMany({where:{key:{in:[...new Set(candidates.flatMap(c=>c.keys))]},data:{not:null}},select:{key:true,checkedAt:true}});
  const cached=new Map(saved.map(logo=>[logo.key,logo.checkedAt]));
