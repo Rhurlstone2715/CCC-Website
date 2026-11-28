@@ -1,3 +1,5 @@
+import{compress}from'hono/compress';
+import{seo,rentalsSeoHtml}from'./seo.js';
 import{finalInvoiceDocuments}from'./final-invoices.js';
 import {craneSelector} from "./routes/crane-selector.js";
 import {rewardsBrand} from "./company-logos.js";
@@ -37,6 +39,11 @@ export const app = new Hono<AppEnv>();
 
 // The default "no-referrer" makes browsers send "Origin: null" on form posts,
 // which hides where a request came from; use the browsers' standard policy.
+const publicCompression=compress({encoding:'gzip',threshold:1024});
+app.use('*',async(c,next)=>{
+ if(['GET','HEAD'].includes(c.req.method)&&/^\/(rentals|equipment\/[^/]+|sitemap\.xml|robots\.txt|bundles\/[^/]+\.(?:js|css)|[^/]+\.(?:js|css))$/.test(c.req.path)&&c.req.header('accept-encoding')?.includes('gzip'))return publicCompression(c,next);
+ return next();
+});
 app.use(secureHeaders({ referrerPolicy: "strict-origin-when-cross-origin" }));
 
 // Once the site has its own domain (PUBLIC_URL), page visits to the Railway
@@ -71,11 +78,12 @@ app.use(async (c, next) => {
 app.use("/*", async (c, next) => {
   await next();
   const path = c.req.path;
-  if (/^\/(account|admin|api)(\/|$)/.test(path)) c.header("Cache-Control", "private, no-store");
+  if (/\.(csv|pdf)$/i.test(path)||/^\/(previews|downloads)(\/|$)/.test(path)||path.includes("email-preview"))c.header("X-Robots-Tag","noindex, noarchive");
+  if (/^\/(account|admin|api)(\/|$)/.test(path)) {c.header("Cache-Control", "private, no-store");c.header("X-Robots-Tag","noindex, nofollow, noarchive");}
   else if (c.res.status === 200 || c.res.status === 206) {
     c.header(
       "Cache-Control",
-      path.startsWith("/uploads/") ? "public, max-age=31536000, immutable" : path.startsWith("/assets/") ? "public, max-age=86400" : "no-cache",
+      (path.startsWith("/uploads/")||/^\/bundles\/site\.[a-f0-9]+\.(js|css)$/.test(path)) ? "public, max-age=31536000, immutable" : path.startsWith("/assets/") ? "public, max-age=86400" : "no-cache",
     );
   }
 });
@@ -91,10 +99,11 @@ app.get("/healthz", async c => {
 });
 
 // The rentals page lives at /rentals, matching the original site's URLs.
-app.get("/", c => c.redirect(`/rentals${new URL(c.req.url).search}`));
-app.get("/index.html", c => c.redirect("/", 301));
-app.get("/rentals.html", c => c.redirect("/rentals", 301));
-app.get("/rentals", serveStatic({ root: publicDir, path: "rentals.html" }));
+app.get("/", c => c.redirect(`/rentals${new URL(c.req.url).search}`,301));
+app.get("/index.html", c => c.redirect(`/rentals${new URL(c.req.url).search}`, 301));
+app.get("/rentals.html", c => c.redirect(`/rentals${new URL(c.req.url).search}`, 301));
+app.get("/rentals", async c=>c.html(await rentalsSeoHtml(c.req.query("category"))));
+app.route("/",seo);
 
 app.get("/privacy", async c => c.html(<PrivacyPage user={await currentUser(c)} />));
 
@@ -240,7 +249,7 @@ app.post("/api/bookings", bodyLimit({ maxSize: 256 * 1024, onError: c => c.json(
 
 app.use("/*", serveStatic({ root: publicDir }));
 
-app.notFound(c => c.text("Not found", 404));
+app.notFound(c => {c.header("X-Robots-Tag","noindex");return c.text("Not found", 404);});
 app.onError((error, c) => {
   console.error(error);
   return c.req.path.startsWith("/api/") ? c.json({ error: "Something went wrong." }, 500) : c.text("Something went wrong.", 500);

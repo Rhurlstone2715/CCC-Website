@@ -165,6 +165,20 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     globalThis.fetch = realFetch;
   });
 
+  test('public SEO pages render catalog links, metadata and local business data before JavaScript',async()=>{
+    const {load}=await import('cheerio');const response=await req('/rentals');assert.equal(response.status,200);const $=load(await response.text());assert.equal($('link[rel=canonical]').attr('href'),'https://www.caymancrane.com/rentals');assert.match($('title').text(),/Grand Cayman/);assert.ok($('#categoryGrid a').length>5);assert.equal($('h1').length,1);assert.ok($('#categoryNavLinks a').length>5);
+    const graph=JSON.parse($('script[type="application/ld+json"]').text())['@graph'];const business=graph.find((v:{'@type':string})=>v['@type']==='LocalBusiness');assert.equal(business.telephone,'+13459160816');assert.equal(business.address.addressCountry,'KY');assert.equal(business.areaServed.name,'Grand Cayman, Cayman Islands');assert.equal(business.aggregateRating,undefined);
+    const category=load(await(await req('/rentals?category=cranes&utm_source=test')).text());assert.equal(category('link[rel=canonical]').attr('href'),'https://www.caymancrane.com/rentals?category=cranes');assert.match(category('#productGrid').text(),/Grove RT890E/);assert.equal(category('#productGrid article').length,4);assert.match(category('meta[name=description]').attr('content')!,/Grand Cayman/);
+    const item=await req('/equipment/rt890e');assert.equal(item.status,200);const product=load(await item.text());assert.match(product('h1').text(),/Grove RT890E rental in Grand Cayman/);assert.ok(product('a[href*="category=cranes"]').length);assert.ok(product('a[href*="#equipment-rt890e"]').length);assert.ok(product('.seo-rates dd').length);assert.equal(product('link[rel=canonical]').attr('href'),'https://www.caymancrane.com/equipment/rt890e');
+    assert.equal((await req('/')).status,301);assert.equal(await prisma.booking.count(),0);assert.equal(await prisma.accountEmail.count(),0);
+  });
+  test('sitemap and robots expose only public visible catalog pages and private areas are noindex',async()=>{
+    const {load}=await import('cheerio');await prisma.product.update({where:{id:'rt890e'},data:{hidden:true}});const response=await req('/sitemap.xml');assert.match(response.headers.get('content-type')!,/xml/);const text=await response.text(),$=load(text,{xmlMode:true}),urls=$('loc').map((_,el)=>$(el).text()).get();assert.ok(urls.includes('https://www.caymancrane.com/rentals'));assert.ok(urls.includes('https://www.caymancrane.com/rentals?category=boom-trucks'));assert.ok(!urls.some(v=>v.includes('/equipment/rt890e')||/account|admin|api|previews/.test(v)));assert.equal(urls.length,new Set(urls).size);assert.equal((await req('/equipment/rt890e')).status,404);
+    const robots=await(await req('/robots.txt')).text();assert.match(robots,/Sitemap: https:\/\/www.caymancrane.com\/sitemap.xml/);assert.match(robots,/Disallow: \/account/);assert.match(robots,/Allow: \//);const account=await req('/account');assert.match(account.headers.get('x-robots-tag')!,/noindex/);
+    const missing=await req('/equipment/does-not-exist');assert.equal(missing.status,404);assert.match(missing.headers.get('x-robots-tag')!,/noindex/);
+    await prisma.product.update({where:{id:'rt635c'},data:{name:'<script>alert(1)</script> Crane'}});const safe=await(await req('/equipment/rt635c')).text();assert.ok(!safe.includes('<script>alert(1)</script>'));assert.ok(safe.includes('&lt;script&gt;'));
+  });
+
   test("crane selector is read-only, enforces 50% and excludes unverified catalog charts", async () => {
     const input={loadLb:10000,liftHeightFt:50,radiusFt:25};
     const response=await req('/api/crane-selector',{json:input});assert.equal(response.status,200);

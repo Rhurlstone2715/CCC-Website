@@ -1,0 +1,4 @@
+import{readFile,mkdir,writeFile}from'node:fs/promises';import{createHash}from'node:crypto';
+const css=['styles.css','rental-member-badge.css','crane-selector.css','rentals-nav.css','catalog-layout.css','seo.css'];
+const js=['signature-pad.js','catalog-layout.js','crane-selector-measures.js','crane-selector-rt-image.js','crane-selector-vector.js','crane-selector.js','rental-member-badge.js','image-variants.js','app.js'];
+await mkdir('public/bundles',{recursive:true});const manifest={};for(const[type,files]of Object.entries({css,js})){const content=(await Promise.all(files.map(f=>readFile('public/'+f,'utf8')))).join(type==='js'?'\n;\n':'\n'),hash=createHash('sha256').update(content).digest('hex').slice(0,12),name=`site.${hash}.${type}`;await writeFile('public/bundles/'+name,content);manifest[type]='/bundles/'+name;}await writeFile('public/bundles/manifest.json',JSON.stringify(manifest));

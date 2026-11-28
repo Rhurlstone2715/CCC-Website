@@ -7,3 +7,5 @@ src/generated
 work/
 
 /public/vendor/pdfjs/
+
+/public/bundles/

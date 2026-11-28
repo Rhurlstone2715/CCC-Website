@@ -1,0 +1,8 @@
+// Delivery-size variants only. Originals remain available for image enlargement.
+import sharp from 'sharp';
+import{mkdir,writeFile,stat}from'node:fs/promises';
+await mkdir('public/assets/optimized',{recursive:true});
+const jobs=[['assets/cayman-crane-logo.png','company-logo.webp',256,90],['assets/current-site/two-cranes-homepage.webp','homepage-cranes.webp',1448,78],['assets/catalog/rigger-banksman.png','rigger-banksman.webp',640,85],['assets/catalog/plumwall-icf-bracing.gif','wall-bracing.webp',640,80]];
+const map={};for(const[source,name,width,quality]of jobs){const input=await sharp('public/'+source,{animated:true}).metadata(),out='assets/optimized/'+name;await sharp('public/'+source,{animated:true}).resize({width,withoutEnlargement:true}).webp({quality,effort:4}).toFile('public/'+out);const result=await sharp('public/'+out,{animated:true}).metadata();if((input.pages||1)>1&&((result.pages||1)<=1||input.loop!==result.loop||input.delay.reduce((a,b)=>a+b,0)!==result.delay.reduce((a,b)=>a+b,0)))throw Error('Animation timing changed: '+source);if(input.hasAlpha&&!result.hasAlpha)throw Error('Transparency loss: '+source);map[source]='/'+out;map['/'+source]='/'+out;console.log(source, (await stat('public/'+source)).size,'->',(await stat('public/'+out)).size,'bytes',result.pages||1,'frames');}
+await sharp('public/assets/current-site/two-cranes-homepage.webp').resize({width:800}).webp({quality:78,effort:4}).toFile('public/assets/optimized/homepage-cranes-mobile.webp');
+await writeFile('public/image-variants.json',JSON.stringify(map,null,2)+'\n');await writeFile('public/image-variants.js','window.CCC_IMAGE_VARIANTS='+JSON.stringify(map)+';\n');
