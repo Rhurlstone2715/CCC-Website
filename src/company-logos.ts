@@ -2,9 +2,10 @@ import {readFileSync} from 'node:fs';
 import {Hono} from 'hono';
 import type {AppEnv} from './auth.js';
 import {prisma} from './db.js';
-import {verifiedCompanyMembership} from './companies.js';
+import {verifiedCompanyMembership,companyNameKey} from './companies.js';
 import {discoverCompanyLogo} from './logo-discovery.js';
-type LogoAsset={name:string;path:string;sourceUrl:string;imageUrl:string};
+type LogoAsset={name:string;path:string;sourceUrl:string;imageUrl:string;darkBackground?:boolean};
+function assetUrl(asset:LogoAsset){return asset.path+(asset.darkBackground?'?logo-contrast=dark':'');}
 let manifest:Record<string,LogoAsset>|undefined;
 export function researchedCompanyLogos(){if(!manifest){try{manifest=JSON.parse(readFileSync(new URL('../public/assets/company-logos/manifest.json',import.meta.url),'utf8'));}catch{manifest={};}}return manifest!;}
 export type RewardsBrand={name:string;parentName:string|null;initials:string;logoUrl:string|null};
@@ -14,11 +15,11 @@ export async function rewardsBrand(userId:number):Promise<RewardsBrand|null>{
  const sub=company.subCompanies.find(s=>s.id===membership.subCompanyId);
  const name=sub?.name??company.name,initials=name.split(/\s+/).filter(w=>/[a-z0-9]/i.test(w)).slice(0,2).map(w=>w[0]).join('').toUpperCase();
  const domains=[...new Set([sub?.domain,company.domain].filter((d):d is string=>Boolean(d)))];
- const keys=[...new Set([...(sub?[`subcompany:${sub.id}`,...(sub.domain?[`domain:${sub.domain}`]:[])]:[]),`company:${company.id}`,...domains.map(d=>`domain:${d}`)])];
+ const keys=[...new Set([...(sub?[`subcompany:${sub.id}`,...(sub.domain?[`domain:${sub.domain}`]:[]),...(!sub.domain&&!company.domain?[`name:${companyNameKey(sub.name)}`]:[])]:[]),`company:${company.id}`,...domains.map(d=>`domain:${d}`),...(!company.domain?[`name:${companyNameKey(company.name)}`]:[])])];
  const cached=await prisma.companyLogo.findMany({where:{key:{in:keys},data:{not:null}},select:{key:true,checkedAt:true}});
  let logoUrl:string|null=null;
  for(const key of keys){const row=cached.find(c=>c.key===key);if(row){logoUrl=`/company-logos/${encodeURIComponent(key)}?v=${row.checkedAt.getTime()}`;break;}
-  if(key.startsWith('domain:')){const asset=researchedCompanyLogos()[key.slice(7)];if(asset){logoUrl=asset.path;break;}}
+  if(key.startsWith('domain:')||key.startsWith('name:')){const asset=researchedCompanyLogos()[key.startsWith('domain:')?key.slice(7):key];if(asset){logoUrl=assetUrl(asset);break;}}
  }
  return {name,parentName:sub?company.name:null,initials,logoUrl};
 }
@@ -48,29 +49,29 @@ export async function adminCustomerBrands(userIds:number[]):Promise<Map<number,R
  const users=await prisma.user.findMany({where:{id:{in:userIds}},select:{id:true,companyAccount:{select:{id:true,name:true,domain:true}},subCompany:{select:{id:true,name:true,domain:true}}}});
  const candidates=users.flatMap(u=>{
   const company=u.companyAccount;if(!company)return[];const sub=u.subCompany;
-  const keys=[...new Set([...(sub?[`subcompany:${sub.id}`,...(sub.domain?[`domain:${sub.domain}`]:[])]:[]),`company:${company.id}`,...[sub?.domain,company.domain].filter(Boolean).map(d=>`domain:${d}`)])];
+  const keys=[...new Set([...(sub?[`subcompany:${sub.id}`,...(sub.domain?[`domain:${sub.domain}`]:[])]:[]),`company:${company.id}`,...[sub?.domain,company.domain].filter(Boolean).map(d=>`domain:${d}`),...(sub&&!sub.domain&&!company.domain?[`name:${companyNameKey(sub.name)}`]:[]),...(!company.domain?[`name:${companyNameKey(company.name)}`]:[])])];
   return[{id:u.id,name:sub?.name??company.name,parentName:sub?company.name:null,keys}];
  });
  const logos=await prisma.companyLogo.findMany({where:{key:{in:[...new Set(candidates.flatMap(c=>c.keys))]},data:{not:null}},select:{key:true,checkedAt:true}});
  const cached=new Map(logos.map(l=>[l.key,l.checkedAt]));
  return new Map(candidates.map(c=>{
   let logoUrl:string|null=null;
-  for(const key of c.keys){const checked=cached.get(key);if(checked){logoUrl=`/company-logos/${encodeURIComponent(key)}?v=${checked.getTime()}`;break;}if(key.startsWith('domain:')){const asset=researchedCompanyLogos()[key.slice(7)];if(asset){logoUrl=asset.path;break;}}}
+  for(const key of c.keys){const checked=cached.get(key);if(checked){logoUrl=`/company-logos/${encodeURIComponent(key)}?v=${checked.getTime()}`;break;}if(key.startsWith('domain:')||key.startsWith('name:')){const asset=researchedCompanyLogos()[key.startsWith('domain:')?key.slice(7):key];if(asset){logoUrl=assetUrl(asset);break;}}}
   return[c.id,{name:c.name,parentName:c.parentName,initials:c.name.split(/\s+/).filter(w=>/[a-z0-9]/i.test(w)).slice(0,2).map(w=>w[0]).join('').toUpperCase(),logoUrl}];
  }));
 }
 
-export async function registeredCompanyLogoUrls(companies:{id:number;domain:string|null;subCompanies:{id:number;domain:string|null}[]}[]){
+export async function registeredCompanyLogoUrls(companies:{id:number;name?:string;domain:string|null;subCompanies:{id:number;name?:string;domain:string|null}[]}[]){
  const candidates=companies.flatMap(co=>{
-  const parent=[`company:${co.id}`,...(co.domain?[`domain:${co.domain}`]:[])];
-  return[{key:`company:${co.id}`,keys:parent},...co.subCompanies.map(sub=>({key:`subcompany:${sub.id}`,keys:[`subcompany:${sub.id}`,...(sub.domain?[`domain:${sub.domain}`]:[]),...parent]}))];
+  const parent=[`company:${co.id}`,...(co.domain?[`domain:${co.domain}`]:[]),...(co.name&&!co.domain?[`name:${companyNameKey(co.name)}`]:[])];
+  return[{key:`company:${co.id}`,keys:parent},...co.subCompanies.map(sub=>({key:`subcompany:${sub.id}`,keys:[`subcompany:${sub.id}`,...(sub.domain?[`domain:${sub.domain}`]:[]),...(sub.name&&!sub.domain&&!co.domain?[`name:${companyNameKey(sub.name)}`]:[]),...parent]}))];
  });
  const saved=await prisma.companyLogo.findMany({where:{key:{in:[...new Set(candidates.flatMap(c=>c.keys))]},data:{not:null}},select:{key:true,checkedAt:true}});
  const cached=new Map(saved.map(logo=>[logo.key,logo.checkedAt]));
  const urls=new Map<string,string>();
  for(const candidate of candidates)for(const key of candidate.keys){
   const date=cached.get(key);if(date){urls.set(candidate.key,`/company-logos/${encodeURIComponent(key)}?v=${date.getTime()}`);break;}
-  if(key.startsWith('domain:')){const asset=researchedCompanyLogos()[key.slice(7)];if(asset){urls.set(candidate.key,asset.path);break;}}
+  if(key.startsWith('domain:')||key.startsWith('name:')){const asset=researchedCompanyLogos()[key.startsWith('domain:')?key.slice(7):key];if(asset){urls.set(candidate.key,assetUrl(asset));break;}}
  }
  return urls;
 }

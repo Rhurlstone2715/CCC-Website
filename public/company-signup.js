@@ -25,6 +25,17 @@
   }
   subSelect.addEventListener('change',()=>{if(subValue)subValue.value=subSelect.value});
   let timer,sequence=0;
+  let searchTimer,searchSequence=0;
+  async function searchCompanies(){
+    const current=++searchSequence,q=company.value.trim();
+    if(q.length<2||company.disabled||!email.validity.valid)return;
+    try{
+      const response=await fetch('/account/company-search?q='+encodeURIComponent(q)+'&email='+encodeURIComponent(email.value));
+      if(!response.ok)return;const data=await response.json();if(current!==searchSequence)return;
+      list.replaceChildren();for(const row of data.companies){const option=document.createElement('option');option.value=row.name;option.label=row.domain?'@'+row.domain:'One verified email login';list.append(option);}
+    }catch{}
+  }
+  company.addEventListener('input',()=>{++searchSequence;clearTimeout(searchTimer);searchTimer=setTimeout(searchCompanies,300);});
   function showTextInput() {
     subWrap.hidden=true;subSelect.disabled=true;choice.hidden=true;choice.disabled=true;company.hidden=false;company.style.display='';company.disabled=false;
     if(label)label.htmlFor=company.id;
@@ -37,7 +48,7 @@
       if(!response.ok)return;
       const data=await response.json();if(current!==sequence)return;
       list.replaceChildren();
-      if(data.mode==='single-email'){showTextInput();note.textContent='You can register a new company using this email as its only login. Other email addresses cannot join it. Verify your email to activate company rewards.';return;}
+      if(data.mode==='single-email'){showTextInput();note.textContent='Type your company name to find an existing listing or register a new company. Companies without a verified work domain allow one verified email login only.';void searchCompanies();return;}
       subChoices=data.subCompanies||[];subRequired=Boolean(data.requiresSubCompany);
       if(data.company){
         const saved=company.value;choice.replaceChildren();

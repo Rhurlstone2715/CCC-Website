@@ -1,10 +1,11 @@
 import freeEmailDomains from "free-email-domains";
 import { getDomain } from "tldts";
 import { domainToASCII } from "node:url";
+import { readFileSync } from "node:fs";
 import { prisma } from "./db.js";
 
 // Consumer/shared mailbox providers cannot establish ownership of a company.
-const PERSONAL = new Set<string>([...freeEmailDomains, ...('gmail.com googlemail.com outlook.com hotmail.com live.com msn.com yahoo.com yahoo.co.uk yahoo.ca yahoo.fr yahoo.co.in ymail.com rocketmail.com aol.com icloud.com me.com mac.com proton.me protonmail.com pm.me fastmail.com hey.com gmx.com gmx.de mail.com email.com zoho.com zohomail.com yandex.com yandex.ru tutanota.com tuta.com tutamail.com hushmail.com mailinator.com guerrillamail.com temp-mail.org 10minutemail.com qq.com 163.com 126.com comcast.net verizon.net att.net sbcglobal.net bellsouth.net btinternet.com orange.fr free.fr icloud.com candw.ky candw.com flow.com'.split(' '))]);
+const PERSONAL = new Set<string>([...freeEmailDomains, ...('gmail.com googlemail.com outlook.com hotmail.com live.com msn.com yahoo.com yahoo.co.uk yahoo.ca yahoo.fr yahoo.co.in ymail.com rocketmail.com aol.com icloud.com me.com mac.com proton.me protonmail.com pm.me fastmail.com hey.com gmx.com gmx.de mail.com email.com zoho.com zohomail.com yandex.com yandex.ru tutanota.com tuta.com tutamail.com hushmail.com mailinator.com guerrillamail.com temp-mail.org 10minutemail.com qq.com 163.com 126.com comcast.net verizon.net att.net sbcglobal.net bellsouth.net btinternet.com orange.fr free.fr icloud.com candw.ky candw.com telecayman.ky easyconnect.ky flow.com'.split(' '))]);
 export function companyEmailDomain(email: string): string | null {
   const parts = email.trim().toLowerCase().split('@');
   if (parts.length !== 2 || !parts[0]) return null;
@@ -17,6 +18,12 @@ export function companyEmailDomain(email: string): string | null {
 export function companyNameKey(name: string): string {
   return name.toLowerCase().replace(/\b(company|co|limited|ltd|incorporated|inc|llc|corp|corporation)\b/g, '').replace(/[^a-z0-9]/g, '');
 }
+const researchedAliases=new Map<string,string[]>();
+try{
+  const directory=JSON.parse(readFileSync(new URL('../data/cayman-business-directory-2026.json',import.meta.url),'utf8')) as {companies:{name:string;aliasNames:string[]}[]};
+  for(const row of directory.companies){const keys=[...new Set([row.name,...row.aliasNames].map(companyNameKey))];for(const key of keys)researchedAliases.set(key,keys);}
+}catch{ /* A missing optional research file must not prevent account access. */ }
+export function companyNameKeys(name:string):string[]{const key=companyNameKey(name);return researchedAliases.get(key)||[key];}
 type MembershipCompany = { id?: number; domain: string | null; ownerEmail: string | null; archivedAt?: Date | null; poolSubcompanyRewards?: boolean; subCompanies?: { id: number; companyId: number; domain: string | null }[] };
 export function companyAllowsEmail(company: MembershipCompany, email: string): boolean {
   if (company.archivedAt) return false;
@@ -35,8 +42,14 @@ export async function validateCompany(email: string, name: string | null, subCom
   if (!name) return subCompanyId ? "Select the parent company for your sub-company." : null;
   const key = companyNameKey(name);
   if (!key) return "Enter a valid company name.";
-  const named = await prisma.company.findUnique({ where: { nameKey: key }, include: { subCompanies: true } });
+  const named = await prisma.company.findFirst({ where: { nameKey: { in:companyNameKeys(name) } }, include: { subCompanies: true } });
   if (named?.archivedAt) return "That company is no longer active. Contact Cayman Crane or use a different company.";
+  // A researched listing with no published work domain is claimed only after email verification.
+  if (named && !named.domain && !named.ownerEmail) {
+    if (subCompanyId) return "This company does not have a registered sub-company.";
+    const owned = await prisma.company.findUnique({ where: { ownerEmail: email.trim().toLowerCase() } });
+    return owned && owned.id !== named.id ? `This email is already registered to ${owned.name}. Use that company name.` : null;
+  }
   if (named) return companyAllowsEmail(named, email) ? subCompanyIssue(named, email, subCompanyId) : named.ownerEmail
     ? "That company is limited to its registered email login. Use that email address or choose a different company."
     : "That company requires its matching work-email domain. Use a company work email.";
@@ -59,7 +72,7 @@ export async function syncCompanyMembership(userId: number): Promise<void> {
     }
     const key = companyNameKey(user.company);
     if (!key) return;
-    let company = await tx.company.findUnique({ where: { nameKey: key }, include: { subCompanies: true } });
+    let company = await tx.company.findFirst({ where: { nameKey: { in:companyNameKeys(user.company) } }, include: { subCompanies: true } });
     if (!company) {
       const domain = companyEmailDomain(user.email);
       const domainCompany = domain ? await tx.company.findUnique({ where: { domain } }) : null;
@@ -72,6 +85,13 @@ export async function syncCompanyMembership(userId: number): Promise<void> {
         // Verified business emails establish a shared company domain, including full trading names.
         company = await tx.company.upsert({ where: { nameKey: key }, create: { name: user.company, nameKey: key, domain, ownerEmail: domain ? null : user.email }, update: {}, include: { subCompanies: true } });
       }
+    }
+    if (!company.domain && !company.ownerEmail && !company.archivedAt) {
+      // Conditional row update serializes simultaneous claims. A work email does not
+      // automatically turn a domainless directory listing into a shared staff account.
+      const owned = await tx.company.findUnique({ where: { ownerEmail: user.email } });
+      if (!owned || owned.id === company.id) await tx.company.updateMany({ where: { id: company.id, domain: null, ownerEmail: null, archivedAt: null }, data: { ownerEmail: user.email } });
+      company = await tx.company.findUniqueOrThrow({ where: { id: company.id }, include: { subCompanies: true } });
     }
     if (!companyAllowsEmail(company, user.email) || subCompanyIssue(company, user.email, user.subCompanyId)) {
       if (user.companyAccountId) await tx.user.update({ where: { id: user.id }, data: { companyAccountId: null } });

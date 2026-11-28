@@ -2216,6 +2216,43 @@ describe("site", { skip: TEST_DB ? false : "TEST_DATABASE_URL not set" }, () => 
     }
   });
 
+  test("domainless directory listings are searchable and claimed only by the first verified email", async () => {
+    const sent=captureEmails();
+    const company=await prisma.company.create({data:{name:"Island Garden Services",nameKey:"islandgardenservices",rewardCreditCents:2500}});
+    const choices=await(await req("/account/company-search?q=Island&email=owner%40gmail.com")).json();
+    assert.deepEqual(choices.companies,[{name:company.name,domain:null}]);
+    const first=await req("/account/signup",{form:{name:"Owner",email:"owner@gmail.com",phone:"345 555 0141",company:company.name,password:"longenough1"}});
+    assert.equal(first.status,302);assert.equal((await prisma.company.findUniqueOrThrow({where:{id:company.id}})).ownerEmail,null);
+    await req(confirmPath(sent.find(m=>m.to.includes("owner@gmail.com"))!.text));
+    const saved=await prisma.company.findUniqueOrThrow({where:{id:company.id}});assert.equal(saved.ownerEmail,"owner@gmail.com");assert.equal(saved.domain,null);assert.equal(saved.rewardCreditCents,2500);
+    for(const email of["other@gmail.com","staff@newcompany.ky"]){const rejected=await req("/account/signup",{form:{name:"Other",email,phone:"345 555 0142",company:company.name,password:"longenough1"}});assert.equal(rejected.status,400);}
+    const outsider=await(await req("/account/company-search?q=Island&email=other%40gmail.com")).json();assert.equal(outsider.companies.length,0);assert.equal(JSON.stringify(outsider).includes("owner@gmail.com"),false);
+    assert.equal((await(await req("/account/company-search?q=Island&email=owner%40gmail.com")).json()).companies.length,1);
+  });
+
+  test("concurrent verified claims cannot share a domainless company or promote its work domain", async () => {
+    const company=await prisma.company.create({data:{name:"Cayman Gardeners",nameKey:"caymangardeners"}});
+    const users=await Promise.all(["one@builders.ky","two@builders.ky"].map(email=>prisma.user.create({data:{name:"Staff",email,passwordHash:"unused",company:company.name,emailVerifiedAt:new Date()}})));
+    await Promise.all(users.map(user=>syncCompanyMembership(user.id)));
+    const saved=await prisma.company.findUniqueOrThrow({where:{id:company.id}});assert.equal(saved.domain,null);assert.ok(users.some(u=>u.email===saved.ownerEmail));assert.equal(await prisma.user.count({where:{companyAccountId:company.id}}),1);
+    const suggestion=await(await req("/account/company-suggestion?email=third%40builders.ky")).json();assert.equal(suggestion.company,null);
+    for(const email of["staff@telecayman.ky","staff@easyconnect.ky"])assert.equal(companyEmailDomain(email),null);
+  });
+
+  test("expanded business directory import preserves ownership, rewards and trading-name aliases without duplicate accounts",async()=>{
+    const directory=JSON.parse(readFileSync("data/cayman-business-directory-2026.json","utf8")) as {companies:{name:string;nameKey:string;domain:string|null;aliasNames:string[]}[]};
+    const alias=await prisma.company.create({data:{name:"Label C Designs",nameKey:"labelcdesigns",ownerEmail:"owner@gmail.com",rewardCreditCents:150000}});
+    const sql=readFileSync("prisma/migrations/20261128180000_cayman_business_directory/migration.sql","utf8");
+    const apply=async()=>{for(const statement of sql.replace(/^--.*$/gm,"").split(";")){const text=statement.trim();if(text&&!/^(BEGIN|COMMIT)$/.test(text))await prisma.$executeRawUnsafe(text);}};
+    await apply();const count=await prisma.company.count();await apply();assert.equal(await prisma.company.count(),count);assert.ok(count>300);
+    const kept=await prisma.company.findUniqueOrThrow({where:{id:alias.id}});assert.equal(kept.rewardCreditCents,150000);assert.equal(kept.ownerEmail,"owner@gmail.com");assert.equal(kept.domain,null);assert.equal(await prisma.company.count({where:{nameKey:"cynthiatranelstudio"}}),0);
+    assert.equal(await prisma.user.count(),0);assert.equal(await prisma.accountEmail.count(),0);
+    const audit=await(await import("./company-directory.js")).auditCompanyDirectory();assert.equal(audit.mapped,directory.companies.length);assert.deepEqual(audit.missing,[]);assert.deepEqual(audit.duplicateMatches,[]);
+    const duplicate=await req("/account/signup",{form:{name:"Other Owner",email:"other@gmail.com",phone:"345 555 0148",company:"Cynthia Tranel Studio",password:"longenough1"}});assert.equal(duplicate.status,400);assert.equal(await prisma.company.count(),count);
+    for(const entry of directory.companies.filter(c=>c.domain&&c.name!=="Cynthia Tranel Studio")){assert.ok(await prisma.company.findUnique({where:{domain:entry.domain!}}),entry.name);}
+    const listing=await prisma.company.findFirstOrThrow({where:{name:"Growing Beauty Nursery"}});assert.equal(listing.domain,null);assert.equal(listing.ownerEmail,null);
+  });
+
   test("a company without a work domain is restricted to one verified email login", async () => {
     const sent = captureEmails();
     const response = await req("/account/signup", { form: { name: "Company Owner", email: "owner@gmail.com", phone: "345 555 0100", company: "Island Repairs", password: "longenough1" } });

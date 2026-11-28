@@ -1310,3 +1310,5 @@ html { scroll-padding-top: calc(var(--site-header-height, 100px) + 12px); }
 .foot-by:hover .gr-mark::before,.foot-by:focus-visible .gr-mark::before{opacity:0}
 .foot-by:hover .gr-mark::after,.foot-by:focus-visible .gr-mark::after{opacity:1}
 @media(max-width:1040px){.portal-footer .wrap.foot-bottom{grid-template-columns:1fr;justify-items:center;text-align:center;gap:16px}.portal-footer .foot-copy,.portal-footer .foot-help{justify-self:center;text-align:center}.portal-footer .foot-by{order:3}}
+/* White official wordmarks remain transparent, with a contrasting display tile. */
+img[src*="logo-contrast=dark"]{background-color:#17212b!important;padding:8px;border-radius:8px;box-sizing:border-box}

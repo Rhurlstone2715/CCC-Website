@@ -30,7 +30,7 @@ export function logoCandidates(html:string,pageUrl:string){
  const $=load(html),found:{url:string;score:number}[]=[];
  const add=(raw:string|undefined,score:number)=>{if(!raw)return;try{const url=new URL(raw,pageUrl);if(url.protocol==='http:')url.protocol='https:';if(!['https:','data:'].includes(url.protocol))return;if(/wordpress|wix-logo|facebook|instagram|linkedin|tripadvisor|whatsapp|google-logo|recaptcha|visa|mastercard|payment|certificat/i.test(url.href))return;found.push({url:url.href,score});}catch{}};
  $('img').each((_,el)=>{const img=$(el),src=img.attr('data-src')||img.attr('src'),label=[img.attr('alt'),img.attr('class'),img.attr('id'),src].join(' ');const inHeader=img.closest('header,[role=banner]').length>0;const wide=Number(img.attr('width'))/Number(img.attr('height'))>=2;let home=false;try{const href=img.closest('a').attr('href');if(href)home=new URL(href,pageUrl).pathname==='/';}catch{}let score=/logo/i.test(label)?100:inHeader&&(wide||home)?65:0;if(wide&&score)score+=10;if(inHeader&&score)score+=200;const context=img.parents().slice(0,4).map((_,e)=>[$(e).attr('id'),$(e).attr('class')].join(' ')).get().join(' ');if(/partner|sponsor|client|brand-carousel|accredit|preloader/i.test(context))score=0;if(img.closest('[id*=video],[class*=video],video').length||/load(?:ing|er)|spinner|preloader|partner|sponsor|client|award|accredit|association|facebook|instagram|linkedin|twitter|youtube|whatsapp|social|visa|mastercard|tripadvisor/i.test(label))score=0;if(score)add(src,score);});
- $('svg').each((_,el)=>{const svg=$(el),label=[svg.attr('class'),svg.attr('id'),svg.attr('aria-label')].join(' '),inside=svg.closest('[class*=logo],[id*=logo]').length>0;if(!inside&&!/logo/i.test(label))return;if(/icon|social|search|menu|cart|arrow|loading|spinner/i.test(label))return;const box=svg.attr('viewBox')?.split(/[ ,]+/).map(Number);if(box&&box[2]<=32&&box[3]<=32)return;svg.attr('xmlns','http://www.w3.org/2000/svg');const content=$.html(svg);if(content.length>200)add('data:image/svg+xml;base64,'+Buffer.from(content).toString('base64'),350);});
+ $('svg').each((_,el)=>{const svg=$(el),label=[svg.attr('class'),svg.attr('id'),svg.attr('aria-label')].join(' '),inside=svg.closest('[class*=logo],[id*=logo]').length>0;if(!inside&&!/logo/i.test(label))return;const context=svg.parents().slice(0,3).map((_,e)=>[$(e).attr('class'),$(e).attr('id'),$(e).attr('href')].join(' ')).get().join(' ');if(/icon|social|search|menu|cart|arrow|loading|spinner|facebook|instagram|linkedin|twitter|youtube|whatsapp/i.test(label+' '+context))return;const box=svg.attr('viewBox')?.split(/[ ,]+/).map(Number);if(box&&box[2]<=32&&box[3]<=32)return;svg.attr('xmlns','http://www.w3.org/2000/svg');const content=$.html(svg);if(content.length>200)add('data:image/svg+xml;base64,'+Buffer.from(content).toString('base64'),350);});
  $('[style]').each((_,el)=>{const e=$(el),label=[e.attr('class'),e.attr('id'),e.attr('data-framer-name')].join(' '),style=e.attr('style')||'';if(/logo/i.test(label)){const match=style.match(/url\((?:"([^"]*)"|'([^']*)'|([^)]*))\)/i);if(match)add(match[1]||match[2]||match[3],320);}});
  $('link[rel*="icon"]').each((_,el)=>{const l=$(el);if(!/\.ico(?:\?|$)/i.test(l.attr('href')||''))add(l.attr('href'),20);});
  $('script[type="application/ld+json"]').each((_,el)=>{try{const traverse=(v:unknown)=>{if(!v||typeof v!=='object')return;if(Array.isArray(v)){v.forEach(traverse);return;}const x=v as Record<string,unknown>;if(/Organization|Corporation|LocalBusiness|Hotel|ConstructionBusiness/.test(String(x['@type']))){const logo=typeof x.logo==='string'?x.logo:(x.logo as {url?:string})?.url;add(logo,90);}if(x['@graph'])traverse(x['@graph']);};traverse(JSON.parse($(el).text()));}catch{}});
@@ -40,8 +40,22 @@ export async function normalizeCompanyLogo(bytes:Buffer){
  const image=sharp(bytes,{limitInputPixels:16_000_000,animated:false});const metadata=await image.metadata();if((metadata.width??0)<16||(metadata.height??0)<10)throw new Error('Logo too small.');
  const sample=await sharp(bytes,{limitInputPixels:16_000_000}).resize({width:100,height:100,fit:'inside'}).ensureAlpha().raw().toBuffer();let light=0,count=0;for(let i=0;i<sample.length;i+=4){if(sample[i+3]<64)continue;light+=(sample[i]+sample[i+1]+sample[i+2])/3;count++;}
  if(count<8)throw new Error('Logo has no visible artwork.');
- const background=light/count>220?'#17212b':'#ffffff';
- return image.resize({width:440,height:200,fit:'inside',withoutEnlargement:true}).flatten({background}).webp({quality:92}).toBuffer();
+ // Keep native transparency. For a flat opaque matte, remove only background
+ // pixels connected to the outer edge; enclosed white brand details remain intact.
+ const {data,info}=await image.resize({width:880,height:400,fit:'inside',withoutEnlargement:true}).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+ const {width:w,height:h}=info,at=(x:number,y:number)=>(y*w+x)*4;
+ const corners=[at(0,0),at(w-1,0),at(0,h-1),at(w-1,h-1)],bg=corners[0];
+ const same=(p:number)=>data[p+3]>240&&[0,1,2].every(c=>Math.abs(data[p+c]-data[bg+c])<=18);
+ if(corners.every(same)){
+  const seen=new Uint8Array(w*h),queue:number[]=[];
+  const add=(x:number,y:number)=>{const n=y*w+x;if(!seen[n]&&same(n*4)){seen[n]=1;queue.push(n);}};
+  for(let x=0;x<w;x++){add(x,0);add(x,h-1);}for(let y=0;y<h;y++){add(0,y);add(w-1,y);}
+  for(let i=0;i<queue.length;i++){const n=queue[i],x=n%w,y=Math.floor(n/w);if(x>0)add(x-1,y);if(x<w-1)add(x+1,y);if(y>0)add(x,y-1);if(y<h-1)add(x,y+1);}
+  // Keep solid brand panels intact rather than erasing their entire artwork.
+  if(queue.length<=w*h*.98)for(const n of queue)data[n*4+3]=0;
+ }
+ const trimmed=await sharp(data,{raw:{width:w,height:h,channels:4}}).trim({background:'#00000000',threshold:5}).resize({width:436,height:196,fit:'inside',withoutEnlargement:true}).png().toBuffer();
+ return sharp(trimmed).extend({top:2,bottom:2,left:2,right:2,background:'#00000000'}).webp({quality:95,alphaQuality:100}).toBuffer();
 }
 export async function discoverCompanyLogo(homepages:string[],strict=false){
  let last='No identifiable logo found.';

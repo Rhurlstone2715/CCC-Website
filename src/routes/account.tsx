@@ -33,7 +33,7 @@ import { bookingRef } from "../bookings.js";
 import { prisma } from "../db.js";
 import { customerEmailsEnabled, sendEmail } from "../email.js";
 import { clientIp, createLimiter } from "../ratelimit.js";
-import { companyEmailDomain, validateCompany, syncCompanyMembership, verifiedCompanyId } from "../companies.js";
+import { companyEmailDomain, companyNameKeys, validateCompany, syncCompanyMembership, verifiedCompanyId } from "../companies.js";
 import { TIERS, rewardsForUser, pendingRewardsForUser, pendingBookingPoints, type Rewards } from "../rewards.js";
 import { Field, Layout, Notice, PHONE_DISPLAY, PHONE_LINK, StatusBadge, WHATSAPP_LINK, caymanDate, money } from "../views/layout.js";
 
@@ -263,6 +263,14 @@ account.get("/company-suggestion", async c => {
   if (!domain) return c.json({ eligible: true, mode: "single-email", company: null });
   const company = await prisma.company.findFirst({ where: { archivedAt: null, OR: [{ domain }, { subCompanies: { some: { domain } } }] }, include: { subCompanies: { orderBy: [{ group: "asc" }, { name: "asc" }] } } });
   return c.json({ eligible: true, domain, companyDomain: company?.domain ?? domain, company: company?.name ?? null, requiresSubCompany: company?.poolSubcompanyRewards === false && Boolean(company.subCompanies.length), subCompanies: company?.subCompanies.filter(sub => domain === company.domain || domain === sub.domain).map(sub => ({ id: sub.id, name: sub.name, group: sub.group })) ?? [], suggestion: domain.split('.')[0].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) });
+});
+
+account.get("/company-search", async c => {
+  c.header("Cache-Control", "private, no-store");
+  const q=(c.req.query("q")||"").trim().slice(0,120),email=(c.req.query("email")||"").trim().toLowerCase(),domain=companyEmailDomain(email);
+  if(q.length<2)return c.json({companies:[]});
+  const companies=await prisma.company.findMany({where:{archivedAt:null,AND:[{OR:[{name:{contains:q,mode:"insensitive"}},{nameKey:{in:companyNameKeys(q)}}]},{OR:[{domain:null,ownerEmail:null},...(EMAIL_PATTERN.test(email)?[{ownerEmail:email}]:[]),...(domain?[{domain},{subCompanies:{some:{domain}}}]:[])]}]},select:{name:true,domain:true},orderBy:{name:"asc"},take:12});
+  return c.json({companies});
 });
 
 account.post("/signup", async c => {

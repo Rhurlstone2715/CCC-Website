@@ -1,3 +1,4 @@
+import{auditCompanyDirectory}from'./company-directory.js';
 import{startFinalInvoiceDelivery,backfillInvoiceWatermarks}from'./final-invoices.js';
 import {startRentalReminderDelivery} from './rental-reminders.js';
 import {runConfiguredDocumentCorrection} from "./booking-document-correction.js";
@@ -14,6 +15,7 @@ import { startGoogleCalendarSync } from "./google-calendar.js";
 import { prisma } from "./db.js";
 
 await ensureCatalogSeeded();
+try{console.log("Company directory audit",JSON.stringify(await auditCompanyDirectory()));}catch{console.error("Company directory read-back audit unavailable; existing customer accounts remain unchanged.");}
 await backfillInvoiceWatermarks();
 await runConfiguredTransportRepair();
 await refreshPaidDocumentBalances();
